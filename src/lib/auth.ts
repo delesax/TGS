@@ -1,6 +1,6 @@
 import "server-only";
 import { cache } from "react";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 export type Profile = {
@@ -15,6 +15,8 @@ export type Profile = {
 export type Viewer = {
   userId: string;
   email: string;
+  /** From the JWT app_metadata claim, which only the server can set. Never a client flag. */
+  isAdmin: boolean;
   profile: Profile | null;
 };
 
@@ -32,7 +34,7 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
     .eq("id", user.id)
     .maybeSingle<Profile>();
 
-  return { userId: user.id, email: user.email ?? "", profile: profile ?? null };
+  return { userId: user.id, email: user.email ?? "", isAdmin: user.app_metadata?.role === "admin", profile: profile ?? null };
 });
 
 /**
@@ -44,4 +46,11 @@ export async function requireStrategist(path: string): Promise<Viewer & { profil
   if (!viewer) redirect(`/login?next=${encodeURIComponent(path)}`);
   if (!viewer.profile?.handle) redirect("/onboarding");
   return viewer as Viewer & { profile: Profile & { handle: string } };
+}
+
+/** Use at the top of admin pages. Non-admins get a plain "not found". RLS enforces the same rule in the database. */
+export async function requireAdmin(path: string): Promise<Viewer & { profile: Profile & { handle: string } }> {
+  const viewer = await requireStrategist(path);
+  if (!viewer.isAdmin) notFound();
+  return viewer;
 }

@@ -1,29 +1,94 @@
-# Sprint 1 demo: click-through
+# Sprint 2 demo: Campaigns and countdown
 
-There are two ways to try it. **A. Local** works now, with no setup on the hosted project. **B. Hosted** needs steps 0 to 2 first.
+Everything below runs on **local** Supabase (Docker Desktop must be running). Nothing here touches the hosted project.
 
----
-
-## A. Try it locally (recommended first)
-
-Needs Docker Desktop running.
+## Setup (once per session)
 
 ```bash
-npx supabase start          # local database, auth and test inbox (first run downloads images)
-npm run dev                 # http://localhost:3000
+npx supabase start
 ```
 
-`npm run dev` reads `.env.local`, which points at the **hosted** project. To use the local one instead, run:
+```bash
+npx supabase db reset
+```
+
+`db reset` rebuilds the local database from the migrations and adds the three `[Sample]` Campaigns and the invite code `LOCAL-DEV-INVITE`.
 
 ```bash
 npm run test:env && set -a && . ./.env.test.local && set +a && npx next dev --port 3100
 ```
 
-Then open http://localhost:3100. Sign-up emails arrive in the local test inbox at http://127.0.0.1:54324. The local invite code is **LOCAL-DEV-INVITE** (reusable).
+Open http://localhost:3100. Sign-up emails go to http://127.0.0.1:54324.
+
+To make yourself an admin locally, sign up first, then run this in a second terminal (sign out and back in afterwards):
+
+```bash
+set -a && . ./.env.test.local && set +a && npm run admin:set -- --email you@example.com
+```
+
+## Click-through
+
+1. **Campaigns** in the header. There are three sections: **Open now** ("[Sample] Should the four-day week…"), **Opening soon** ("…state pension age…") and **Closed** ("…phones in schools…"). Each sample Campaign shows when it closes or opens, in UK time.
+2. Open the **four-day week** sample:
+   - The big countdown ticks every second, and under it is **Round 1 of 3: Opening arguments** with its own countdown.
+   - Scroll down for **Rounds and deadlines** (round 1 marked "(now)"), the **Rules**, and "Dispatches open in the next update".
+3. **Your position** on the open Campaign: it says you did not record a before position, and offers **Where do you stand now?** Pick one and press **Record my position**. A green message confirms it. Reload: your choice is still selected.
+4. Open the **pension age** sample (Opening soon):
+   - It shows "Opens in" with a countdown and the **Opinion, not advice** label.
+   - Record a **before** position. Pressing the button without choosing gives a message that stays on screen.
+5. Open the **phones in schools** sample (Closed): "This Campaign has closed", and positions are final.
+6. **Countdown and focus**: switch to another tab for a minute and come back. The countdown re-syncs with the server rather than trusting your computer's clock.
+7. **As an admin**, Campaigns shows **Create a Campaign** and **Manage Campaigns**.
+   - Press **Create a Campaign**. Type a title (the web address fills itself in) and press **Save Campaign** without a summary. Expect "Please check the highlighted answers", the reason next to the field, and your title still there.
+   - Fill in the rest: category, format, Opens and Closes (UK time), two rounds, and tick **Sensitive topic** without a content note. Expect "A sensitive Campaign needs a content note".
+   - Add a note, choose **Schedule it** and save. You land on **Edit Campaign** with "Saved. The change has been recorded in the audit log."
+   - Press **View page**. The content note comes first, before the title.
+8. As a non-admin, go to http://localhost:3100/admin/campaigns: you get "Page not found".
+
+## Watch a Campaign open, change round and close (about 5 minutes)
+
+In a second terminal:
+
+```bash
+set -a && . ./.env.test.local && set +a && npm run campaign:test
+```
+
+It prints a page link. The Campaign opens at the next whole minute and runs two 2-minute rounds. Leave the page open:
+
+- At the opening minute the countdown reaches zero, the page refreshes itself and shows **Open now** with Round 1's countdown.
+- Two minutes later it moves to Round 2.
+- Two minutes after that it shows **This Campaign has closed**.
+
+Each step is written to the audit log as `campaign.opened`, `campaign.round_changed` and `campaign.closed` (Supabase Studio at http://127.0.0.1:54323 → Table editor → audit_log).
+
+Options: `-- --in 3 --round 5` opens in 3 minutes with 5-minute rounds. The script refuses to run against the hosted project.
+
+## Launch topics (local first)
+
+```bash
+set -a && . ./.env.test.local && set +a && npm run topics:load -- --start 2026-12-01
+```
+
+- The script prints the target (it should say **local Supabase**), lists the 15 topics in wave order with their start dates, and waits for you to type `yes`.
+- All 15 are **drafts**: as an admin, open **Manage Campaigns** to see them. The Bank of England topic shows "Owner decision needed".
+- Run it again: "Created 0 drafts. Skipped 15 that already existed."
+- To load them to the **hosted** project later, run `npm run topics:load -- --start <date>` without the `set -a …` part. It will say **hosted Supabase** before asking. Please don't do this until we've agreed the date and pushed the migration.
+
+## Running the tests
+
+```bash
+npm run test:env
+```
+
+```bash
+npm test
+```
+
+`npm test` runs the unit, RLS and Playwright tests against local Supabase only.
 
 ---
 
-## B. Hosted project setup (once)
+## Sprint 1 reference: hosted project setup
 
 **0. Fix `DATABASE_URL` so migrations can be pushed.**
 Supabase dashboard → your TGS project → **Connect** → **Session pooler** → copy the URI and put your database password in it. Replace the `DATABASE_URL=` line in `.env.local` with it. Do not paste it into chat. Then tell me and I will run the dry run again, show you the result and wait for your OK before the real push. Or run it yourself (call the CLI directly, not through `npx`: npx prints the full command, password included):
@@ -61,36 +126,3 @@ npm run admin:set -- --email you@example.com
 
 ---
 
-## Click-through (either setup)
-
-1. **Home** (`/`): the headline and the two buttons "I have an invite code" and "Sign in". Make the window narrow (phone width): nothing scrolls sideways.
-2. Click **I have an invite code**.
-3. Enter a wrong code such as `TGS-WRNG-WRNG-WRNG`, plus your email and a 10+ character password, and tick both boxes. Click **Create account**.
-   - Expect: a red message "Your invite code was not accepted" that **stays until you dismiss it**, a plain explanation under the code field, and **your email still filled in**.
-4. Put in the real invite code and click **Create account**. Expect the **Check your email** page.
-5. Open the email (locally: http://127.0.0.1:54324) and click the link. You land on **Choose your handle**.
-6. Type `Admin` and click **Save my handle**. Expect: "This name could be mistaken for an official or staff account". Try `Adm1n` or `hitler_fan` too.
-7. Type a normal handle, such as `Jane_Smith`. Expect: **Your Dossier** with "Welcome, @Jane_Smith" and empty sections for Titles, Awards and Dispatches, each saying what to do next.
-8. Click **Account** in the header. Edit your name, area of expertise or bio and click **Save profile**. Expect a green "saved" message.
-9. On the same page click **Add a passkey on this device**, and approve with Touch ID or your device PIN. The passkey appears in the list.
-10. Click **Back to home**. Expect "Welcome back, @Jane_Smith".
-11. Click **Sign out**, then **Sign in** → **Sign in with a passkey**. You are back in your Dossier without typing a password.
-12. Sign out and sign in with email and a **wrong password**. Expect a message that stays on screen and says what to do next.
-13. Footer: **Privacy policy**, **Terms of use** and **How we use AI** each show a yellow **DRAFT** banner.
-14. Click **Campaigns**. Expect "No Campaigns are open yet" with a way back home.
-
-## Running the tests
-
-```bash
-npx supabase start
-```
-
-```bash
-npm run test:env
-```
-
-```bash
-npm test
-```
-
-`npm test` runs the unit tests, the RLS tests and Playwright. The tests refuse to run unless `.env.test.local` points at **local** Supabase, so they never touch the hosted project.

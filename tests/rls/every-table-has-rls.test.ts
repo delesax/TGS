@@ -10,7 +10,7 @@ describe("schema guard", () => {
     const rows = await sql<{ tablename: string; rowsecurity: boolean }[]>`
       select tablename, rowsecurity from pg_tables where schemaname = 'public' order by tablename`;
     expect(rows.map((r) => r.tablename)).toEqual(
-      expect.arrayContaining(["profiles", "invites", "campaigns", "dispatches", "awards", "audit_log", "ai_decisions", "passkeys"]),
+      expect.arrayContaining(["profiles", "invites", "campaigns", "dispatches", "awards", "audit_log", "ai_decisions", "passkeys", "campaign_rounds", "campaign_positions"]),
     );
     expect(rows.filter((r) => !r.rowsecurity).map((r) => r.tablename)).toEqual([]);
   });

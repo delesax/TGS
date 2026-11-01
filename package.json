@@ -21,7 +21,9 @@
     "db:reset": "supabase db reset",
     "db:push": "supabase db push",
     "admin:set": "tsx scripts/make-admin.ts",
-    "test:env": "bash scripts/local-test-env.sh"
+    "test:env": "bash scripts/local-test-env.sh",
+    "topics:load": "tsx scripts/load-topics.ts",
+    "campaign:test": "tsx scripts/test-campaign.ts"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.7",
