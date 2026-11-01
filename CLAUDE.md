@@ -37,3 +37,12 @@ TGS is a time-boxed arena for structured reasoning. It rewards the best argument
 
 ## Definition of done (every task)
 Typecheck and lint clean; tests pass; works at 375px width; empty, loading and error states exist; no console errors.
+
+## Current environment (1 November 2026)
+- Building now on personal GitHub, Supabase and Vercel FREE plans. Do not add or suggest any paid service. The company (The Grand Strategist Limited, owned by Luma Empire Limited) is registered on 2 November; accounts move into it in Sprint 7.
+- The Supabase project already exists (London/EU region), Vercel is already linked to this repo, and .env.local holds the values listed in .env.example. Do not create new projects. Never print, read aloud, log or commit .env.local. If a variable is missing, tell me its name and where to find it; never ask me to paste a secret into chat.
+- The free Supabase plan has no backups and pauses after inactivity, so ALL schema changes go in supabase/migrations as SQL files that can rebuild the database from scratch. Include a seed script for development only.
+- Vercel free is for non-commercial use and its cron is limited: do scheduling with pg_cron and Inngest, not Vercel cron.
+- AI calls are stubbed behind src/lib/ai until Sprint 4. No Anthropic key is needed before then.
+- Read docs/PLAN.md and docs/UX_LESSONS.md at the start of every sprint.
+- Claude Code permissions are on manual: ask before git push, deletes, database commands and anything touching env files.
