@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { expect, test, type Page } from "@playwright/test";
 import { toUkInputValue } from "../../src/lib/campaigns";
 import { loadTestEnv } from "../test-env";
+import { expectNoHorizontalOverflow } from "./helpers";
 
 const env = loadTestEnv();
 const service = createClient(env.supabaseUrl, env.serviceKey, { auth: { persistSession: false } });
@@ -101,6 +102,9 @@ test("an admin creates a Campaign; a Strategist sees it, records a before positi
   await expect(page.getByText("Round 1: Opening arguments")).toBeVisible();
   await expect(page.getByText("Dispatches open in the next update")).toBeVisible();
 
+  // Sprint 2 carry-over: the Campaign page's buttons fit at 375px.
+  await expectNoHorizontalOverflow(page);
+
   // The countdown is computed from the server's clock and ticks.
   const clock = page.getByTestId("campaign-countdown").locator("[data-seconds-left]");
   const first = Number(await clock.getAttribute("data-seconds-left"));
@@ -127,6 +131,5 @@ test("an admin creates a Campaign; a Strategist sees it, records a before positi
   await expect(page.getByRole("heading", { level: 1, name: "Your account" })).toBeVisible();
   await expect(page.getByText("Loading…")).toHaveCount(0);
 
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-  expect(overflow).toBeLessThanOrEqual(0);
+  await expectNoHorizontalOverflow(page);
 });

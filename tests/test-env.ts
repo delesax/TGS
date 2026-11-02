@@ -16,7 +16,9 @@ export function loadTestEnv() {
     );
   }
   return {
-    siteUrl: process.env.NEXT_PUBLIC_SITE_URL!,
+    // E2E_SITE_URL lets the Playwright server use another port when 3100 is busy
+    // (for example while a demo dev server is running there).
+    siteUrl: process.env.E2E_SITE_URL ?? process.env.NEXT_PUBLIC_SITE_URL!,
     supabaseUrl: url,
     anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
