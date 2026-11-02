@@ -34,3 +34,9 @@ cross join (values
 ) as r(position, title, from_start, to_end)
 where c.slug = 'sample-open-four-day-week'
 on conflict (campaign_id, position) do nothing;
+
+-- Email processor for LOCAL development: pg_cron calls the app on port 3100
+-- through pg_net. Dummy local secret, not used anywhere else. On the hosted
+-- project the owner stores the real address and secret in Vault (see DEMO.md).
+select vault.create_secret('http://host.docker.internal:3100/api/email/process', 'email_processor_url', 'Local development only');
+select vault.create_secret('local-email-processor-secret', 'email_processor_secret', 'Local development only');

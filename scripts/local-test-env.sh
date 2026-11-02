@@ -27,5 +27,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=$anon_key
 SUPABASE_SERVICE_ROLE_KEY=$service_key
 DATABASE_URL=$db_url
 MAILPIT_URL=${mail_url:-http://127.0.0.1:54324}
+# Matches the dummy Vault secret in supabase/seed.sql. Local only.
+EMAIL_PROCESSOR_SECRET=local-email-processor-secret
 EOF
 echo "Wrote .env.test.local for local Supabase at $api_url"
