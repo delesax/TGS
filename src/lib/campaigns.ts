@@ -107,6 +107,17 @@ export function formatUkDateTime(iso: string): string {
   return `${date}, ${time} (UK time)`;
 }
 
+/** For example "2 Nov 2026, 10:04am": compact, for Dispatches and lists. */
+export function formatUkShort(iso: string): string {
+  const d = new Date(iso);
+  const date = new Intl.DateTimeFormat("en-GB", { timeZone: TIME_ZONE, day: "numeric", month: "short", year: "numeric" }).format(d);
+  const time = new Intl.DateTimeFormat("en-GB", { timeZone: TIME_ZONE, hour: "numeric", minute: "2-digit", hour12: true })
+    .format(d)
+    .replace(" ", "")
+    .toLowerCase();
+  return `${date}, ${time}`;
+}
+
 function londonParts(ms: number) {
   const parts = new Intl.DateTimeFormat("en-GB", {
     timeZone: TIME_ZONE,
