@@ -11,9 +11,28 @@ beforeAll(async () => {
 afterAll(() => deleteUsers([alice, bob, newcomer]));
 
 describe("profiles", () => {
-  it("are not readable by anonymous visitors", async () => {
-    const { data } = await anonClient().from("profiles").select("id").eq("id", alice.id);
-    expect(data ?? []).toHaveLength(0);
+  it("with a handle are readable by anonymous visitors (public columns only), without a handle they are not", async () => {
+    // Handles appear on public Campaign pages, so a Strategist's public profile is public.
+    const { data } = await anonClient().from("profiles").select("id, handle").eq("id", alice.id);
+    expect(data).toHaveLength(1);
+    const { error } = await anonClient().from("profiles").select("invite_id").eq("id", alice.id);
+    expect(error).not.toBeNull();
+
+    const { data: hidden } = await anonClient().from("profiles").select("id").eq("id", newcomer.id);
+    expect(hidden ?? []).toHaveLength(0);
+  });
+
+  it("show anonymous visitors only the handle and join date, never the display name, expertise, bio or search text", async () => {
+    const { data, error } = await anonClient().from("profiles").select("id, handle, created_at").eq("id", alice.id);
+    expect(error).toBeNull();
+    expect(data).toHaveLength(1);
+    for (const column of ["display_name", "expertise_tag", "bio", "search_vector"]) {
+      const { data: denied, error: deniedError } = await anonClient().from("profiles").select(column).eq("id", alice.id);
+      expect(deniedError, column).not.toBeNull();
+      expect(denied, column).toBeNull();
+    }
+    // "*" would include them, so it is refused too.
+    expect((await anonClient().from("profiles").select("*").eq("id", alice.id)).error).not.toBeNull();
   });
 
   it("with a handle are readable by other signed-in Strategists (public columns only)", async () => {

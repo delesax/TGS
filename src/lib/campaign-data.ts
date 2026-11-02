@@ -19,10 +19,11 @@ export type CampaignSummary = {
 export type Campaign = CampaignSummary & {
   rules: string | null;
   content_note: string | null;
-  notes: string | null;
-  needs_owner_decision: string | null;
   rounds: CampaignRound[];
 };
+
+/** Admin-only columns, read through campaign_admin_fields() (checks the JWT role claim). */
+export type CampaignAdminFields = { id: string; notes: string | null; needs_owner_decision: string | null };
 
 const SUMMARY_COLUMNS = "id, slug, title, summary, category, format, status, starts_at, ends_at, is_sensitive, opinion_not_advice";
 
@@ -46,7 +47,7 @@ export async function getCampaign(by: { slug: string } | { id: string }): Promis
   const supabase = await createClient();
   const query = supabase
     .from("campaigns")
-    .select(`${SUMMARY_COLUMNS}, rules, content_note, notes, needs_owner_decision, rounds:campaign_rounds(position, title, starts_at, ends_at)`);
+    .select(`${SUMMARY_COLUMNS}, rules, content_note, rounds:campaign_rounds(position, title, starts_at, ends_at, allowed_kinds)`);
   const { data, error } = await ("slug" in by ? query.eq("slug", by.slug) : query.eq("id", by.id)).maybeSingle();
   if (error) throw new Error("Could not load the Campaign");
   if (!data) return null;
@@ -66,4 +67,12 @@ export async function getMyPosition(campaignId: string, userId: string): Promise
     .eq("user_id", userId)
     .maybeSingle<MyPosition>();
   return data ?? null;
+}
+
+export async function getCampaignAdminFields(ids: string[]): Promise<Map<string, CampaignAdminFields>> {
+  if (!ids.length) return new Map();
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("campaign_admin_fields", { p_ids: ids });
+  if (error) throw new Error("Could not load Campaign notes");
+  return new Map((data as CampaignAdminFields[]).map((row) => [row.id, row]));
 }

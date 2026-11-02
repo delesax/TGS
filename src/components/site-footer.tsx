@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PwaSupport } from "@/components/pwa";
 
 const links = [
   { href: "/privacy", label: "Privacy policy" },
@@ -10,7 +11,10 @@ export function SiteFooter() {
   return (
     <footer className="mt-auto border-t border-border bg-muted">
       <div className="mx-auto flex max-w-4xl flex-col gap-3 px-4 py-6 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-base text-muted-foreground">The Grand Strategist · Invite-only pilot</p>
+        <div className="flex flex-col gap-2">
+          <p className="text-base text-muted-foreground">The Grand Strategist · Invite-only pilot</p>
+          <PwaSupport />
+        </div>
         <nav aria-label="Policies">
           <ul className="-mx-2 flex flex-wrap gap-1">
             {links.map((link) => (

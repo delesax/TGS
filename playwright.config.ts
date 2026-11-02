@@ -8,6 +8,9 @@ const port = new URL(env.siteUrl).port || "3100";
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: false,
+  // One at a time: the tests share one database, and the performance test must
+  // not compete with other tests for the CPU.
+  workers: 1,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
@@ -31,6 +34,10 @@ export default defineConfig({
       NEXT_PUBLIC_SUPABASE_URL: env.supabaseUrl,
       NEXT_PUBLIC_SUPABASE_ANON_KEY: env.anonKey,
       SUPABASE_SERVICE_ROLE_KEY: env.serviceKey,
+      // Emails go to the local Mailpit inbox only.
+      EMAIL_TRANSPORT: "mailpit",
+      MAILPIT_URL: env.mailpitUrl,
+      EMAIL_PROCESSOR_SECRET: env.emailSecret,
     },
   },
 });

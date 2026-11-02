@@ -1,6 +1,6 @@
-# Sprint 2 demo: Campaigns and countdown
+# Sprint 3 demo: Dispatches and discussion
 
-Everything below runs on **local** Supabase (Docker Desktop must be running). Nothing here touches the hosted project.
+Everything below runs on **local** Supabase (Docker Desktop must be running). Nothing here touches the hosted project. **Closed test only:** there is no automatic screening until Sprint 4.
 
 ## Setup (once per session)
 
@@ -12,69 +12,90 @@ npx supabase start
 npx supabase db reset
 ```
 
-`db reset` rebuilds the local database from the migrations and adds the three `[Sample]` Campaigns and the invite code `LOCAL-DEV-INVITE`.
+`db reset` rebuilds the local database from the migrations, adds the three `[Sample]` Campaigns and the invite code `LOCAL-DEV-INVITE`, and stores the local email processor's address and dummy secret in Vault.
 
 ```bash
-npm run test:env && set -a && . ./.env.test.local && set +a && npx next dev --port 3100
+npm run test:env
 ```
 
-Open http://localhost:3100. Sign-up emails go to http://127.0.0.1:54324.
+Load the 20-Strategist debate (local only, and safe to run twice):
 
-To make yourself an admin locally, sign up first, then run this in a second terminal (sign out and back in afterwards):
+```bash
+set -a && . ./.env.test.local && set +a && npm run seed:debate
+```
+
+Start the app. If a `next dev` is already running, stop it first (Ctrl+C), because it needs the new settings:
+
+```bash
+set -a && . ./.env.test.local && set +a && npx next dev --port 3100
+```
+
+Open http://localhost:3100. Emails go to the local inbox at http://127.0.0.1:54324.
+
+**Test Strategists:** `debater01@example.test` to `debater20@example.test` (handles `Test_Amara` to `Test_Tamsin`), password `debate-test-password`. These are local test data only.
+
+## Click-through on your phone-sized screen
+
+Use your browser's device mode at 375px, or open the Network URL that `next dev` prints on your phone if it is on the same Wi-Fi.
+
+1. **Read the debate signed out.** Go to Campaigns, then **[Test data] Should high streets be car-free on Saturdays?**
+   - Under **Dispatches** there is "Sign in to post" and the threads, newest first.
+   - Each Dispatch shows the author, its position as a word and icon ("For" with a plus, "Against" with a minus, "Undecided" with a question mark) and a solid, dashed or dotted left edge.
+   - It also shows the kind (Argument, Rebuttal, Evidence), round, time, sources with the website name, and the AI-use label ("Written without AI", "Written with AI help" or "Mostly written by AI").
+   - One Dispatch shows **Withdrawn by author.**
+   - Tap an author's handle: their Strategist page shows only the handle, "Strategist since …" and their public Dispatches, with **Sign in to follow**. No display name, expertise or bio while signed out.
+   - Search for `blue badge` from the header: Campaigns and Dispatches only. The **Strategists** filter says **Sign in to search for Strategists**.
+2. **Threads.** The first thread has a long exchange: replies indent four levels, then continue with "Replying to @…". Use **Hide/Show N replies** to fold branches. At the bottom, **Show more Dispatches** loads the next 20 threads.
+3. **Sign in as `debater01@example.test`** and open the debate again.
+   - Round 2 accepts rebuttals and evidence only, so the box is for **Evidence** (rebuttals go through **Reply**). Press **Post Dispatch** with nothing filled in: you get "Please check the highlighted answers" and "Say whether you used AI".
+   - Write a note and type `javascript:alert(1)` as the link: it is refused. Paste a real link with `?utm_source=x`, choose an AI-use answer, and post. The tracking code is gone from the link.
+   - Press **Post Dispatch** again straight away: "You can post again in N seconds", counting down.
+4. **Reply, react, edit, withdraw.**
+   - On someone else's Dispatch press **Reply**, write a rebuttal and post it; it appears nested.
+   - Press **Persuasive**: it fills in and the count goes up. Press again to take it back.
+   - On your own new Dispatch, **Edit (N min left)** works for 5 minutes and then the Dispatch shows "edited".
+   - **Withdraw** asks you to confirm and then shows "Withdrawn by author." You cannot react to your own Dispatches.
+5. **Report.** On another Strategist's Dispatch press **Report**, choose a reason and send it. The form says plainly that there is no automatic screening yet.
+6. **New Dispatches without reloading.** Keep the debate open in one window. In a private window, sign in as `debater02@example.test` and post a rebuttal. Switch back to the first window: within 30 seconds, or straight away when the window regains focus, a **"1 new Dispatch. Show"** button appears.
+7. **Follow.** Tap an author's handle to open their Strategist page. Signed in, it also shows their display name, expertise tag and bio if they set them. Press **Follow**. Open **Dossier**: your Dispatches are grouped by Campaign with their AI-use labels, the withdrawn one is marked, and **Following** lists the Campaign (followed automatically when you posted) and the Strategist.
+8. **Search.** Use the header search box with `blue badge`. Results come from Campaigns, Dispatches and handles, with the matches highlighted. Try the **Dispatches** and **Strategists** filters, then search for `Test_Am` to find a handle (people search works only when signed in).
+9. **Email.** Open http://127.0.0.1:54324: the test Strategists received digests such as "3 replies to your Dispatches".
+   - Your own reply from step 4 arrives about 10 minutes later. Replies are gathered into one email; the wait is set in `community_settings.reply_digest_minutes`.
+   - Open an email and use **Stop these emails**: a page asks you to confirm with one button.
+   - **Account → Email settings** shows the three kinds of email, all on by default, and **Stop all emails**.
+10. **Your data.** **Account → Download my data** saves a JSON file with your profile, Dispatches and their history, positions, reactions, follows, reports and email settings. **Deleting your account** explains that it is not switched on yet.
+11. **Admin.** Make yourself an admin (below), sign out and back in, then go to **Campaigns → Reports**.
+    - The report from step 5 is there. **Hide this Dispatch** with a reason: the public now sees "Hidden by a moderator."
+    - **Hidden Dispatches → Restore it** brings the text back. Each step is in the audit log (Supabase Studio at http://127.0.0.1:54323 → `audit_log`).
+12. **Sensitive Campaign.** As an admin, create a Campaign marked sensitive with a content note and open it. The Dispatches and the compose box stay folded behind the note until you press **I have read the note. Show the Dispatches**. A financial or medical Campaign shows "Opinion, not advice" on the box and on every Dispatch.
+13. **Offline and install.** The service worker runs only in a production build, so try this with `npm run build && npx next start --port 3100` (with the same `set -a …` prefix). Open any page, then turn Wi-Fi off and open another: **You are offline** appears, with "Try again". In Chrome, the footer shows a small **Install the app** button. The icons are placeholders.
+
+To make yourself an admin locally (sign out and back in afterwards):
 
 ```bash
 set -a && . ./.env.test.local && set +a && npm run admin:set -- --email you@example.com
 ```
 
-## Click-through
-
-1. **Campaigns** in the header. There are three sections: **Open now** ("[Sample] Should the four-day week…"), **Opening soon** ("…state pension age…") and **Closed** ("…phones in schools…"). Each sample Campaign shows when it closes or opens, in UK time.
-2. Open the **four-day week** sample:
-   - The big countdown ticks every second, and under it is **Round 1 of 3: Opening arguments** with its own countdown.
-   - Scroll down for **Rounds and deadlines** (round 1 marked "(now)"), the **Rules**, and "Dispatches open in the next update".
-3. **Your position** on the open Campaign: it says you did not record a before position, and offers **Where do you stand now?** Pick one and press **Record my position**. A green message confirms it. Reload: your choice is still selected.
-4. Open the **pension age** sample (Opening soon):
-   - It shows "Opens in" with a countdown and the **Opinion, not advice** label.
-   - Record a **before** position. Pressing the button without choosing gives a message that stays on screen.
-5. Open the **phones in schools** sample (Closed): "This Campaign has closed", and positions are final.
-6. **Countdown and focus**: switch to another tab for a minute and come back. The countdown re-syncs with the server rather than trusting your computer's clock.
-7. **As an admin**, Campaigns shows **Create a Campaign** and **Manage Campaigns**.
-   - Press **Create a Campaign**. Type a title (the web address fills itself in) and press **Save Campaign** without a summary. Expect "Please check the highlighted answers", the reason next to the field, and your title still there.
-   - Fill in the rest: category, format, Opens and Closes (UK time), two rounds, and tick **Sensitive topic** without a content note. Expect "A sensitive Campaign needs a content note".
-   - Add a note, choose **Schedule it** and save. You land on **Edit Campaign** with "Saved. The change has been recorded in the audit log."
-   - Press **View page**. The content note comes first, before the title.
-8. As a non-admin, go to http://localhost:3100/admin/campaigns: you get "Page not found".
-
-## Watch a Campaign open, change round and close (about 5 minutes)
-
-In a second terminal:
+## Throttled load test
 
 ```bash
-set -a && . ./.env.test.local && set +a && npm run campaign:test
+npm run test:env
 ```
-
-It prints a page link. The Campaign opens at the next whole minute and runs two 2-minute rounds. Leave the page open:
-
-- At the opening minute the countdown reaches zero, the page refreshes itself and shows **Open now** with Round 1's countdown.
-- Two minutes later it moves to Round 2.
-- Two minutes after that it shows **This Campaign has closed**.
-
-Each step is written to the audit log as `campaign.opened`, `campaign.round_changed` and `campaign.closed` (Supabase Studio at http://127.0.0.1:54323 → Table editor → audit_log).
-
-Options: `-- --in 3 --round 5` opens in 3 minutes with 5-minute rounds. The script refuses to run against the hosted project.
-
-## Launch topics (local first)
 
 ```bash
-set -a && . ./.env.test.local && set +a && npm run topics:load -- --start 2026-12-01
+npx playwright test tests/e2e/performance.spec.ts
 ```
 
-- The script prints the target (it should say **local Supabase**), lists the 15 topics in wave order with their start dates, and waits for you to type `yes`.
-- All 15 are **drafts**: as an admin, open **Manage Campaigns** to see them. The Bank of England topic shows "Owner decision needed".
-- Run it again: "Created 0 drafts. Skipped 15 that already existed."
-- To load them to the **hosted** project later, run `npm run topics:load -- --start <date>` without the `set -a …` part. It will say **hosted Supabase** before asking. Please don't do this until we've agreed the date and pushed the migration.
+It loads the debate on Chrome's "Slow 4G" profile with a 4x CPU slowdown and writes the numbers to `test-results/performance.json`. My run:
 
-## Running the tests
+| | Debate on screen | Buttons work |
+| --- | --- | --- |
+| First visit, empty cache | 1.48 s | 3.08 s |
+| Signed-in Strategist coming back | 1.06 s | 1.09 s |
+
+If port 3100 is busy with your `next dev`, add `E2E_SITE_URL=http://localhost:3200` before `npx playwright test`. Restart `next dev` afterwards, because the test's production build confuses a running dev server.
+
+## Running all the tests
 
 ```bash
 npm run test:env
@@ -85,6 +106,50 @@ npm test
 ```
 
 `npm test` runs the unit, RLS and Playwright tests against local Supabase only.
+
+## Hosted project: dry run (nothing applied)
+
+The command I ran, which calls the CLI directly and redacts the connection string:
+
+```bash
+set -a && . ./.env.local && set +a && ./node_modules/.bin/supabase db push --dry-run --db-url "$DATABASE_URL"
+```
+
+Result: the hosted project is up to date to Sprint 2, and these would be applied:
+
+- `20261103000100_invite_consumed_on_confirmation.sql`
+- `20261103000110_campaign_private_columns.sql`
+- `20261103000200_dispatches_discussion.sql`
+- `20261103000300_email_notifications.sql`
+
+There is no DROP or TRUNCATE in them. The only DELETE statements remove a Strategist's own reaction or follow when they take it back, plus the Sprint 2 step in `save_campaign()` that removes rounds an admin deleted. Every new table has row-level security, and a test checks this.
+
+**After you approve the push**, email needs these owner steps on hosted:
+
+1. In Resend, verify the sending domain. Then set `RESEND_API_KEY`, `EMAIL_FROM` (for example `The Grand Strategist <notifications@your-domain>`) and `EMAIL_PROCESSOR_SECRET` (any long random string) in Vercel → Project → Settings → Environment Variables. Do not paste them into chat.
+2. In Supabase → SQL Editor, store the processor's address and the same secret in Vault, replacing both placeholders:
+
+```sql
+select vault.create_secret('https://YOUR-VERCEL-URL/api/email/process', 'email_processor_url');
+```
+
+```sql
+select vault.create_secret('THE-SAME-SECRET-AS-VERCEL', 'email_processor_secret');
+```
+
+Until both are done, nothing is sent and emails wait safely in `email_outbox`.
+
+## Decisions for you
+
+These are listed in full in CHANGELOG.md, with defaults that can be changed without a release:
+
+- the reaction set;
+- the edit window and how withdrawing works;
+- length and rate limits;
+- the account-deletion wording (not built; proposal in the CHANGELOG);
+- the email sender, sending domain and daily cap;
+- whether report-and-hide is enough for a closed test;
+- ~~whether Strategist profiles may be public~~ (decided 2 November: signed-out visitors see the handle, join date and public Dispatches only; people search needs sign-in).
 
 ---
 

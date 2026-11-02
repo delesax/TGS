@@ -1,5 +1,3 @@
-import { z } from "zod";
-
 // Campaign model, labels and time logic. Pure functions: every "now" is passed
 // in, and it is always the server's clock (CLAUDE.md rule 5).
 
@@ -7,11 +5,13 @@ export const CATEGORIES = ["financial_services", "energy", "technology", "educat
 export const FORMATS = ["open_arena", "oxford", "progressive"] as const;
 export const STATUSES = ["draft", "scheduled", "open", "closed"] as const;
 export const POSITIONS = ["for", "against", "undecided"] as const;
+export const DISPATCH_KINDS = ["argument", "rebuttal", "evidence"] as const;
 
 export type Category = (typeof CATEGORIES)[number];
 export type Format = (typeof FORMATS)[number];
 export type Status = (typeof STATUSES)[number];
 export type PositionChoice = (typeof POSITIONS)[number];
+export type DispatchKind = (typeof DISPATCH_KINDS)[number];
 
 export const CATEGORY_LABELS: Record<Category, string> = {
   financial_services: "Financial Services",
@@ -33,7 +33,14 @@ export const POSITION_LABELS: Record<PositionChoice, string> = {
   undecided: "Undecided",
 };
 
-export type CampaignRound = { position: number; title: string; starts_at: string; ends_at: string };
+export type CampaignRound = {
+  position: number;
+  title: string;
+  starts_at: string;
+  ends_at: string;
+  /** Kinds of Dispatch this round accepts. Missing means all three. */
+  allowed_kinds?: DispatchKind[];
+};
 
 export type CampaignTimes = { status: Status; starts_at: string; ends_at: string };
 
@@ -96,6 +103,17 @@ export function formatUkDateTime(iso: string): string {
     .replace(" ", "")
     .toLowerCase();
   return `${date}, ${time} (UK time)`;
+}
+
+/** For example "2 Nov 2026, 10:04am": compact, for Dispatches and lists. */
+export function formatUkShort(iso: string): string {
+  const d = new Date(iso);
+  const date = new Intl.DateTimeFormat("en-GB", { timeZone: TIME_ZONE, day: "numeric", month: "short", year: "numeric" }).format(d);
+  const time = new Intl.DateTimeFormat("en-GB", { timeZone: TIME_ZONE, hour: "numeric", minute: "2-digit", hour12: true })
+    .format(d)
+    .replace(" ", "")
+    .toLowerCase();
+  return `${date}, ${time}`;
 }
 
 function londonParts(ms: number) {
@@ -196,66 +214,5 @@ export function slugify(title: string): string {
     .slice(0, 80)
     .replace(/-+$/, "");
 }
-
-const ukTime = (label: string) =>
-  z
-    .string()
-    .min(1, `Enter the ${label}.`)
-    .transform((v, ctx) => {
-      const iso = fromUkInputValue(v);
-      if (!iso) {
-        ctx.addIssue({ code: "custom", message: `Enter the ${label} as a date and time. This time may not exist because the clocks change.` });
-        return z.NEVER;
-      }
-      return iso;
-    });
-
-export const roundInputSchema = z.object({
-  title: z.string().trim().min(1, "Give the round a name, for example Opening arguments.").max(80, "Keep the round name to 80 characters or fewer."),
-  startsAt: ukTime("round start"),
-  endsAt: ukTime("round end"),
-});
-
-export const campaignInputSchema = z
-  .object({
-    title: z.string().trim().min(5, "The title needs at least 5 characters.").max(160, "Keep the title to 160 characters or fewer."),
-    slug: z
-      .string()
-      .trim()
-      .max(80, "Keep the web address to 80 characters or fewer.")
-      .regex(SLUG_PATTERN, "Use lower-case letters, numbers and single hyphens only, for example four-day-week."),
-    summary: z.string().trim().min(1, "Write a short summary so people know what the question is about.").max(2000, "Keep the summary to 2,000 characters or fewer."),
-    rules: z.string().trim().max(10000, "Keep the rules to 10,000 characters or fewer."),
-    category: z.enum(CATEGORIES, "Choose a category."),
-    format: z.enum(FORMATS, "Choose a format."),
-    status: z.enum(["draft", "scheduled"], "Choose whether to keep this as a draft or schedule it."),
-    startsAt: ukTime("start date and time"),
-    endsAt: ukTime("end date and time"),
-    isSensitive: z.boolean(),
-    contentNote: z.string().trim().max(500, "Keep the content note to 500 characters or fewer."),
-    opinionNotAdvice: z.boolean(),
-    notes: z.string().trim().max(2000, "Keep the notes to 2,000 characters or fewer."),
-    rounds: z.array(roundInputSchema).max(10, "A Campaign can have at most 10 rounds."),
-  })
-  .superRefine((v, ctx) => {
-    if (Date.parse(v.endsAt) <= Date.parse(v.startsAt)) {
-      ctx.addIssue({ code: "custom", path: ["endsAt"], message: "The end must be after the start." });
-    }
-    if (v.isSensitive && !v.contentNote) {
-      ctx.addIssue({ code: "custom", path: ["contentNote"], message: "A sensitive Campaign needs a content note. It is shown before anything else." });
-    }
-    v.rounds.forEach((r, i) => {
-      const n = i + 1;
-      if (Date.parse(r.endsAt) <= Date.parse(r.startsAt)) {
-        ctx.addIssue({ code: "custom", path: [`round${n}`], message: `Round ${n} must end after it starts.` });
-      } else if (Date.parse(r.startsAt) < Date.parse(v.startsAt) || Date.parse(r.endsAt) > Date.parse(v.endsAt)) {
-        ctx.addIssue({ code: "custom", path: [`round${n}`], message: `Round ${n} must start and end within the Campaign's start and end.` });
-      } else if (i > 0 && Date.parse(r.startsAt) < Date.parse(v.rounds[i - 1].endsAt)) {
-        ctx.addIssue({ code: "custom", path: [`round${n}`], message: `Round ${n} must not start before round ${i} ends.` });
-      }
-    });
-  });
-
-export type CampaignInput = z.infer<typeof campaignInputSchema>;
 
 export const MAX_ROUND_ROWS = 5;

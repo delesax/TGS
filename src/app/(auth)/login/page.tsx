@@ -10,7 +10,7 @@ import { SignInForm } from "./sign-in-form";
 export const metadata: Metadata = { title: "Sign in" };
 
 const CONFIRM_ERRORS: Record<string, string> = {
-  confirm_failed: "That confirmation link did not work. It may have expired or already been used. Try signing in; if that fails, sign up again with your invite code.",
+  confirm_failed: "That confirmation link did not work. It may have expired or already been used, or your invite may have filled up while you were away. Try signing in; if that fails, sign up again with your invite code.",
 };
 
 export default async function SignInPage({ searchParams }: PageProps<"/login">) {

@@ -56,6 +56,19 @@ describe("campaigns", () => {
     expect(data).toHaveLength(1);
   });
 
+  it("keep admin notes, hidden facts and owner decisions private to admins", async () => {
+    await service.from("campaigns").update({ notes: "Admin only.", needs_owner_decision: null }).eq("id", openId);
+    for (const client of [anonClient(), reader.client, admin.client]) {
+      for (const column of ["notes", "brief", "needs_owner_decision", "created_by"]) {
+        const { error } = await client.from("campaigns").select(column).eq("id", openId);
+        expect(error, column).not.toBeNull();
+      }
+    }
+    expect((await reader.client.rpc("campaign_admin_fields", { p_ids: [openId] })).error).not.toBeNull();
+    const { data } = await admin.client.rpc("campaign_admin_fields", { p_ids: [openId] });
+    expect(data![0].notes).toBe("Admin only.");
+  });
+
   it("can be created and edited only by admins", async () => {
     const row = {
       slug: `rls-user-${Date.now()}`,
@@ -81,64 +94,35 @@ describe("campaigns", () => {
   });
 });
 
+// Dispatch rules (posting through post_dispatch(), edits, withdraw, hide,
+// reactions, follows, reports and search) are tested in dispatches.test.ts.
 describe("dispatches", () => {
-  it("can be posted by a Strategist as themselves while the Campaign is open, and start as pending", async () => {
-    const { data, error } = await author.client.from("dispatches").insert(dispatch(openId, author.id)).select("id, moderation_status").single();
-    expect(error).toBeNull();
-    expect(data!.moderation_status).toBe("pending");
-  });
-
-  it("cannot be posted as someone else", async () => {
-    const { error } = await reader.client.from("dispatches").insert(dispatch(openId, author.id));
-    expect(error).not.toBeNull();
-  });
-
-  it("cannot be posted to a draft or closed Campaign (server time decides)", async () => {
-    for (const id of [draftId, closedId]) {
-      const { error } = await author.client.from("dispatches").insert(dispatch(id, author.id));
-      expect(error).not.toBeNull();
-    }
-  });
-
-  it("cannot be posted before choosing a handle", async () => {
-    const { error } = await noHandle.client.from("dispatches").insert(dispatch(openId, noHandle.id));
-    expect(error).not.toBeNull();
-  });
-
-  it("cannot skip moderation by setting their own status", async () => {
-    const { error } = await author.client.from("dispatches").insert(dispatch(openId, author.id, { moderation_status: "visible" }));
+  it("cannot be inserted, updated or deleted directly from the browser", async () => {
+    const { error } = await author.client.from("dispatches").insert(dispatch(openId, author.id));
     expect(error).not.toBeNull();
 
-    const { data: mine } = await author.client.from("dispatches").insert(dispatch(openId, author.id)).select("id").single();
-    const { error: updateError } = await author.client.from("dispatches").update({ moderation_status: "visible" }).eq("id", mine!.id);
-    expect(updateError).not.toBeNull();
+    const { data: posted } = await service
+      .from("dispatches")
+      .insert({ ...dispatch(openId, author.id), moderation_status: "visible" })
+      .select("id")
+      .single();
+    await author.client.from("dispatches").update({ body: "Edited directly." }).eq("id", posted!.id);
+    await author.client.from("dispatches").delete().eq("id", posted!.id);
+    const { data } = await service.from("dispatches").select("body").eq("id", posted!.id);
+    expect(data).toEqual([{ body: "A considered argument." }]);
   });
 
   it("stay hidden from others until moderation makes them visible", async () => {
-    const { data: mine } = await author.client.from("dispatches").insert(dispatch(openId, author.id)).select("id").single();
+    const { data: mine } = await service.from("dispatches").insert(dispatch(openId, author.id)).select("id, moderation_status").single();
+    expect(mine!.moderation_status).toBe("pending");
+    const { data: own } = await author.client.from("dispatches").select("id").eq("id", mine!.id);
+    expect(own).toHaveLength(1);
     const { data: before } = await reader.client.from("dispatches").select("id").eq("id", mine!.id);
     expect(before ?? []).toHaveLength(0);
 
     await service.from("dispatches").update({ moderation_status: "visible" }).eq("id", mine!.id);
     const { data: after } = await anonClient().from("dispatches").select("id").eq("id", mine!.id);
     expect(after).toHaveLength(1);
-  });
-
-  it("can be edited by their author only", async () => {
-    const { data: mine } = await author.client.from("dispatches").insert(dispatch(openId, author.id)).select("id").single();
-    const { error } = await author.client.from("dispatches").update({ body: "Edited by author." }).eq("id", mine!.id);
-    expect(error).toBeNull();
-
-    await reader.client.from("dispatches").update({ body: "Edited by someone else." }).eq("id", mine!.id);
-    const { data } = await service.from("dispatches").select("body").eq("id", mine!.id).single();
-    expect(data!.body).toBe("Edited by author.");
-  });
-
-  it("cannot be deleted from the browser, even by their author", async () => {
-    const { data: mine } = await author.client.from("dispatches").insert(dispatch(openId, author.id)).select("id").single();
-    await author.client.from("dispatches").delete().eq("id", mine!.id);
-    const { data } = await service.from("dispatches").select("id").eq("id", mine!.id);
-    expect(data).toHaveLength(1);
   });
 });
 

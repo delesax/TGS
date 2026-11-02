@@ -12,3 +12,17 @@ export type { ScreeningResult } from "./types";
 export async function screenHandle(handle: string): Promise<ScreeningResult> {
   return screenHandleWithStub(handle);
 }
+
+export type DispatchScreeningInput = { body: string; aiUse: "none" | "assisted" | "generated" };
+
+/**
+ * Sprint 4 hook for Dispatch screening, including the check for pasted AI
+ * output that was not declared (CLAUDE.md rule 9). Not built yet: it allows
+ * everything and records nothing, because no decision is made. When Sprint 4
+ * replaces it, each result is stored in ai_decisions and a "hold" sets the
+ * Dispatch to pending for review; AI never deletes (rule 6).
+ */
+export async function screenDispatch(input: DispatchScreeningInput): Promise<{ outcome: "allow" }> {
+  void input;
+  return { outcome: "allow" };
+}

@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { FormState } from "@/components/form";
 import { getViewer } from "@/lib/auth";
-import { MAX_ROUND_ROWS, campaignInputSchema } from "@/lib/campaigns";
+import { MAX_ROUND_ROWS } from "@/lib/campaigns";
+import { campaignInputSchema } from "@/lib/campaign-schema";
 import { createClient } from "@/lib/supabase/server";
 
 const text = (formData: FormData, name: string) => String(formData.get(name) ?? "");

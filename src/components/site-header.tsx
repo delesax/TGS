@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Search } from "lucide-react";
 import { getViewer } from "@/lib/auth";
 import { signOut } from "@/app/(auth)/actions";
 import { NavLink } from "@/components/nav-link";
@@ -56,6 +57,29 @@ export async function SiteHeader() {
             )}
           </ul>
         </nav>
+      </div>
+      <div className="mx-auto max-w-4xl px-4 pb-3">
+        <form role="search" action="/search" className="flex gap-2">
+          <label htmlFor="site-search" className="sr-only">
+            Search Campaigns, Dispatches and Strategists
+          </label>
+          <input
+            id="site-search"
+            name="q"
+            type="search"
+            enterKeyHint="search"
+            maxLength={200}
+            placeholder="Search"
+            className="min-h-12 w-full min-w-0 rounded-md border-2 border-input bg-background px-3 text-lg placeholder:text-muted-foreground focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          />
+          <button
+            type="submit"
+            className="inline-flex min-h-12 min-w-12 shrink-0 items-center justify-center gap-2 rounded-md bg-primary px-3 text-lg font-semibold text-primary-foreground focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          >
+            <Search aria-hidden className="size-5" />
+            <span className="sr-only sm:not-sr-only">Search</span>
+          </button>
+        </form>
       </div>
     </header>
   );

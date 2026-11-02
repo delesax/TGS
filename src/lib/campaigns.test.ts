@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   announcementBucket,
-  campaignInputSchema,
   currentRound,
   describeDuration,
   formatUkDateTime,
@@ -12,6 +11,7 @@ import {
   statusAt,
   toUkInputValue,
 } from "./campaigns";
+import { campaignInputSchema } from "./campaign-schema";
 
 const START = "2026-12-01T09:00:00.000Z";
 const END = "2026-12-08T09:00:00.000Z";

@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { getViewer } from "@/lib/auth";
 import { getCampaign, getMyPosition, getServerNow } from "@/lib/campaign-data";
 import { POSITION_LABELS, currentRound, formatUkDateTime, statusAt } from "@/lib/campaigns";
+import { DispatchSection } from "./dispatch-section";
 import { PositionForm } from "./position-form";
 
 export const dynamic = "force-dynamic";
@@ -97,7 +98,7 @@ export default async function CampaignPage({ params }: PageProps<"/campaigns/[sl
         </section>
       ) : null}
 
-      <Card>
+      <Card id="your-position" className="scroll-mt-4">
         <CardHeader>
           <CardTitle>Your position</CardTitle>
           <CardDescription>
@@ -172,14 +173,7 @@ export default async function CampaignPage({ params }: PageProps<"/campaigns/[sl
         </section>
       ) : null}
 
-      <section className="flex flex-col gap-2" aria-labelledby="dispatches-heading">
-        <h2 id="dispatches-heading" className="text-2xl font-bold">
-          Dispatches
-        </h2>
-        <p className="rounded-xl border-2 border-dashed border-border bg-muted p-5 text-lg">
-          Dispatches open in the next update. For now, record your position above.
-        </p>
-      </section>
+      {status !== "draft" ? <DispatchSection campaign={campaign} viewer={viewer} status={status} round={round} now={now} position={position} /> : null}
 
       <div className="flex flex-col gap-3 sm:flex-row">
         <Button asChild variant="outline">

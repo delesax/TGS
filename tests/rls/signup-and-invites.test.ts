@@ -44,21 +44,72 @@ describe("invite-only sign-up (enforced by the database trigger)", () => {
     expect(error).not.toBeNull();
   });
 
-  it("accepts a valid invite once, creates a profile without a handle, and then refuses reuse", async () => {
+  it("reserves the invite at sign-up and uses it up only when the email is confirmed", async () => {
     const invite = await createInvite({ max_uses: 1 });
     const first = await signUpWith({ invite_code: invite.code.toLowerCase(), age_confirmed: true, terms_accepted: true });
     expect(first.error).toBeNull();
     expect(first.data.user).not.toBeNull();
-    extraUserIds.push(first.data.user!.id);
+    const firstId = first.data.user!.id;
+    extraUserIds.push(firstId);
 
-    const { data: profile } = await service.from("profiles").select("handle, invite_id").eq("id", first.data.user!.id).single();
-    expect(profile).toEqual({ handle: null, invite_id: invite.id });
+    const { data: profile } = await service.from("profiles").select("handle, invite_id, invite_consumed_at").eq("id", firstId).single();
+    expect(profile).toEqual({ handle: null, invite_id: invite.id, invite_consumed_at: null });
 
-    const { data: used } = await service.from("invites").select("use_count").eq("id", invite.id).single();
-    expect(used!.use_count).toBe(1);
-
+    // Not used up yet, but the place is held: a second person cannot take it.
+    const { data: reserved } = await service.from("invites").select("use_count").eq("id", invite.id).single();
+    expect(reserved!.use_count).toBe(0);
     const second = await signUpWith({ invite_code: invite.code, age_confirmed: true, terms_accepted: true });
     expect(second.error).not.toBeNull();
+
+    // Confirming the email uses it up and records it.
+    const { error: confirmError } = await service.auth.admin.updateUserById(firstId, { email_confirm: true });
+    expect(confirmError).toBeNull();
+    const { data: used } = await service.from("invites").select("use_count").eq("id", invite.id).single();
+    expect(used!.use_count).toBe(1);
+    const { data: consumed } = await service.from("profiles").select("invite_consumed_at").eq("id", firstId).single();
+    expect(consumed!.invite_consumed_at).not.toBeNull();
+    const { data: log } = await service.from("audit_log").select("action").eq("target_id", invite.id);
+    expect(log!.map((l) => l.action)).toContain("invite.consumed");
+
+    const third = await signUpWith({ invite_code: invite.code, age_confirmed: true, terms_accepted: true });
+    expect(third.error).not.toBeNull();
+  });
+
+  it("releases an invite held by a sign-up that was never confirmed within 24 hours", async () => {
+    const invite = await createInvite({ max_uses: 1 });
+    const stale = await signUpWith({ invite_code: invite.code, age_confirmed: true, terms_accepted: true });
+    expect(stale.error).toBeNull();
+    extraUserIds.push(stale.data.user!.id);
+
+    // Age the reservation past 24 hours.
+    await service.from("profiles").update({ created_at: new Date(Date.now() - 25 * 3_600_000).toISOString() }).eq("id", stale.data.user!.id);
+    const { data: usable } = await service.rpc("invite_is_usable", { p_code: invite.code });
+    expect(usable).toBe(true);
+
+    const fresh = await signUpWith({ invite_code: invite.code, age_confirmed: true, terms_accepted: true });
+    expect(fresh.error).toBeNull();
+    extraUserIds.push(fresh.data.user!.id);
+    expect((await service.auth.admin.updateUserById(fresh.data.user!.id, { email_confirm: true })).error).toBeNull();
+
+    // The late confirmation is refused: the invite filled up in the meantime.
+    const late = await service.auth.admin.updateUserById(stale.data.user!.id, { email_confirm: true });
+    expect(late.error).not.toBeNull();
+    const { data: used } = await service.from("invites").select("use_count").eq("id", invite.id).single();
+    expect(used!.use_count).toBe(1);
+  });
+
+  it("uses the invite straight away for an account created already confirmed", async () => {
+    const user = await createUser();
+    users.push(user);
+    const { data } = await service.from("profiles").select("invite_id, invite_consumed_at").eq("id", user.id).single();
+    expect(data!.invite_consumed_at).not.toBeNull();
+    const { data: invite } = await service.from("invites").select("use_count").eq("id", data!.invite_id).single();
+    expect(invite!.use_count).toBe(1);
+  });
+
+  it("does not let browsers check invites directly", async () => {
+    const { error } = await anonClient().rpc("invite_is_usable", { p_code: "LOCAL-DEV-INVITE" });
+    expect(error).not.toBeNull();
   });
 });
 

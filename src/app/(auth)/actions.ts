@@ -10,18 +10,14 @@ import { fieldErrors, safeNextPath, signInSchema, signUpSchema } from "@/lib/val
 const INVITE_PROBLEM =
   "We could not accept that invite code. It may be mistyped, used up or expired. Check the code in your invitation email, or ask the person who invited you for a new one.";
 
-/** Server-side check so we can give a clear message. The database trigger enforces it again. */
+/**
+ * Server-side check so we can give a clear message. Counts places held by
+ * unconfirmed sign-ups from the last 24 hours. The database trigger enforces it again.
+ */
 async function inviteIsUsable(code: string): Promise<boolean> {
   const admin = createAdminClient();
-  const { data, error } = await admin
-    .from("invites")
-    .select("max_uses, use_count, expires_at, revoked_at")
-    .eq("code", code)
-    .maybeSingle();
-  if (error || !data) return false;
-  if (data.revoked_at) return false;
-  if (data.expires_at && new Date(data.expires_at) <= new Date()) return false;
-  return data.use_count < data.max_uses;
+  const { data, error } = await admin.rpc("invite_is_usable", { p_code: code });
+  return !error && data === true;
 }
 
 export async function signUp(_prev: FormState, formData: FormData): Promise<FormState> {
