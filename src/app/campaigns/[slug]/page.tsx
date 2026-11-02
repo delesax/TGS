@@ -108,11 +108,11 @@ export default async function CampaignPage({ params }: PageProps<"/campaigns/[sl
           {status === "closed" && !position ? (
             <p className="text-lg">This Campaign has closed. Positions are now final.</p>
           ) : !viewer ? (
-            <Button asChild className="self-start">
+            <Button asChild className="max-w-full self-start whitespace-normal py-2 text-center">
               <Link href={`/login?next=${encodeURIComponent(`/campaigns/${campaign.slug}`)}`}>Sign in to record your position</Link>
             </Button>
           ) : !viewer.profile?.handle ? (
-            <Button asChild className="self-start">
+            <Button asChild className="max-w-full self-start whitespace-normal py-2 text-center">
               <Link href="/onboarding">Choose your handle first</Link>
             </Button>
           ) : status === "scheduled" ? (
