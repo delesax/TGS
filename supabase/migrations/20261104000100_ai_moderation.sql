@@ -13,8 +13,9 @@
 --     dispatch_appeals, moderate_dispatch(), posting mute, AI usage and caps,
 --     coach feedback ratings, versioned judging weights
 --   * a pg_cron sweeper that re-screens Dispatches left pending for 2 minutes
--- No table or row is dropped. Two CHECK constraints are replaced to allow new
--- values, and one policy is changed with ALTER POLICY.
+-- No table, column or row is dropped. Two CHECK constraints are replaced to
+-- allow new values, email_recipients() is recreated with one more column, and
+-- one policy is changed with ALTER POLICY. Reaction-set changes are now audited.
 
 -- ---------------------------------------------------------------------------
 -- Settings
