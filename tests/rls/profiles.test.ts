@@ -22,6 +22,19 @@ describe("profiles", () => {
     expect(hidden ?? []).toHaveLength(0);
   });
 
+  it("show anonymous visitors only the handle and join date, never the display name, expertise, bio or search text", async () => {
+    const { data, error } = await anonClient().from("profiles").select("id, handle, created_at").eq("id", alice.id);
+    expect(error).toBeNull();
+    expect(data).toHaveLength(1);
+    for (const column of ["display_name", "expertise_tag", "bio", "search_vector"]) {
+      const { data: denied, error: deniedError } = await anonClient().from("profiles").select(column).eq("id", alice.id);
+      expect(deniedError, column).not.toBeNull();
+      expect(denied, column).toBeNull();
+    }
+    // "*" would include them, so it is refused too.
+    expect((await anonClient().from("profiles").select("*").eq("id", alice.id)).error).not.toBeNull();
+  });
+
   it("with a handle are readable by other signed-in Strategists (public columns only)", async () => {
     const { data, error } = await bob.client.from("profiles").select("id, handle, display_name").eq("id", alice.id);
     expect(error).toBeNull();

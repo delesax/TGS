@@ -1000,10 +1000,12 @@ create trigger dispatches_after_change
 
 -- ---------------------------------------------------------------------------
 -- Public Strategist pages: handles are shown on public Campaign pages, so
--- visitors who are not signed in can read a Strategist's public profile.
+-- visitors who are not signed in can read a Strategist's handle and join date.
+-- Display name, expertise and bio stay visible to signed-in Strategists only
+-- (owner decision, 2 November 2026).
 -- ---------------------------------------------------------------------------
 
-grant select (id, handle, display_name, expertise_tag, bio, created_at) on public.profiles to anon;
+grant select (id, handle, created_at) on public.profiles to anon;
 
 create policy "Anyone can read Strategists with a handle"
   on public.profiles for select to anon
@@ -1026,7 +1028,9 @@ alter table public.profiles
     to_tsvector('simple', coalesce(handle, '') || ' ' || coalesce(display_name, '') || ' ' || coalesce(expertise_tag, ''))
   ) stored;
 create index profiles_search_idx on public.profiles using gin (search_vector) where handle is not null;
-grant select (search_vector) on public.profiles to anon, authenticated;
+-- Built from the display name and expertise too, so visitors who are not
+-- signed in never get it: searching for people is for signed-in Strategists.
+grant select (search_vector) on public.profiles to authenticated;
 
 create or replace function public.search_tgs(
   p_query text,
@@ -1060,6 +1064,33 @@ begin
   from (select regexp_split_to_table(lower(left(coalesce(p_query, ''), 200)), '[^a-z0-9_]+') as w) t
   where w <> '';
   prefix := case when words is null then null else to_tsquery('simple', words) end;
+
+  -- Visitors who are not signed in cannot read profiles.search_vector, so the
+  -- Strategist branch is only planned (and run) for callers who can. PL/pgSQL
+  -- plans each statement when it first runs, so anon never touches the column.
+  if not pg_catalog.has_column_privilege('public.profiles', 'search_vector', 'select') then
+    return query
+    select * from (
+    select 'campaign'::text, c.id, c.title,
+           ts_headline('english', coalesce(c.summary, ''), q, 'MaxFragments=1, MaxWords=24, MinWords=8, StartSel=⟦, StopSel=⟧'),
+           c.slug, null::text, c.starts_at, ts_rank(c.search_vector, q)
+    from public.campaigns c
+    where p_type in ('all', 'campaigns') and numnode(q) > 0 and c.search_vector @@ q
+    union all
+    select 'dispatch'::text, d.id, c.title,
+           ts_headline('english', d.body, q, 'MaxFragments=1, MaxWords=24, MinWords=8, StartSel=⟦, StopSel=⟧'),
+           c.slug, p.handle, d.created_at, ts_rank(d.search_vector, q)
+    from public.dispatches d
+    join public.campaigns c on c.id = d.campaign_id
+    join public.profiles p on p.id = d.author_id
+    where p_type in ('all', 'dispatches') and numnode(q) > 0
+      and d.search_vector @@ q
+      and d.withdrawn_at is null and d.hidden_at is null and d.moderation_status = 'visible'
+    ) results (result_type, id, title, snippet, campaign_slug, handle, created_at, rank)
+    order by rank desc, created_at desc
+    limit lim offset greatest(coalesce(p_offset, 0), 0);
+    return;
+  end if;
 
   return query
   select * from (

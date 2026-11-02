@@ -13,14 +13,19 @@ export const dynamic = "force-dynamic";
 const HANDLE = /^[A-Za-z][A-Za-z0-9_]{2,19}$/;
 const memberSince = new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric" });
 
-type PublicProfile = { id: string; handle: string; display_name: string | null; expertise_tag: string | null; bio: string | null; created_at: string };
+type PublicProfile = { id: string; handle: string; display_name?: string | null; expertise_tag?: string | null; bio?: string | null; created_at: string };
 
-async function getProfile(handle: string): Promise<PublicProfile | null> {
+// Visitors who are not signed in see only the handle and join date (the
+// database grants them nothing more); signed-in Strategists also see the rest.
+const PUBLIC_COLUMNS = "id, handle, created_at";
+const MEMBER_COLUMNS = "id, handle, display_name, expertise_tag, bio, created_at";
+
+async function getProfile(handle: string, signedIn: boolean): Promise<PublicProfile | null> {
   if (!HANDLE.test(handle)) return null;
   const supabase = await createClient();
   const { data } = await supabase
     .from("profiles")
-    .select("id, handle, display_name, expertise_tag, bio, created_at")
+    .select(signedIn ? MEMBER_COLUMNS : PUBLIC_COLUMNS)
     .ilike("handle", handle.replace(/_/g, "\\_"))
     .maybeSingle<PublicProfile>();
   return data;
@@ -33,7 +38,8 @@ export async function generateMetadata({ params }: PageProps<"/strategists/[hand
 
 export default async function StrategistPage({ params }: PageProps<"/strategists/[handle]">) {
   const { handle } = await params;
-  const [profile, viewer] = await Promise.all([getProfile(handle), getViewer()]);
+  const viewer = await getViewer();
+  const profile = await getProfile(handle, Boolean(viewer));
   if (!profile) notFound();
 
   const supabase = await createClient();

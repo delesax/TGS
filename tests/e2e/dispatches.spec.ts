@@ -28,7 +28,7 @@ async function makeStrategist(prefix: string) {
   if (error) throw error;
   userIds.push(data.user.id);
   const handle = `${prefix}_${randomUUID().replace(/-/g, "").slice(0, 8)}`;
-  await service.from("profiles").update({ handle }).eq("id", data.user.id);
+  await service.from("profiles").update({ handle, display_name: `${prefix} Lovelace`, bio: `Bio of ${prefix}.` }).eq("id", data.user.id);
   return { id: data.user.id, email, handle };
 }
 
@@ -163,6 +163,8 @@ test("two Strategists post, reply, react, follow, search and get an email", asyn
 
   await b.getByRole("link", { name: `@${ada.handle}` }).first().click();
   await expect(b.getByRole("heading", { level: 1, name: `@${ada.handle}` })).toBeVisible();
+  await expect(b.getByText("ADA Lovelace")).toBeVisible();
+  await expect(b.getByText("Bio of ADA.")).toBeVisible();
   await b.getByRole("button", { name: `Follow @${ada.handle}` }).click();
   await expect(b.getByRole("button", { name: `Following @${ada.handle}. Unfollow` })).toBeVisible();
   await expectNoHorizontalOverflow(b);
@@ -199,6 +201,25 @@ test("two Strategists post, reply, react, follow, search and get an email", asyn
   await expect(anon.getByText("Done. We will not send you these emails any more.")).toBeVisible();
   const { data: prefs } = await service.from("notification_preferences").select("replies, campaign_updates").eq("user_id", ada.id).single();
   expect(prefs).toEqual({ replies: false, campaign_updates: true });
+
+  // --- Signed out: a Strategist page shows only the handle, join date and public Dispatches ---
+  await anon.goto(`/strategists/${ada.handle}`);
+  await expect(anon.getByRole("heading", { level: 1, name: `@${ada.handle}` })).toBeVisible();
+  await expect(anon.getByText(/^Strategist since /)).toBeVisible();
+  await expect(anon.getByText(word)).toBeVisible();
+  await expect(anon.getByText("ADA Lovelace")).toHaveCount(0);
+  await expect(anon.getByText("Bio of ADA.")).toHaveCount(0);
+  await expect(anon.getByRole("link", { name: "Sign in to follow" })).toBeVisible();
+  await expectNoHorizontalOverflow(anon);
+
+  // ...and searching for people asks them to sign in.
+  await anon.goto(`/search?q=${ada.handle}&type=strategists`);
+  await expect(anon.getByRole("heading", { name: "Sign in to search for Strategists" })).toBeVisible();
+  await anon.goto(`/search?q=${ada.handle}`);
+  await expect(anon.getByText("Nothing matched", { exact: false }).or(anon.getByRole("status"))).toBeVisible();
+  // Result cards are labelled "Campaign", "Dispatch" or "Strategist"; none may be a person.
+  await expect(anon.locator("ol > li").filter({ has: anon.getByText("Strategist", { exact: true }) })).toHaveCount(0);
+  await expectNoHorizontalOverflow(anon);
 });
 
 test("a sensitive Campaign shows its content note before the compose box and the Dispatches", async ({ page }) => {

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { EmptyState, Page } from "@/components/page";
 import { Button } from "@/components/ui/button";
+import { getViewer } from "@/lib/auth";
 import { formatUkShort } from "@/lib/campaigns";
 import { splitHighlights } from "@/lib/highlight";
 import { SEARCH_TYPES, runSearch, type SearchResult, type SearchType } from "@/lib/search";
@@ -47,10 +48,20 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
   const type = (SEARCH_TYPES as readonly string[]).includes(String(params.type)) ? (params.type as SearchType) : "all";
   const page = Math.min(Math.max(Number.parseInt(String(params.page ?? "1"), 10) || 1, 1), 50);
 
-  const outcome = q ? await runSearch(q, type, page) : null;
+  const viewer = await getViewer();
+  // Searching for people is for signed-in Strategists only.
+  const peopleLocked = !viewer && type === "strategists";
+  const outcome = q && !peopleLocked ? await runSearch(q, type, page) : null;
 
   return (
-    <Page title="Search" intro="Find Campaigns, Dispatches and Strategists. Withdrawn and hidden Dispatches are not included.">
+    <Page
+      title="Search"
+      intro={
+        viewer
+          ? "Find Campaigns, Dispatches and Strategists. Withdrawn and hidden Dispatches are not included."
+          : "Find Campaigns and Dispatches. Withdrawn and hidden Dispatches are not included. Sign in to search for Strategists too."
+      }
+    >
       <form role="search" action="/search" className="flex flex-col gap-3 sm:flex-row">
         <label htmlFor="search-page-q" className="sr-only">
           Search for
@@ -85,8 +96,19 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
         </nav>
       ) : null}
 
-      {!q ? (
-        <EmptyState title="What are you looking for?">Type a word or two, for example a topic, a phrase from a Dispatch, or a Strategist&apos;s handle.</EmptyState>
+      {peopleLocked ? (
+        <EmptyState
+          title="Sign in to search for Strategists"
+          action={
+            <Button asChild>
+              <Link href={`/login?next=${encodeURIComponent(q ? searchHref(q, type) : "/search?type=strategists")}`}>Sign in</Link>
+            </Button>
+          }
+        >
+          Searching for people is open to signed-in Strategists only. You can still search Campaigns and Dispatches.
+        </EmptyState>
+      ) : !q ? (
+        <EmptyState title="What are you looking for?">Type a word or two, for example a topic or a phrase from a Dispatch{viewer ? ", or a Strategist’s handle" : ""}.</EmptyState>
       ) : outcome && "error" in outcome ? (
         <div role="alert" className="flex flex-col gap-3 rounded-xl border-2 border-destructive p-5">
           <p className="text-xl font-semibold">{outcome.error === "timeout" ? "That search took too long." : "Search is not working right now."}</p>

@@ -43,6 +43,8 @@ Use your browser's device mode at 375px, or open the Network URL that `next dev`
    - Each Dispatch shows the author, its position as a word and icon ("For" with a plus, "Against" with a minus, "Undecided" with a question mark) and a solid, dashed or dotted left edge.
    - It also shows the kind (Argument, Rebuttal, Evidence), round, time, sources with the website name, and the AI-use label ("Written without AI", "Written with AI help" or "Mostly written by AI").
    - One Dispatch shows **Withdrawn by author.**
+   - Tap an author's handle: their Strategist page shows only the handle, "Strategist since …" and their public Dispatches, with **Sign in to follow**. No display name, expertise or bio while signed out.
+   - Search for `blue badge` from the header: Campaigns and Dispatches only. The **Strategists** filter says **Sign in to search for Strategists**.
 2. **Threads.** The first thread has a long exchange: replies indent four levels, then continue with "Replying to @…". Use **Hide/Show N replies** to fold branches. At the bottom, **Show more Dispatches** loads the next 20 threads.
 3. **Sign in as `debater01@example.test`** and open the debate again.
    - Round 2 accepts rebuttals and evidence only, so the box is for **Evidence** (rebuttals go through **Reply**). Press **Post Dispatch** with nothing filled in: you get "Please check the highlighted answers" and "Say whether you used AI".
@@ -55,8 +57,8 @@ Use your browser's device mode at 375px, or open the Network URL that `next dev`
    - **Withdraw** asks you to confirm and then shows "Withdrawn by author." You cannot react to your own Dispatches.
 5. **Report.** On another Strategist's Dispatch press **Report**, choose a reason and send it. The form says plainly that there is no automatic screening yet.
 6. **New Dispatches without reloading.** Keep the debate open in one window. In a private window, sign in as `debater02@example.test` and post a rebuttal. Switch back to the first window: within 30 seconds, or straight away when the window regains focus, a **"1 new Dispatch. Show"** button appears.
-7. **Follow.** Tap an author's handle to open their Strategist page, then **Follow**. Open **Dossier**: your Dispatches are grouped by Campaign with their AI-use labels, the withdrawn one is marked, and **Following** lists the Campaign (followed automatically when you posted) and the Strategist.
-8. **Search.** Use the header search box with `blue badge`. Results come from Campaigns, Dispatches and handles, with the matches highlighted. Try the **Dispatches** and **Strategists** filters, then search for `Test_Am` to find a handle.
+7. **Follow.** Tap an author's handle to open their Strategist page. Signed in, it also shows their display name, expertise tag and bio if they set them. Press **Follow**. Open **Dossier**: your Dispatches are grouped by Campaign with their AI-use labels, the withdrawn one is marked, and **Following** lists the Campaign (followed automatically when you posted) and the Strategist.
+8. **Search.** Use the header search box with `blue badge`. Results come from Campaigns, Dispatches and handles, with the matches highlighted. Try the **Dispatches** and **Strategists** filters, then search for `Test_Am` to find a handle (people search works only when signed in).
 9. **Email.** Open http://127.0.0.1:54324: the test Strategists received digests such as "3 replies to your Dispatches".
    - Your own reply from step 4 arrives about 10 minutes later. Replies are gathered into one email; the wait is set in `community_settings.reply_digest_minutes`.
    - Open an email and use **Stop these emails**: a page asks you to confirm with one button.
@@ -147,7 +149,7 @@ These are listed in full in CHANGELOG.md, with defaults that can be changed with
 - the account-deletion wording (not built; proposal in the CHANGELOG);
 - the email sender, sending domain and daily cap;
 - whether report-and-hide is enough for a closed test;
-- whether Strategist profiles may be public.
+- ~~whether Strategist profiles may be public~~ (decided 2 November: signed-out visitors see the handle, join date and public Dispatches only; people search needs sign-in).
 
 ---
 

@@ -393,8 +393,25 @@ describe("search", () => {
     expect((await admin.client.rpc("search_tgs", { p_query: "quokka" })).data!.map((r: { id: string }) => r.id)).toContain(draftId);
 
     const { data: handle } = await service.from("profiles").select("handle").eq("id", author.id).single();
-    const people = await anonClient().rpc("search_tgs", { p_query: handle!.handle.slice(0, 6), p_type: "strategists" });
+    const people = await reader.client.rpc("search_tgs", { p_query: handle!.handle.slice(0, 6), p_type: "strategists" });
+    expect(people.error).toBeNull();
     expect(people.data!.map((r: { id: string }) => r.id)).toContain(author.id);
     expect((await anonClient().rpc("search_tgs", { p_query: "", p_type: "all" })).data).toEqual([]);
+  });
+
+  it("never returns a person to anonymous visitors, and does not fail for them", async () => {
+    const { data: handle } = await service.from("profiles").select("handle").eq("id", author.id).single();
+    // A visible Dispatch by the author whose body also contains the handle, so "all" has something to find.
+    const visible = await postOk(author, { body: `Quoting ${handle!.handle} on this point.` });
+    for (const type of ["strategists", "all"]) {
+      const { data, error } = await anonClient().rpc("search_tgs", { p_query: handle!.handle, p_type: type });
+      expect(error, type).toBeNull();
+      expect(data!.filter((r: { result_type: string }) => r.result_type === "strategist"), type).toEqual([]);
+    }
+    const all = await anonClient().rpc("search_tgs", { p_query: handle!.handle, p_type: "all" });
+    expect(all.data!.map((r: { id: string }) => r.id)).toContain(visible);
+    // Signed in, the same search finds the person.
+    const signedIn = await reader.client.rpc("search_tgs", { p_query: handle!.handle, p_type: "all" });
+    expect(signedIn.data!.filter((r: { result_type: string }) => r.result_type === "strategist").map((r: { id: string }) => r.id)).toContain(author.id);
   });
 });

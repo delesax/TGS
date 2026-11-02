@@ -59,10 +59,11 @@ Branch `sprint-3`, cut from `main` after pull request #1 (Sprint 2) was merged. 
   - A schema test (`reactions-not-judging.test.ts`) fails if any function, view or table other than the reaction code reads reactions, so they can never feed a Verdict.
 - **Follow**:
   - You can follow Campaigns and Strategists. Posting in a Campaign follows it automatically.
-  - Strategist pages (`/strategists/[handle]`) show the public profile, recent Dispatches and a Follow button.
+  - Strategist pages (`/strategists/[handle]`) show recent public Dispatches and a Follow button. Signed-out visitors see only the handle and join date; signed-in Strategists also see the display name, expertise tag and bio.
   - The Dossier lists who and what you follow, privately.
 - **Search**:
   - Postgres full text (English) over Campaign titles and summaries and over visible Dispatches; handles are matched by prefix. Withdrawn and hidden Dispatches are excluded.
+  - Searching for Strategists is for signed-in Strategists only. Signed-out visitors get Campaigns and Dispatches, never a person, and the Strategists filter asks them to sign in. The handle search index is not readable by them at all, and `search_tgs()` skips that part for them instead of failing.
   - `search_tgs()` runs with the searcher's own rights, so row-level security applies; for example, drafts are found only by admins.
   - A search box in the header, a results page with filters (Everything, Campaigns, Dispatches, Strategists), highlighted matches, paging, and empty, loading, error and 4-second timeout states.
   - Every query uses its GIN index. Each took under 0.2 ms on the seeded debate.
@@ -100,16 +101,17 @@ Branch `sprint-3`, cut from `main` after pull request #1 (Sprint 2) was merged. 
   - Running it again changes nothing.
 - **Tests**:
   - **Unit**: 24 new, 102 in total. They cover validation, limits, link cleaning, threading, edit and cooldown windows, error wording, email planning (digest, daily cap, preferences, retries), email templates and transport selection, and search highlighting.
-  - **RLS**: 29 new, 90 in total.
+  - **RLS**: 31 new, 92 in total.
     - Dispatches only through the functions, with every posting rule enforced.
     - No editing someone else's Dispatch; edit history and sealed content kept private.
     - Hidden and withdrawn content not exposed; moderator notes hidden.
     - Reports, reactions, follows and settings.
-    - Search visibility.
+    - Search visibility, including that anonymous search never returns a person.
+    - Anonymous visitors can read a profile's handle and join date only, never the display name, expertise tag, bio or search index.
     - Email preferences and outbox closed to browsers; each email trigger fires exactly once.
     - Every new table has RLS.
   - **Playwright**: 6 new, 9 in total, all at 375px.
-    - The full post, reply, react, follow and search journey with the email arriving in Mailpit and the unsubscribe link working.
+    - The full post, reply, react, follow and search journey with the email arriving in Mailpit and the unsubscribe link working, then the same Strategist's page and a people search seen signed out.
     - The sensitive-Campaign gate.
     - No sideways scrolling on the Campaigns, Campaign, Dossier, Strategist, search and sign-in pages.
     - The offline page, and that no pages are cached.
@@ -128,7 +130,7 @@ Branch `sprint-3`, cut from `main` after pull request #1 (Sprint 2) was merged. 
 | Reply digest | Replies wait 10 minutes and go out together | `community_settings.reply_digest_minutes` |
 
 ### Checked
-- **Full suite**: lint and typecheck clean; 102 unit, 90 RLS and 9 Playwright tests pass.
+- **Full suite**: lint and typecheck clean; 102 unit, 92 RLS and 9 Playwright tests pass (re-run 2 November after the profile-privacy change).
 - **Performance** (`tests/e2e/performance.spec.ts`; the 20-Strategist debate on Chrome's "Slow 4G" profile with 4x CPU slowdown, results in `test-results/performance.json`):
 
   | | HTML received | Debate on screen (LCP) | Page loaded (DCL) | Buttons work | Downloaded |
@@ -151,7 +153,7 @@ Branch `sprint-3`, cut from `main` after pull request #1 (Sprint 2) was merged. 
    - **Risk today**: `dispatches.author_id` cascades from `auth.users`, so deleting a user in the Supabase dashboard would hard-delete their Dispatches. Please don't delete users there until this is built; the fix belongs in the deletion migration.
 5. **Email**: sender name and address, the sending domain (verify it in Resend; an owner action) and the daily cap (6 suggested).
 6. **Is report-and-hide enough for a closed test before Sprint 4?** I suggest yes, for the owner's own testers only, with an admin checking `/admin/reports` daily. Not for real invitees.
-7. **New: public Strategist profiles.** Handles appear on public Campaign pages, so visitors who are not signed in can now read a Strategist's handle, display name, expertise tag and bio. Before, only signed-in Strategists could. Say if you would rather keep profiles behind sign-in; the Campaign pages would then need to hide author handles from visitors.
+7. **Decided (owner, 2 November): public Strategist profiles are minimal.** Visitors who are not signed in can read a Strategist's handle and join date only, plus their public Dispatches. Display name, expertise tag and bio stay visible to signed-in Strategists only, and searching for people needs sign-in. Made by editing `20261103000200` (not yet applied anywhere) rather than adding a migration.
 
 ### Not done / known issues
 - **Nothing is applied to the hosted project.** The dry run is reported in DEMO.md. Pushing the migrations and the email set-up (Vercel variables and two Vault secrets) wait for your OK.
