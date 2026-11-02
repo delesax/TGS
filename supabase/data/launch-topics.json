@@ -1,0 +1,262 @@
+{
+  "_about": "Fifteen launch Campaign topics from the TGS Launch Topic Bank (Nov 2026). Loaded as DRAFT only. Facts were checked on or around 1 November 2026 and must be refreshed before each topic opens.",
+  "waves": {
+    "1": "Run first (pilot weeks 1 to 4)",
+    "2": "Run second, once moderation and judging are proven",
+    "3": "Later: owner to schedule",
+    "4": "Hold back until the AI moderator is tested on calmer topics"
+  },
+  "default_duration_days": 7,
+  "topics": [
+    {
+      "slug": "bank-of-england-rate-decision-november",
+      "title": "Should the Bank of England raise interest rates on 5 November?",
+      "category": "financial_services",
+      "format": "open_arena",
+      "suggested_format": "Poll-and-argue, closing just before the announcement so each call can be scored against the real result.",
+      "wave": 2,
+      "summary": "Bank Rate is 3.75%. The Monetary Policy Committee held it for the sixth meeting running on 17 September, by 6 votes to 3; the three dissenters wanted 4%. The July report projected CPI peaking at 3.2% in the final quarter of 2026. The next decision is due at noon on Thursday 5 November 2026.",
+      "argument_for": "Inflation is still rising and the committee is already split.",
+      "argument_against": "Energy-driven prices may fade, growth is fragile, and mortgage holders feel every quarter-point.",
+      "sources": [
+        "https://www.investmentweek.co.uk/news/4535896/bank-england-bucks-trend-global-interest-rate-hikes-hold-375",
+        "https://www.financecalendar.com/event/bank-of-england-mpc-rate-decision-november-2026/"
+      ],
+      "is_sensitive": false,
+      "opinion_not_advice": true,
+      "needs_owner_decision": "The 5 November decision falls before the 1 December soft launch, so this topic cannot run as written. Choose the next MPC date or replace the topic."
+    },
+    {
+      "slug": "bank-surcharge-energy-bill-support",
+      "title": "Is a higher bank surcharge the fairest way to fund energy bill support?",
+      "category": "financial_services",
+      "format": "oxford",
+      "suggested_format": "Red team versus blue team, judged by a panel including a banker, an economist and a consumer advocate.",
+      "wave": 3,
+      "summary": "The 28 October 2026 Budget raised the bank surcharge by 3 percentage points, to 6% on profits above a threshold, for 15 months, to help pay for energy support including 100 pounds for about 20 million households.",
+      "argument_for": "Banks have earned more as rates rose, and households are under energy pressure.",
+      "argument_against": "Costs can pass to customers and borrowers, lending and UK competitiveness may suffer, and temporary taxes tend to last.",
+      "sources": [
+        "https://www.itv.com/news/2026-10-28/budget-at-a-glance-what-has-john-healey-announced",
+        "https://live.euronext.com/en/financial-news/factbox-key-measures-uk-finance-minister-healeys-first-budget"
+      ],
+      "is_sensitive": false,
+      "opinion_not_advice": true
+    },
+    {
+      "slug": "sterling-stablecoins-everyday-money",
+      "title": "Should sterling stablecoins be allowed to become everyday money?",
+      "category": "financial_services",
+      "format": "open_arena",
+      "suggested_format": "Open debate with a retired banker and a technologist on the judging panel.",
+      "wave": 3,
+      "summary": "The Lords Financial Services Regulation Committee reported on 3 June 2026 that the UK risks falling behind without clear rules and that USD stablecoins could dominate. It backed 1:1 asset backing but questioned the Bank of England plan for at least 40% of backing in unremunerated central bank deposits, and its proposed holding limits. The new regime is expected to take effect on 25 October 2027.",
+      "argument_for": "Faster, cheaper payments and a stronger sterling presence.",
+      "argument_against": "Risk to bank deposits and financial stability, consumer protection and crime.",
+      "sources": [
+        "https://www.regulationtomorrow.com/2026/06/house-of-lords-financial-services-regulation-committee-report-on-growth-and-regulation-of-stablecoins/"
+      ],
+      "is_sensitive": false,
+      "opinion_not_advice": true
+    },
+    {
+      "slug": "rosebank-after-jackdaw",
+      "title": "Having approved Jackdaw, should the UK also approve Rosebank?",
+      "category": "energy",
+      "format": "open_arena",
+      "suggested_format": "Open debate, with an energy economist and a climate scientist on the panel.",
+      "wave": 4,
+      "summary": "On 21 October 2026 the government approved the Jackdaw gas project off Scotland (about 5% of UK gas production over 11 years). Rosebank, a mainly oil project west of Shetland, is still undecided. The Prime Minister has pledged to keep Labour's 2024 manifesto commitments, including no new licences for new fields.",
+      "argument_for": "Jobs, tax revenue and less reliance on imports in an unstable world.",
+      "argument_against": "Climate commitments, no effect on bills, and a precedent that reopens the North Sea.",
+      "sources": [
+        "https://ny1.com/nyc/all-boroughs/ap-top-news/2026/10/21/uk-government-approves-natural-gas-project-off-scotland-despite-environmental-concerns",
+        "https://www.argusmedia.com/es/news-and-insights/latest-market-news/2855655-new-uk-pm-unlikely-to-change-energy-policy-direction"
+      ],
+      "is_sensitive": false,
+      "opinion_not_advice": false,
+      "needs_owner_decision": "Owner suggests holding back until the AI moderator is tested on calmer topics."
+    },
+    {
+      "slug": "energy-price-shock-tax-cuts-subsidies",
+      "title": "Are tax cuts and subsidies the right response to this winter's energy price shock?",
+      "category": "energy",
+      "format": "open_arena",
+      "suggested_format": "Poll-and-argue with a mixed panel: a consumer advocate, an economist, a retired utilities executive.",
+      "wave": 3,
+      "summary": "The Ofgem price cap rose 4% to 1,723 pounds a year for a typical household from 1 October, with gas costs almost 27% higher than a year earlier. The Budget scraps gas standing charges from next year, extends the electricity VAT cut to July, gives about 20 million households 100 pounds, and moves a green levy onto general taxation, while fiscal headroom falls to 15bn pounds.",
+      "argument_for": "Protects households now and eases cost-of-living pressure.",
+      "argument_against": "Costs the Treasury, blunts the incentive to use less energy, helps well-off households too, and a targeted social tariff or insulation might do more.",
+      "sources": [
+        "https://www.uswitch.com/gas-electricity/news/october-energy-price-cap-to-increase-by-four-percent/",
+        "https://www.itv.com/news/2026-10-28/budget-at-a-glance-what-has-john-healey-announced"
+      ],
+      "is_sensitive": false,
+      "opinion_not_advice": false
+    },
+    {
+      "slug": "ai-data-centres-priority-grid-connections",
+      "title": "Should AI data centres get priority grid connections in return for local investment?",
+      "category": "energy",
+      "format": "oxford",
+      "suggested_format": "Red team versus blue team, with a technologist and a grid engineer judging.",
+      "wave": 2,
+      "summary": "The Budget says data centre operators must invest in local communities, create jobs and protect water supplies in return for priority grid connections. Reporting linked it to a goal of tripling UK computing capacity to six gigawatts by 2030 and a grid connection queue that reached 125GW by June 2025, at least 80GW of it data centres.",
+      "argument_for": "Investment, AI capability and a fair price for access.",
+      "argument_against": "Queue-jumping ahead of homes, renewables and factories, rising bills, and local resistance.",
+      "sources": [
+        "https://live.euronext.com/en/financial-news/factbox-key-measures-uk-finance-minister-healeys-first-budget",
+        "https://www.cityam.com/?p=2472014"
+      ],
+      "is_sensitive": false,
+      "opinion_not_advice": false
+    },
+    {
+      "slug": "under-16-social-media-ban",
+      "title": "Should the UK's under-16 social media ban go ahead as planned?",
+      "category": "technology",
+      "format": "open_arena",
+      "suggested_format": "Open debate. Parents, teachers and retired professionals bring different lived experience; a strong first public topic.",
+      "wave": 1,
+      "summary": "On 15 June 2026 the government announced a ban on social media platforms serving under-16s, broadly following Australia's model. Platforms would need highly effective age assurance, AI romantic-companion chatbots would need a minimum age of 18, and the first regulations could take effect in spring 2027, with Ofcom still to report on age checks and enforcement. The detail is still moving.",
+      "argument_for": "Protects children from addictive design and harmful content, and parents get backing.",
+      "argument_against": "Age checks mean more data collection and privacy risk, teenagers may migrate to less safe corners, and it limits young people's access to information and community.",
+      "sources": [
+        "https://www.lewissilkin.com/insights/2026/06/15/a-line-in-the-sand-uk-confirms-full-social-media-ban-for-the-under-16s-102n2so"
+      ],
+      "is_sensitive": false,
+      "opinion_not_advice": false
+    },
+    {
+      "slug": "ai-closing-bottom-rung-career-ladder",
+      "title": "Is AI closing the bottom rung of the career ladder?",
+      "category": "technology",
+      "format": "open_arena",
+      "suggested_format": "Poll-and-argue, with students and retired executives together.",
+      "wave": 3,
+      "summary": "A Survation survey of 1,001 UK businesses for the Work Foundation at Lancaster University (fieldwork 7 to 20 May, reported 27 August 2026) found 36% of firms had cut entry-level jobs over the past year. Only 24% of small firms said AI had reduced available jobs, against 58% to 60% of larger firms, and 73% of employers said it was harder for young people to find work than five years ago.",
+      "argument_for": "Routine junior tasks are the easiest to automate, which removes the apprenticeship stage of careers.",
+      "argument_against": "Economic weakness and hiring caution explain much of it, AI creates new roles, and skills can be rebuilt.",
+      "sources": [
+        "https://allwork.space/2026/08/one-in-three-u-k-employers-cut-entry-level-jobs-as-ai-expands-survey-finds/"
+      ],
+      "is_sensitive": false,
+      "opinion_not_advice": false
+    },
+    {
+      "slug": "scrapping-digital-id-scheme",
+      "title": "Was scrapping the digital ID scheme the right call?",
+      "category": "technology",
+      "format": "oxford",
+      "suggested_format": "Red team versus blue team, with a privacy lawyer and a public-sector technologist judging.",
+      "wave": 3,
+      "summary": "The government is scrapping the government-backed digital identity system, redirecting the effort to cost-of-living measures. It had been made voluntary in January, the Office for Budget Responsibility estimated a cost of 1.8bn pounds over three years (which Downing Street disputed), and nearly three million people signed a petition against a mandatory scheme.",
+      "argument_for": "Cost, privacy and trust in government with data.",
+      "argument_against": "Easier proof of identity for services and employment checks, less fraud, and a lost chance to modernise the state.",
+      "sources": [
+        "https://www.computing.co.uk/news/2026/government/burnham-government-to-scrap-uk-digital-id-plans-in-policy-reset"
+      ],
+      "is_sensitive": false,
+      "opinion_not_advice": false
+    },
+    {
+      "slug": "international-student-levy",
+      "title": "Should the international student levy go ahead?",
+      "category": "education",
+      "format": "open_arena",
+      "suggested_format": "Poll-and-argue, with a student, a university finance director and an economist on the panel.",
+      "wave": 3,
+      "summary": "A levy of 925 pounds a year per international student, charged to universities, is due to take full effect in 2028. Student visa applications were down 11% in July 2026 compared with 2025, almost a third of UK universities reported deficits this year, and the levy is forecast to cost the sector 330m pounds a year from August 2028, applying to English universities only.",
+      "argument_for": "International fees subsidise the rest of the system, so the public should get something back, and it lowers net migration pressure.",
+      "argument_against": "It deepens deficits, risks courses and jobs, and weakens a major UK export.",
+      "sources": [
+        "https://theboar.org/2026/09/uk-universities-face-financial-crisis-as-international-student-numbers-fall/",
+        "https://thepienews.com/uk-universities-face-rising-deficits-as-levy-looms/"
+      ],
+      "is_sensitive": false,
+      "opinion_not_advice": false
+    },
+    {
+      "slug": "in-person-exams-ai-cheating",
+      "title": "Should universities return to in-person exams to beat AI cheating?",
+      "category": "education",
+      "format": "oxford",
+      "suggested_format": "Red team versus blue team. An ideal first class topic because the students are the people affected.",
+      "wave": 1,
+      "summary": "Birkbeck's law school has brought back invigilated exams, Bath moves to a Two-Lane model with supervised in-person exams from 2026-27, and Surrey embeds AI and assesses students' process from September 2026. Up to 95% of students say they use AI in their studies, and 12% include AI-generated text in assessed work, up from 3% in 2024.",
+      "argument_for": "Only supervised assessment proves what a student knows.",
+      "argument_against": "Exams test memory, not real-world skill; process-based and oral assessment are fairer and teach AI literacy.",
+      "sources": [
+        "https://www.timeshighereducation.com/node/743640"
+      ],
+      "is_sensitive": false,
+      "opinion_not_advice": false
+    },
+    {
+      "slug": "lifelong-learning-loans-age-60",
+      "title": "Should lifelong learning loans stop at age 60?",
+      "category": "education",
+      "format": "open_arena",
+      "suggested_format": "Open debate. Speaks directly to retired contributors, so it doubles as a recruitment topic.",
+      "wave": 1,
+      "summary": "From courses starting on 1 January 2027, the Lifelong Learning Entitlement gives new learners in England up to 39,160 pounds (four years of study at the 2026 to 2027 maximum fee of 9,790 pounds). Tuition fee loans are available only up to age 60 at the start of the course. A January survey found only 12% of adults in England knew about it.",
+      "argument_for": "People work and live longer, and learning keeps older people active and employable.",
+      "argument_against": "Loans need years of repayment to pay back, public money is tight, and younger learners should come first.",
+      "sources": [
+        "https://www.gov.uk/government/publications/lifelong-learning-entitlement-lle-overview/lifelong-learning-entitlement-overview",
+        "https://www.hepi.ac.uk/2026/02/01/weekend-reading-one-year-until-the-lifelong-learning-entitlement-kicks-in-yet-only-12-of-adults-know-it-is-coming/"
+      ],
+      "is_sensitive": false,
+      "opinion_not_advice": false
+    },
+    {
+      "slug": "nhs-18-week-target-2029",
+      "title": "Is the NHS target of 92% treated within 18 weeks by 2029 realistic?",
+      "category": "health_social_care",
+      "format": "open_arena",
+      "suggested_format": "Poll-and-argue. Clinicians, patients and managers each bring a different lens.",
+      "wave": 3,
+      "summary": "At the end of August 2026 the England waiting list stood at an estimated 7.37 million treatments (6.24 million patients). About 65% are treated within 18 weeks, against a government target of 92% by the end of this parliament in 2029, and 113,339 people have waited over a year. September was NHS England's busiest month on record for A&E attendances and ambulance incidents.",
+      "argument_for": "Record numbers of treatments are being delivered (4.7 million in three months), so reform and capacity can close the gap.",
+      "argument_against": "Demand keeps rising, winter pressure is already here, and the target should be rebuilt around outcomes, not a single clock.",
+      "sources": [
+        "https://www.smoothradio.com/news/uk-world/nhs-waiting-list-at-its-worst-since-2025-new/"
+      ],
+      "is_sensitive": false,
+      "opinion_not_advice": true
+    },
+    {
+      "slug": "fair-pay-agreement-social-care-reform",
+      "title": "Should the 500m pound Fair Pay Agreement be only the start of social care reform?",
+      "category": "health_social_care",
+      "format": "open_arena",
+      "suggested_format": "Open debate with a prompt for personal stories and an AI-written summary for the final round. Strong fit for retired participants.",
+      "wave": 2,
+      "summary": "Government has committed 500 million pounds for the first Fair Pay Agreement for adult social care workers in England: a negotiating body to be set up in 2026, negotiations in 2027, and the first agreement taking effect in 2028. Baroness Casey's independent commission is working on cross-party consensus for a national care service.",
+      "argument_for": "Pay first: the sector cannot recruit or keep staff without it, and everything else depends on workforce.",
+      "argument_against": "Structure first: pay alone will not fix funding, quality or who pays for care, so a settled national model has to come before more money.",
+      "sources": [
+        "https://www.gov.uk/government/news/500m-for-first-ever-fair-pay-agreement-for-care-workers"
+      ],
+      "is_sensitive": false,
+      "opinion_not_advice": true
+    },
+    {
+      "slug": "assisted-dying-or-fix-care-first",
+      "title": "Should assisted dying legislation return, or should palliative and social care be fixed first?",
+      "category": "health_social_care",
+      "format": "open_arena",
+      "suggested_format": "Closed, moderated debate with stricter AI moderation and clear rules on respect. The most sensitive of the fifteen: do not run first.",
+      "wave": 4,
+      "summary": "The assisted dying bill, reintroduced in the Commons on 11 September 2026 by Lauren Edwards, was defeated at second reading by 286 votes to 270, after running out of time in the Lords in April. The Prime Minister did not vote and has said palliative and social care funding should be fixed first. Campaigners expect the issue to return when, not if.",
+      "argument_for": "The Commons has backed the principle before, and people with terminal illness cannot wait for a perfect care system.",
+      "argument_against": "Choice is hollow without good alternatives, and there are concerns about coercion and pressure on vulnerable people.",
+      "sources": [
+        "https://www.itv.com/news/2026-09-11/assisted-dying-debate-is-back-in-parliament-what-happens-now"
+      ],
+      "is_sensitive": true,
+      "opinion_not_advice": true,
+      "needs_owner_decision": "Needs your approved wording for the content note and any support-resources text (CLAUDE.md rule 15). The loader must not invent it. 'Closed, moderated' is not a format in the database yet; stricter moderation arrives in Sprint 4."
+    }
+  ]
+}

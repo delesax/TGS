@@ -1,0 +1,67 @@
+{
+  "name": "tgs",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=20.9"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "vitest run --project unit && vitest run --project rls && playwright test",
+    "test:unit": "vitest run --project unit",
+    "test:rls": "vitest run --project rls",
+    "test:e2e": "playwright test",
+    "env:check": "tsx scripts/check-env.ts",
+    "invite:create": "tsx scripts/create-invite.ts",
+    "db:start": "supabase start",
+    "db:reset": "supabase db reset",
+    "db:push": "supabase db push",
+    "admin:set": "tsx scripts/make-admin.ts",
+    "test:env": "bash scripts/local-test-env.sh",
+    "topics:load": "tsx scripts/load-topics.ts",
+    "campaign:test": "tsx scripts/test-campaign.ts"
+  },
+  "dependencies": {
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@simplewebauthn/browser": "^13.1.0",
+    "@simplewebauthn/server": "^13.1.1",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.49.4",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.66.0",
+    "next": "16.4.3",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1",
+    "tailwind-merge": "^3.3.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "@tailwindcss/turbopack": "^4",
+    "@types/node": "^24",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "dotenv": "^16.5.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.3",
+    "postgres": "^4.0.0",
+    "supabase": "^2.22.0",
+    "tailwindcss": "^4",
+    "tsx": "^4.19.4",
+    "tw-animate-css": "^1.3.0",
+    "typescript": "^5",
+    "vitest": "^5.0.5"
+  },
+  "allowScripts": {
+    "supabase": true,
+    "esbuild": true,
+    "fsevents": false
+  }
+}

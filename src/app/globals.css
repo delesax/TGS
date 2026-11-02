@@ -1,0 +1,87 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+ * TGS design tokens (shadcn/ui naming). Light theme only for the pilot: high
+ * contrast, 18px base text and 48px minimum tap targets for older readers.
+ * All text/background pairs below meet WCAG 2.2 AA (most meet AAA).
+ */
+:root {
+  --radius: 0.625rem;
+  --background: #ffffff;
+  --foreground: #111827; /* 17.7:1 on white */
+  --card: #ffffff;
+  --card-foreground: #111827;
+  --muted: #f3f4f6;
+  --muted-foreground: #374151; /* 9.5:1 on muted */
+  --primary: #1e3a5f; /* deep navy, 11.5:1 with white text */
+  --primary-foreground: #ffffff;
+  --secondary: #e8eef6;
+  --secondary-foreground: #1e3a5f;
+  --accent: #fdf3d7;
+  --accent-foreground: #5c4300;
+  --destructive: #b42318; /* 6.4:1 on white */
+  --destructive-foreground: #ffffff;
+  --success: #166534;
+  --border: #9ca3af;
+  --input: #4b5563; /* 3:1+ boundary for form controls */
+  --ring: #b45309; /* amber focus ring, visible on white and navy */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: var(--font-atkinson), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-source-serif), ui-serif, Georgia, serif;
+}
+
+@layer base {
+  html {
+    font-size: 112.5%; /* 18px base */
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-background text-foreground font-sans leading-relaxed;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-serif text-foreground;
+    text-wrap: balance;
+  }
+  a {
+    @apply underline-offset-4;
+  }
+  :focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
