@@ -201,6 +201,39 @@ test("two Strategists post, reply, react, follow, search and get an email", asyn
   expect(prefs).toEqual({ replies: false, campaign_updates: true });
 });
 
+test("a sensitive Campaign shows its content note before the compose box and the Dispatches", async ({ page }) => {
+  const sensitiveSlug = `e2e-sensitive-${randomUUID().slice(0, 8)}`;
+  const { data, error } = await service
+    .from("campaigns")
+    .insert({
+      slug: sensitiveSlug,
+      title: "A sensitive test Campaign",
+      category: "health_social_care",
+      status: "open",
+      starts_at: new Date(Date.now() - 60_000).toISOString(),
+      ends_at: new Date(Date.now() + 86_400_000).toISOString(),
+      is_sensitive: true,
+      content_note: "This Campaign discusses end-of-life care.",
+      opinion_not_advice: true,
+    })
+    .select("id")
+    .single();
+  if (error) throw error;
+  try {
+    await page.goto(`/campaigns/${sensitiveSlug}`);
+    const gate = page.getByRole("region", { name: "Content note before the Dispatches" });
+    await expect(gate.getByText("This Campaign discusses end-of-life care.")).toBeVisible();
+    await expect(page.getByText("Sign in to post", { exact: true })).toHaveCount(0);
+    await expect(page.getByTestId("dispatch-threads")).toHaveCount(0);
+    await gate.getByRole("button", { name: "I have read the note. Show the Dispatches" }).click();
+    await expect(page.getByText("Sign in to post", { exact: true })).toBeVisible();
+    await expect(page.getByTestId("dispatch-threads")).toBeVisible();
+    await expect(page.getByText("Opinion, not advice.").first()).toBeVisible();
+  } finally {
+    await service.from("campaigns").delete().eq("id", data.id);
+  }
+});
+
 test("pages fit a 375px screen", async ({ page }) => {
   for (const path of ["/campaigns", `/campaigns/${slug}`, "/login", `/search?q=${word}`]) {
     await page.goto(path);

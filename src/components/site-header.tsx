@@ -69,7 +69,7 @@ export async function SiteHeader() {
             type="search"
             enterKeyHint="search"
             maxLength={200}
-            placeholder="Search Campaigns, Dispatches, people"
+            placeholder="Search"
             className="min-h-12 w-full min-w-0 rounded-md border-2 border-input bg-background px-3 text-lg placeholder:text-muted-foreground focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring"
           />
           <button
