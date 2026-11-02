@@ -3,12 +3,12 @@ import { formatUkDateTime } from "@/lib/campaigns";
 // Email wording and markup. Pure functions, unit tested. Plain text and HTML
 // say the same thing; HTML is simple, large and readable, with a language set.
 
-export type EmailKind = "reply" | "campaign_opened" | "campaign_round_changed" | "campaign_closed" | "campaign_closing_soon";
+export type EmailKind = "reply" | "campaign_opened" | "campaign_round_changed" | "campaign_closed" | "campaign_closing_soon" | "moderation_outcome";
 
 export type ReplyItem = { dispatch_id: string; campaign_slug: string; campaign_title: string; replier_handle: string | null; excerpt: string };
 export type CampaignPayload = { campaign_slug: string; campaign_title: string; ends_at?: string; round?: number | null; round_title?: string | null };
 
-export type PreferenceKey = "replies" | "campaign_updates" | "closing_soon";
+export type PreferenceKey = "replies" | "campaign_updates" | "closing_soon" | "moderation";
 
 export const PREFERENCE_FOR_KIND: Record<EmailKind, PreferenceKey> = {
   reply: "replies",
@@ -16,6 +16,7 @@ export const PREFERENCE_FOR_KIND: Record<EmailKind, PreferenceKey> = {
   campaign_round_changed: "campaign_updates",
   campaign_closed: "campaign_updates",
   campaign_closing_soon: "closing_soon",
+  moderation_outcome: "moderation",
 };
 
 export type EmailContent = { subject: string; text: string; html: string; unsubscribeUrl: string; preference: PreferenceKey };
@@ -34,6 +35,7 @@ const PREFERENCE_WORDS: Record<PreferenceKey, string> = {
   replies: "replies to your Dispatches",
   campaign_updates: "updates about Campaigns you follow",
   closing_soon: "reminders before a Campaign you are in closes",
+  moderation: "moderation decisions on your Dispatches",
 };
 
 type Block = { heading?: string; lines: string[]; link?: { href: string; label: string } };
@@ -97,7 +99,39 @@ export function replyDigest(site: string, recipient: Recipient, items: ReplyItem
   return render(site, recipient, "replies", subject, intro, blocks);
 }
 
-export function campaignEmail(site: string, recipient: Recipient, kind: Exclude<EmailKind, "reply">, c: CampaignPayload): EmailContent {
+export type ModerationPayload = { dispatch_id: string; campaign_slug: string; campaign_title: string; outcome: "held" | "released" | "kept_held" | "removed"; appeal?: boolean };
+
+/** Plain words about a moderation decision. Never the moderator's private reason or the AI's. */
+export function moderationEmail(site: string, recipient: Recipient, m: ModerationPayload): EmailContent {
+  const href = `${site}/campaigns/${m.campaign_slug}#dispatch-${m.dispatch_id}`;
+  const appeal = m.appeal ? "We have looked at your appeal. " : "";
+  const words: Record<ModerationPayload["outcome"], { subject: string; intro: string; lines: string[] }> = {
+    held: {
+      subject: "Your Dispatch is waiting for a check",
+      intro: "A person will check one of your Dispatches before others can see it.",
+      lines: ["Only you can see it for now. You do not need to do anything.", "If you think this is a mistake, you can appeal once from the Dispatch."],
+    },
+    released: {
+      subject: m.appeal ? "Your appeal was upheld" : "Your Dispatch is now visible",
+      intro: `${appeal}A person has checked your Dispatch and it is now visible to everyone.`,
+      lines: [],
+    },
+    kept_held: {
+      subject: m.appeal ? "Your appeal was not upheld" : "Your Dispatch stays hidden",
+      intro: `${appeal}A person has checked your Dispatch. It stays hidden from others because it does not meet our community rules.`,
+      lines: m.appeal ? ["This decision is final."] : ["If you think this is a mistake, you can appeal once from the Dispatch."],
+    },
+    removed: {
+      subject: m.appeal ? "Your appeal was not upheld" : "A moderator removed your Dispatch",
+      intro: `${appeal}A person has removed one of your Dispatches because it does not meet our community rules. Others now see "Removed by a moderator."`,
+      lines: m.appeal ? ["This decision is final. The original is kept for our records, not deleted."] : ["The original is kept for our records, not deleted.", "If you think this is a mistake, you can appeal once from the Dispatch."],
+    },
+  };
+  const w = words[m.outcome];
+  return render(site, recipient, "moderation", w.subject, w.intro, [{ heading: m.campaign_title, lines: w.lines, link: { href, label: "See your Dispatch" } }]);
+}
+
+export function campaignEmail(site: string, recipient: Recipient, kind: Exclude<EmailKind, "reply" | "moderation_outcome">, c: CampaignPayload): EmailContent {
   const href = `${site}/campaigns/${c.campaign_slug}`;
   const deadline = c.ends_at ? `Deadline: ${formatUkDateTime(c.ends_at)}.` : "";
   switch (kind) {

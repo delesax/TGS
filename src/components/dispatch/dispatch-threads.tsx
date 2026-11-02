@@ -4,8 +4,8 @@ import * as React from "react";
 import { useActionState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronDown, ChevronRight, Flag, Pencil, Reply, Undo2 } from "lucide-react";
-import { loadMoreThreads, reportDispatch, toggleReaction, withdrawDispatch } from "@/app/campaigns/[slug]/dispatch-actions";
+import { ChevronDown, ChevronRight, Flag, Pencil, Reply, Scale, Undo2 } from "lucide-react";
+import { appealDispatch, loadMoreThreads, reportDispatch, toggleReaction, withdrawDispatch } from "@/app/campaigns/[slug]/dispatch-actions";
 import { ActionForm, FormMessage, SubmitButton, type FormState } from "@/components/form";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -14,7 +14,7 @@ import { useServerNow } from "@/components/use-server-now";
 import { formatUkShort, type DispatchKind } from "@/lib/campaigns";
 import { buildThreads, countReplies, editSecondsLeft, type DispatchLimits, type DispatchRow, type ThreadNode } from "@/lib/dispatches";
 import { cn } from "@/lib/utils";
-import { ComposeForm } from "./compose-form";
+import { LazyComposeForm as ComposeForm } from "./lazy-compose";
 import { AiUseLabel, KindTag, POSITION_BORDER, PositionTag, SourceList } from "./labels";
 
 export type ReactionType = { key: string; label: string; description: string };
@@ -33,6 +33,9 @@ export type ThreadsContext = {
   limits: DispatchLimits;
   reactionTypes: ReactionType[];
   serverNow: number;
+  /** The viewer's own appeals: Dispatch id to status (open, upheld, rejected). */
+  myAppeals: Record<string, string>;
+  aiHelp?: { enabled: boolean; coachUsesPerDraft: number };
 };
 
 const REPORT_REASONS: { value: string; label: string }[] = [
@@ -221,9 +224,13 @@ function DispatchNode({ node }: { node: ThreadNode }) {
 
 function DispatchCard({ node }: { node: ThreadNode }) {
   const { ctx, now } = useThreads();
-  const [panel, setPanel] = React.useState<"none" | "reply" | "edit" | "withdraw" | "report">("none");
+  const [panel, setPanel] = React.useState<"none" | "reply" | "edit" | "withdraw" | "report" | "appeal">("none");
   const isMine = ctx.viewerId === node.author_id;
   const gone = Boolean(node.withdrawn_at || node.hidden_at);
+  // Pending and held Dispatches reach only their author (row-level security).
+  const visible = node.moderation_status === "visible";
+  const appeal = ctx.myAppeals[node.id];
+  const canAppeal = isMine && !node.withdrawn_at && !appeal && (node.moderation_status === "held" || node.moderation_status === "removed" || Boolean(node.hidden_at));
   const editLeft = isMine && !gone && ctx.open ? editSecondsLeft(node.created_at, now, ctx.limits) : 0;
   const handle = node.author?.handle;
 
@@ -236,7 +243,7 @@ function DispatchCard({ node }: { node: ThreadNode }) {
               @{handle}
             </Link>
           ) : (
-            <span className="font-semibold">A Strategist</span>
+            <span className="font-semibold">{node.author?.deleted_at ? "A deleted Strategist" : "A Strategist"}</span>
           )}
           {isMine ? <span className="text-base text-muted-foreground">(you)</span> : null}
         </p>
@@ -259,8 +266,27 @@ function DispatchCard({ node }: { node: ThreadNode }) {
         ) : null}
       </header>
 
+      {isMine && node.moderation_status === "pending" ? (
+        <p role="status" className="rounded-lg border-2 border-border bg-muted p-3 text-base">
+          <strong>Checking…</strong> Only you can see this until our automatic check finishes. It usually takes a few seconds.
+        </p>
+      ) : null}
+      {isMine && node.moderation_status === "held" ? (
+        <div role="note" className="flex flex-col gap-1 rounded-lg border-2 border-accent-foreground bg-accent p-3 text-base text-accent-foreground">
+          <p>
+            <strong>Held.</strong> {node.held_reason ?? "A person will check this before others can see it."} Only you can see it.
+          </p>
+          {appeal ? <p>You appealed this decision{appeal === "open" ? ". A person will look at it." : appeal === "upheld" ? " and the appeal was upheld." : ". The decision stands."}</p> : null}
+        </div>
+      ) : null}
+      {isMine && (node.moderation_status === "removed" || node.hidden_at) && appeal ? (
+        <p className="text-base">You appealed this decision{appeal === "open" ? ". A person will look at it." : appeal === "upheld" ? " and the appeal was upheld." : ". The decision stands."}</p>
+      ) : null}
+
       {node.withdrawn_at ? (
         <p className="text-lg italic text-muted-foreground">Withdrawn by author.</p>
+      ) : node.moderation_status === "removed" ? (
+        <p className="text-lg italic text-muted-foreground">Removed by a moderator.</p>
       ) : node.hidden_at ? (
         <p className="text-lg italic text-muted-foreground">Hidden by a moderator.</p>
       ) : (
@@ -272,16 +298,22 @@ function DispatchCard({ node }: { node: ThreadNode }) {
         </>
       )}
 
-      {!gone ? <Reactions node={node} isMine={isMine} /> : null}
+      {!gone && visible ? <Reactions node={node} isMine={isMine} /> : null}
+
+      {canAppeal && ctx.canInteract ? (
+        <Button type="button" variant="outline" className="self-start" aria-expanded={panel === "appeal"} onClick={() => setPanel(panel === "appeal" ? "none" : "appeal")}>
+          <Scale aria-hidden /> Appeal
+        </Button>
+      ) : null}
 
       {!gone && ctx.canInteract ? (
         <div className="flex flex-wrap gap-2">
-          {ctx.open && ctx.repliesAllowed ? (
+          {ctx.open && ctx.repliesAllowed && visible ? (
             <Button type="button" variant="outline" aria-expanded={panel === "reply"} onClick={() => setPanel(panel === "reply" ? "none" : "reply")}>
               <Reply aria-hidden /> Reply
             </Button>
           ) : null}
-          {editLeft > 0 ? (
+          {editLeft > 0 && (visible || node.moderation_status === "pending") ? (
             <Button type="button" variant="ghost" aria-expanded={panel === "edit"} onClick={() => setPanel(panel === "edit" ? "none" : "edit")}>
               <Pencil aria-hidden /> Edit <span className="text-base font-normal">({Math.ceil(editLeft / 60)} min left)</span>
             </Button>
@@ -291,7 +323,7 @@ function DispatchCard({ node }: { node: ThreadNode }) {
               <Undo2 aria-hidden /> Withdraw
             </Button>
           ) : null}
-          {!isMine ? (
+          {!isMine && visible ? (
             <Button type="button" variant="ghost" aria-expanded={panel === "report"} onClick={() => setPanel(panel === "report" ? "none" : "report")}>
               <Flag aria-hidden /> Report
             </Button>
@@ -308,6 +340,7 @@ function DispatchCard({ node }: { node: ThreadNode }) {
             kinds={["rebuttal"]}
             replyTo={{ id: node.id, handle: handle ?? null }}
             opinionNotAdvice={ctx.opinionNotAdvice}
+            aiHelp={ctx.aiHelp}
             onDone={() => setPanel("none")}
             onCancel={() => setPanel("none")}
           />
@@ -328,6 +361,7 @@ function DispatchCard({ node }: { node: ThreadNode }) {
       ) : null}
       {panel === "withdraw" ? <WithdrawPanel id={node.id} onCancel={() => setPanel("none")} /> : null}
       {panel === "report" ? <ReportPanel id={node.id} onCancel={() => setPanel("none")} /> : null}
+      {panel === "appeal" ? <AppealPanel id={node.id} slug={ctx.slug} onCancel={() => setPanel("none")} /> : null}
     </div>
   );
 }
@@ -453,8 +487,8 @@ function ReportPanel({ id, onCancel }: { id: string; onCancel: () => void }) {
         <FormMessage state={state} />
         <input type="hidden" name="dispatchId" value={id} />
         <p className="text-base text-muted-foreground">
-          Reports go to the TGS team, who can hide a Dispatch while they review it. During this closed test there is no automatic screening yet, so your
-          report matters.
+          Reports go to the TGS team, who review them and can remove a Dispatch. Every Dispatch is also checked automatically, but your report
+          still matters.
         </p>
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-lg font-semibold">Why are you reporting it?</legend>
@@ -478,6 +512,49 @@ function ReportPanel({ id, onCancel }: { id: string; onCancel: () => void }) {
           <div className="flex flex-col gap-2 sm:flex-row">
             <SubmitButton pending={pending} pendingLabel="Sending…">
               Send report
+            </SubmitButton>
+            <Button type="button" variant="ghost" onClick={onCancel}>
+              Cancel
+            </Button>
+          </div>
+        )}
+      </ActionForm>
+    </div>
+  );
+}
+
+function AppealPanel({ id, slug, onCancel }: { id: string; slug: string; onCancel: () => void }) {
+  const router = useRouter();
+  const [state, action, pending] = useActionState(appealDispatch, {} as FormState);
+  return (
+    <div className="rounded-lg border-2 border-border p-3">
+      <ActionForm action={action} aria-label="Appeal this decision" className="gap-4">
+        <FormMessage state={state} />
+        <input type="hidden" name="dispatchId" value={id} />
+        <input type="hidden" name="slug" value={slug} />
+        <p className="text-base text-muted-foreground">
+          A person will look at this Dispatch again. You can appeal each Dispatch once, and you will hear the outcome by email and on this page.
+        </p>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor={`appeal-${id}-reason`}>Why do you think the decision is wrong?</Label>
+          {state.fieldErrors?.reason ? <p className="text-base font-semibold text-destructive">{state.fieldErrors.reason}</p> : null}
+          <Textarea id={`appeal-${id}-reason`} name="reason" rows={3} maxLength={500} aria-invalid={state.fieldErrors?.reason ? true : undefined} />
+        </div>
+        {state.success ? (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              onCancel();
+              router.refresh();
+            }}
+          >
+            Close
+          </Button>
+        ) : (
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <SubmitButton pending={pending} pendingLabel="Sending…">
+              Send appeal
             </SubmitButton>
             <Button type="button" variant="ghost" onClick={onCancel}>
               Cancel

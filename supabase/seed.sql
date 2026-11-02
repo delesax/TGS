@@ -40,3 +40,8 @@ on conflict (campaign_id, position) do nothing;
 -- project the owner stores the real address and secret in Vault (see DEMO.md).
 select vault.create_secret('http://host.docker.internal:3100/api/email/process', 'email_processor_url', 'Local development only');
 select vault.create_secret('local-email-processor-secret', 'email_processor_secret', 'Local development only');
+
+-- Moderation sweeper for LOCAL development (Sprint 4): pg_cron re-screens
+-- Dispatches stuck in "Checking…" through the app on port 3100. Dummy secret.
+select vault.create_secret('http://host.docker.internal:3100/api/moderation/sweep', 'moderation_processor_url', 'Local development only');
+select vault.create_secret('local-moderation-processor-secret', 'moderation_processor_secret', 'Local development only');

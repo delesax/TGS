@@ -41,7 +41,7 @@ export default async function AdminCampaignsPage() {
           <Link href="/admin/campaigns/new">Create a Campaign</Link>
         </Button>
         <Button asChild variant="secondary">
-          <Link href="/admin/reports">Reports</Link>
+          <Link href="/admin/moderation">Moderation</Link>
         </Button>
         <Button asChild variant="outline">
           <Link href="/campaigns">Back to Campaigns</Link>

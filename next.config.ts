@@ -10,6 +10,8 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   // Auth pages read cookies on every request, so we keep the standard dynamic
   // rendering model rather than opting in to Cache Components.
+  // The AI prompts are read from prompts/*.md at run time; ship them with every server route.
+  outputFileTracingIncludes: { "/**": ["./prompts/**/*.md"] },
   turbopack: {
     rules: {
       "*.css": {

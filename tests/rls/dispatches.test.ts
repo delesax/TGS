@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { anonClient, createCampaign, createUser, deleteUsers, service, type TestUser } from "./helpers";
+import { anonClient, applyScreening, createCampaign, createUser, deleteUsers, service, type TestUser } from "./helpers";
 
 // Sprint 3: Dispatches through post_dispatch(), edits, withdraw, hide, reports,
 // reactions, follows, settings and search. Everything runs against LOCAL Supabase.
@@ -37,6 +37,8 @@ async function post(user: TestUser | SupabaseClient, args: PostArgs = {}) {
 async function postOk(user: TestUser, args: PostArgs = {}): Promise<string> {
   const { data, error } = await post(user, args);
   if (error) throw new Error(`post_dispatch failed: ${error.message}`);
+  // Sprint 4: posted as pending; screening (here, a test "allow") makes it visible.
+  await applyScreening(data as string);
   return data as string;
 }
 
@@ -103,8 +105,12 @@ describe("posting through post_dispatch()", () => {
     const { data } = await anonClient().from("dispatches").select("kind, position, moderation_status, round_position, depth, root_id").eq("id", id).single();
     expect(data).toEqual({ kind: "argument", position: "for", moderation_status: "visible", round_position: null, depth: 0, root_id: id });
 
-    const { data: log } = await service.from("audit_log").select("action, actor_id").eq("target_id", id);
-    expect(log).toEqual([{ action: "dispatch.created", actor_id: author.id }]);
+    const { data: log } = await service.from("audit_log").select("action, actor_id").eq("target_id", id).order("id");
+    // Created by the author, then made visible by screening (actor: the system).
+    expect(log).toEqual([
+      { action: "dispatch.created", actor_id: author.id },
+      { action: "dispatch.moderation_changed", actor_id: null },
+    ]);
     const { data: follow } = await author.client.from("campaign_follows").select("campaign_id").eq("campaign_id", openId);
     expect(follow).toHaveLength(1);
   });
@@ -214,6 +220,9 @@ describe("editing, withdrawing and history", () => {
     const id = await postOk(author, { body: "First version." });
     const { error } = await author.client.rpc("edit_dispatch", { p_id: id, p_body: "Second version.", p_ai_use: "assisted", p_sources: [] });
     expect(error).toBeNull();
+    // Sprint 4: the edited text is hidden from others until it is screened again.
+    expect((await anonClient().from("dispatches").select("id").eq("id", id)).data).toEqual([]);
+    await applyScreening(id);
 
     const { data } = await anonClient().from("dispatches").select("body, ai_use, edited_at").eq("id", id).single();
     expect(data!.body).toBe("Second version.");
@@ -226,7 +235,7 @@ describe("editing, withdrawing and history", () => {
     expect(others ?? []).toHaveLength(0);
 
     const { data: log } = await service.from("audit_log").select("action").eq("target_id", id).order("id");
-    expect(log!.map((l) => l.action)).toEqual(["dispatch.created", "dispatch.edited"]);
+    expect(log!.map((l) => l.action)).toEqual(["dispatch.created", "dispatch.moderation_changed", "dispatch.edited", "dispatch.moderation_changed"]);
   });
 
   it("refuses edits by anyone else, and after the edit window", async () => {
@@ -299,8 +308,8 @@ describe("reports and hiding", () => {
     expect(restored).toEqual({ body: "Text a moderator will hide.", hidden_at: null });
 
     const { data: log } = await service.from("audit_log").select("action, actor_id").eq("target_id", id).order("id");
-    expect(log!.map((l) => l.action)).toEqual(["dispatch.created", "dispatch.reported", "dispatch.hidden", "dispatch.restored"]);
-    expect(log![2].actor_id).toBe(admin.id);
+    expect(log!.map((l) => l.action)).toEqual(["dispatch.created", "dispatch.moderation_changed", "dispatch.reported", "dispatch.hidden", "dispatch.restored"]);
+    expect(log![3].actor_id).toBe(admin.id);
   });
 
   it("lets admins dismiss reports", async () => {

@@ -10,7 +10,7 @@ export const THREADS_PER_PAGE = 20;
 const MAX_REPLIES_PER_PAGE = 400;
 
 export const DISPATCH_COLUMNS =
-  "id, campaign_id, author_id, parent_id, display_parent_id, root_id, depth, kind, position, body, sources, ai_use, round_position, reaction_counts, created_at, edited_at, withdrawn_at, hidden_at, author:profiles!dispatches_author_id_fkey(handle)";
+  "id, campaign_id, author_id, parent_id, display_parent_id, root_id, depth, kind, position, body, sources, ai_use, round_position, reaction_counts, created_at, edited_at, withdrawn_at, hidden_at, moderation_status, held_reason, author:profiles!dispatches_author_id_fkey(handle, deleted_at)";
 
 export async function getDispatchLimits(): Promise<DispatchLimits> {
   const supabase = await createClient();
@@ -101,6 +101,10 @@ export async function getMyReactions(dispatchIds: string[], userId: string): Pro
 }
 
 export type ComposeContext = {
+  /** Set when an admin has paused this Strategist's posting, with the reason shown to them. */
+  muted: { at: string; reason: string | null } | null;
+  /** Appeals made on Dispatches shown on this page: Dispatch id to status. */
+  appeals: Record<string, string>;
   postedThisRound: number;
   lastPostedAt: string | null;
   followsCampaign: boolean;
@@ -110,10 +114,24 @@ export async function getComposeContext(campaignId: string, userId: string, roun
   const supabase = await createClient();
   let roundQuery = supabase.from("dispatches").select("id", { count: "exact", head: true }).eq("campaign_id", campaignId).eq("author_id", userId);
   roundQuery = roundPosition === null ? roundQuery.is("round_position", null) : roundQuery.eq("round_position", roundPosition);
-  const [{ count }, { data: last }, { data: follow }] = await Promise.all([
+  const [{ count }, { data: last }, { data: follow }, { data: status }, { data: appeals }] = await Promise.all([
     roundQuery,
     supabase.from("dispatches").select("created_at").eq("author_id", userId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
     supabase.from("campaign_follows").select("campaign_id").eq("campaign_id", campaignId).eq("user_id", userId).maybeSingle(),
+    supabase.rpc("my_account_status").maybeSingle<{ posting_muted_at: string | null; posting_muted_reason: string | null }>(),
+    supabase.from("dispatch_appeals").select("dispatch_id, status").eq("author_id", userId),
   ]);
-  return { postedThisRound: count ?? 0, lastPostedAt: (last as { created_at: string } | null)?.created_at ?? null, followsCampaign: Boolean(follow) };
+  return {
+    muted: status?.posting_muted_at ? { at: status.posting_muted_at, reason: status.posting_muted_reason } : null,
+    appeals: Object.fromEntries(((appeals as { dispatch_id: string; status: string }[] | null) ?? []).map((a) => [a.dispatch_id, a.status])),
+    postedThisRound: count ?? 0, lastPostedAt: (last as { created_at: string } | null)?.created_at ?? null, followsCampaign: Boolean(follow) };
+}
+
+export type AiHelp = { enabled: boolean; coachUsesPerDraft: number };
+
+/** Whether the tone check and the coach are offered (the AI kill switch turns both off). */
+export async function getAiHelp(): Promise<AiHelp> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("community_settings").select("ai_enabled, coach_uses_per_draft").maybeSingle<{ ai_enabled: boolean; coach_uses_per_draft: number }>();
+  return { enabled: Boolean(data?.ai_enabled), coachUsesPerDraft: data?.coach_uses_per_draft ?? 0 };
 }

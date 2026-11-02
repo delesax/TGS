@@ -157,7 +157,10 @@ export type DispatchRow = {
   edited_at: string | null;
   withdrawn_at: string | null;
   hidden_at: string | null;
-  author: { handle: string | null } | null;
+  /** Only the author and admins ever receive rows that are not visible (row-level security). */
+  moderation_status: "pending" | "visible" | "held" | "removed";
+  held_reason: string | null;
+  author: { handle: string | null; deleted_at?: string | null } | null;
 };
 
 export type ThreadNode = DispatchRow & {
@@ -252,7 +255,7 @@ export function describeDispatchError(error: { message?: string; details?: strin
     case "REBUTTAL_NEEDS_TARGET":
       return { code, message: "A rebuttal must answer another Dispatch.", hint: "Use the Reply button on the Dispatch you want to answer." };
     case "TARGET_UNAVAILABLE":
-      return { code, message: "That Dispatch has been withdrawn or hidden, so it cannot be answered." };
+      return { code, message: "That Dispatch cannot be answered.", hint: "It may have been withdrawn, hidden, or still be waiting for a check." };
     case "TARGET_NOT_IN_CAMPAIGN":
     case "ONLY_REBUTTALS_REPLY":
       return { code, message: "Only a rebuttal can reply to another Dispatch in the same Campaign." };
@@ -265,7 +268,9 @@ export function describeDispatchError(error: { message?: string; details?: strin
     case "NOT_YOURS":
       return { code, message: "You can only change your own Dispatches." };
     case "NOT_EDITABLE":
-      return { code, message: "This Dispatch has been withdrawn or hidden, so it cannot be edited." };
+      return { code, message: "This Dispatch cannot be edited now.", hint: "Withdrawn, held and hidden Dispatches cannot be edited. A held one can be appealed." };
+    case "MUTED":
+      return { code, message: "Posting is paused for your account.", hint: "A moderator has paused your posting. The reason is shown on the Campaign page. You can still read and react." };
     case "EDIT_WINDOW_OVER":
       return { code, message: `Dispatches can be edited for ${Math.round((detail || 300) / 60)} minutes after posting.`, hint: "That time has passed. You can post a new Dispatch, or withdraw this one." };
     case "OWN_DISPATCH":

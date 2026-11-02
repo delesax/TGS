@@ -80,6 +80,8 @@ test.beforeAll(async () => {
 
 test.afterAll(async () => {
   await service.from("community_settings").update({ cooldown_seconds: 30, reply_digest_minutes: 10 }).eq("id", true);
+  // Deleting a user keeps their Dispatches (Sprint 4), so clear the test's own first.
+  await service.from("dispatches").delete().eq("campaign_id", campaignId);
   for (const id of userIds) await service.auth.admin.deleteUser(id);
   await service.from("campaigns").delete().eq("id", campaignId);
 });

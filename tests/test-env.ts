@@ -24,5 +24,6 @@ export function loadTestEnv() {
     serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
     mailpitUrl: process.env.MAILPIT_URL ?? "http://127.0.0.1:54324",
     emailSecret: process.env.EMAIL_PROCESSOR_SECRET ?? "local-email-processor-secret",
+    moderationSecret: process.env.MODERATION_PROCESSOR_SECRET ?? "local-moderation-processor-secret",
   };
 }

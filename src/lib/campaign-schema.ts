@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CATEGORIES, FORMATS, SLUG_PATTERN, fromUkInputValue } from "./campaigns";
+import { CATEGORIES, DISPATCH_KINDS, FORMATS, SLUG_PATTERN, fromUkInputValue } from "./campaigns";
 
 // Admin form validation for Campaigns. Kept apart from campaigns.ts so the
 // validation library is not sent to every visitor's browser.
@@ -21,6 +21,7 @@ export const roundInputSchema = z.object({
   title: z.string().trim().min(1, "Give the round a name, for example Opening arguments.").max(80, "Keep the round name to 80 characters or fewer."),
   startsAt: ukTime("round start"),
   endsAt: ukTime("round end"),
+  allowedKinds: z.array(z.enum(DISPATCH_KINDS)).min(1, "Each round must accept at least one kind of Dispatch.").default([...DISPATCH_KINDS]),
 });
 
 export const campaignInputSchema = z

@@ -3,7 +3,9 @@
 import { useActionState, useState } from "react";
 import { ActionForm, CheckboxField, FormMessage, SubmitButton, TextAreaField, TextField, type FormState } from "@/components/form";
 import { Label } from "@/components/ui/label";
-import { CATEGORIES, CATEGORY_LABELS, FORMATS, FORMAT_LABELS, MAX_ROUND_ROWS, slugify } from "@/lib/campaigns";
+import { CATEGORIES, CATEGORY_LABELS, DISPATCH_KINDS, FORMATS, FORMAT_LABELS, MAX_ROUND_ROWS, slugify } from "@/lib/campaigns";
+
+const KIND_WORDS: Record<string, string> = { argument: "Arguments", rebuttal: "Rebuttals", evidence: "Evidence" };
 import { saveCampaign } from "./actions";
 
 export type CampaignFormValues = {
@@ -21,7 +23,7 @@ export type CampaignFormValues = {
   contentNote: string;
   opinionNotAdvice: boolean;
   notes: string;
-  rounds: { title: string; startsAt: string; endsAt: string }[];
+  rounds: { title: string; startsAt: string; endsAt: string; allowedKinds?: string[] }[];
 };
 
 const selectClass =
@@ -54,7 +56,7 @@ export function CampaignForm({ values }: { values: CampaignFormValues }) {
   const errors = state.fieldErrors ?? {};
   const [slug, setSlug] = useState(values.slug);
   const [slugTouched, setSlugTouched] = useState(Boolean(values.id));
-  const rows = Array.from({ length: MAX_ROUND_ROWS }, (_, i) => values.rounds[i] ?? { title: "", startsAt: "", endsAt: "" });
+  const rows = Array.from({ length: MAX_ROUND_ROWS }, (_, i) => values.rounds[i] ?? { title: "", startsAt: "", endsAt: "", allowedKinds: [...DISPATCH_KINDS] });
 
   return (
     <ActionForm action={action} aria-label={values.id ? "Edit Campaign" : "Create Campaign"}>
@@ -97,7 +99,9 @@ export function CampaignForm({ values }: { values: CampaignFormValues }) {
 
       <fieldset className="flex flex-col gap-4">
         <legend className="mb-2 text-xl font-semibold">Rounds (optional)</legend>
-        <p className="text-base text-muted-foreground">Each round has its own deadline and must sit within the Campaign. Leave unused rows blank.</p>
+        <p className="text-base text-muted-foreground">
+          Each round has its own deadline and must sit within the Campaign, and accepts at least one kind of Dispatch. Leave unused rows blank.
+        </p>
         {rows.map((r, i) => {
           const n = i + 1;
           const error = errors[`round${n}`];
@@ -112,6 +116,17 @@ export function CampaignForm({ values }: { values: CampaignFormValues }) {
               <TextField name={`round${n}-title`} label={`Round ${n} name`} defaultValue={r.title} maxLength={80} />
               <TextField name={`round${n}-startsAt`} type="datetime-local" label={`Round ${n} starts`} defaultValue={r.startsAt} />
               <TextField name={`round${n}-endsAt`} type="datetime-local" label={`Round ${n} deadline`} defaultValue={r.endsAt} />
+              <fieldset className="flex flex-col gap-1">
+                <legend className="text-lg font-semibold">Round {n} accepts</legend>
+                {DISPATCH_KINDS.map((k) => (
+                  <CheckboxField
+                    key={k}
+                    name={`round${n}-kind-${k}`}
+                    label={KIND_WORDS[k]}
+                    defaultChecked={(r.allowedKinds ?? DISPATCH_KINDS).includes(k)}
+                  />
+                ))}
+              </fieldset>
             </div>
           );
         })}

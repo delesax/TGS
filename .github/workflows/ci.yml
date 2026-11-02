@@ -8,6 +8,12 @@ on:
 permissions:
   contents: read
 
+# Sprint 4: CI never calls the real AI API. The keyword-driven fake provider
+# is used everywhere, and no Anthropic key is ever given to CI.
+env:
+  AI_PROVIDER: fake
+  ANTHROPIC_API_KEY: ""
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true

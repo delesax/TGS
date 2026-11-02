@@ -108,22 +108,23 @@ function FieldText({ name, hint, error }: Omit<FieldProps, "label">) {
   );
 }
 
-export function TextField({ name, label, hint, error, ...props }: FieldProps & React.ComponentProps<"input">) {
+// `id` defaults to the name; pass one when the same form appears more than once on a page.
+export function TextField({ name, label, hint, error, id = name, ...props }: FieldProps & React.ComponentProps<"input">) {
   return (
     <div className="flex flex-col gap-2">
-      <Label htmlFor={name}>{label}</Label>
-      <FieldText name={name} hint={hint} error={error} />
-      <Input id={name} name={name} aria-invalid={error ? true : undefined} aria-describedby={describedBy(name, hint, error)} {...props} />
+      <Label htmlFor={id}>{label}</Label>
+      <FieldText name={id} hint={hint} error={error} />
+      <Input id={id} name={name} aria-invalid={error ? true : undefined} aria-describedby={describedBy(id, hint, error)} {...props} />
     </div>
   );
 }
 
-export function TextAreaField({ name, label, hint, error, ...props }: FieldProps & React.ComponentProps<"textarea">) {
+export function TextAreaField({ name, label, hint, error, id = name, ...props }: FieldProps & React.ComponentProps<"textarea">) {
   return (
     <div className="flex flex-col gap-2">
-      <Label htmlFor={name}>{label}</Label>
-      <FieldText name={name} hint={hint} error={error} />
-      <Textarea id={name} name={name} aria-invalid={error ? true : undefined} aria-describedby={describedBy(name, hint, error)} {...props} />
+      <Label htmlFor={id}>{label}</Label>
+      <FieldText name={id} hint={hint} error={error} />
+      <Textarea id={id} name={name} aria-invalid={error ? true : undefined} aria-describedby={describedBy(id, hint, error)} {...props} />
     </div>
   );
 }
@@ -132,6 +133,7 @@ export function CheckboxField({
   name,
   label,
   error,
+  id = name,
   ...props
 }: Omit<FieldProps, "label" | "hint"> & { label: React.ReactNode } & React.ComponentProps<"input">) {
   return (
@@ -139,20 +141,20 @@ export function CheckboxField({
       <div className="flex items-start gap-3">
         {/* The 28px box sits inside a 48px tall row; the whole label is clickable. */}
         <input
-          id={name}
+          id={id}
           name={name}
           type="checkbox"
           value="on"
           aria-invalid={error ? true : undefined}
-          aria-describedby={error ? `${name}-error` : undefined}
+          aria-describedby={error ? `${id}-error` : undefined}
           className="mt-2.5 size-7 shrink-0 accent-primary"
           {...props}
         />
-        <label htmlFor={name} className="min-h-12 py-2 text-lg leading-snug">
+        <label htmlFor={id} className="min-h-12 py-2 text-lg leading-snug">
           {label}
         </label>
       </div>
-      <FieldText name={name} error={error} />
+      <FieldText name={id} error={error} />
     </div>
   );
 }

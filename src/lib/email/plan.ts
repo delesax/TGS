@@ -13,6 +13,7 @@ export type RecipientInfo = {
   replies: boolean;
   campaign_updates: boolean;
   closing_soon: boolean;
+  moderation: boolean;
   unsubscribed_all: boolean;
   unsubscribe_token: string;
   sent_last_24h: number;
@@ -29,7 +30,7 @@ export type DeliveryPlan = {
 };
 
 // Most time-sensitive first, so the cap never holds back a closing reminder.
-const PRIORITY: EmailKind[] = ["campaign_closing_soon", "campaign_opened", "campaign_round_changed", "campaign_closed", "reply"];
+const PRIORITY: EmailKind[] = ["moderation_outcome", "campaign_closing_soon", "campaign_opened", "campaign_round_changed", "campaign_closed", "reply"];
 
 export function planDelivery(
   rows: OutboxRow[],

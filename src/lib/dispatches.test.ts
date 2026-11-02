@@ -137,6 +137,8 @@ describe("buildThreads", () => {
     kind: parent ? "rebuttal" : "argument",
     position: "for",
     body: id,
+    moderation_status: "visible",
+    held_reason: null,
     sources: [],
     ai_use: "none",
     round_position: null,

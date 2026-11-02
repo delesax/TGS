@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { anonClient, createCampaign, createUser, deleteUsers, service, type TestUser } from "./helpers";
+import { anonClient, applyScreening, createCampaign, createUser, deleteUsers, service, type TestUser } from "./helpers";
 
 // Email notifications: preferences, the outbox and the triggers that fill it.
 
@@ -62,6 +62,7 @@ describe("email outbox", () => {
 
   it("queues one reply email for the author being answered, never for replying to yourself", async () => {
     const { data: root } = await author.client.rpc("post_dispatch", { p_campaign_id: campaignId, p_kind: "argument", p_body: "My case.", p_ai_use: "none" });
+    await applyScreening(root as string); // replies need a visible target (Sprint 4)
     const { data: reply } = await replier.client.rpc("post_dispatch", {
       p_campaign_id: campaignId,
       p_kind: "rebuttal",

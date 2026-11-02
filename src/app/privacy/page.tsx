@@ -17,6 +17,15 @@ export default function PrivacyPage() {
         </p>
         <h2 className="text-2xl font-semibold">[DRAFT] Why we use it, and our lawful basis</h2>
         <p>[Placeholder] To be written and reviewed under UK GDPR.</p>
+        {/* OWNER DECISION 5: needs the owner's and a lawyer's approval (UK GDPR) before real invitees arrive. */}
+        <h2 className="text-2xl font-semibold">[DRAFT] Automated checks by AI</h2>
+        <p>
+          [Placeholder, needs legal review] To keep debates safe, the text of every Dispatch and every handle is sent to our AI provider, Anthropic, to
+          check it against our community rules. If you ask for feedback or a tone check, your draft is sent too. We send only the text and the
+          Campaign&apos;s question and topic, never your name, email address or other details. The AI can hold a Dispatch for a person to check; it
+          never deletes anything, and a person reviews every hold and every appeal. We keep a record of each AI decision and of coach feedback, but not
+          your drafts.
+        </p>
         <h2 className="text-2xl font-semibold">[DRAFT] How long we keep it</h2>
         <p>[Placeholder] Retention periods to be confirmed.</p>
         <h2 className="text-2xl font-semibold">[DRAFT] Your rights</h2>
