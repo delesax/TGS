@@ -216,7 +216,7 @@ test("two Strategists post, reply, react, follow, search and get an email", asyn
   await anon.goto(`/search?q=${ada.handle}&type=strategists`);
   await expect(anon.getByRole("heading", { name: "Sign in to search for Strategists" })).toBeVisible();
   await anon.goto(`/search?q=${ada.handle}`);
-  await expect(anon.getByText("Nothing matched", { exact: false }).or(anon.getByRole("status"))).toBeVisible();
+  await expect(anon.getByText("Nothing matched", { exact: false }).or(anon.getByRole("status")).first()).toBeVisible();
   // Result cards are labelled "Campaign", "Dispatch" or "Strategist"; none may be a person.
   await expect(anon.locator("ol > li").filter({ has: anon.getByText("Strategist", { exact: true }) })).toHaveCount(0);
   await expectNoHorizontalOverflow(anon);
