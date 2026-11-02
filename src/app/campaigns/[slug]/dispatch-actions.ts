@@ -6,7 +6,8 @@ import type { FormState } from "@/components/form";
 import { screenDispatch } from "@/lib/ai";
 import { getViewer } from "@/lib/auth";
 import { getDispatchLimits, getMyReactions, getThreadPage } from "@/lib/dispatch-data";
-import { MAX_SOURCES, describeDispatchError, dispatchInputSchema, parseSources, type DispatchRow } from "@/lib/dispatches";
+import { dispatchInputSchema } from "@/lib/dispatch-schema";
+import { MAX_SOURCES, describeDispatchError, parseSources, type DispatchRow } from "@/lib/dispatches";
 import { createClient } from "@/lib/supabase/server";
 import { fieldErrors } from "@/lib/validation";
 

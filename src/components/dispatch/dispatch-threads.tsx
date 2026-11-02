@@ -107,6 +107,8 @@ export function DispatchThreads({
   const newCount = useNewCount(context.campaignId, since, context.viewerId);
   const threads = React.useMemo(() => buildThreads(rows), [rows]);
   const headingRef = React.useRef<HTMLHeadingElement>(null);
+  // Marks the threads as interactive (used by the performance test).
+  const readyRef = React.useCallback((node: HTMLDivElement | null) => node?.setAttribute("data-hydrated", "true"), []);
 
   const showMore = async () => {
     if (!nextBefore) return;
@@ -125,7 +127,7 @@ export function DispatchThreads({
 
   return (
     <Ctx.Provider value={{ ctx: context, now, mine, setMine }}>
-      <div className="flex flex-col gap-4">
+      <div ref={readyRef} data-testid="dispatch-threads" className="flex flex-col gap-4">
         <h3 ref={headingRef} tabIndex={-1} className="sr-only">
           Dispatches, newest threads first
         </h3>
@@ -377,7 +379,7 @@ function Reactions({ node, isMine }: { node: ThreadNode; isMine: boolean }) {
                     pressed ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background hover:bg-muted",
                   )}
                 >
-                  {pressed ? "✓ " : ""}
+                  {pressed ? <span aria-hidden>✓</span> : null}
                   {t.label}
                   <span className="tabular-nums">{n}</span>
                   <span className="sr-only">{n === 1 ? "reaction" : "reactions"}</span>

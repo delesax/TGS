@@ -17,7 +17,7 @@ export function FollowStrategistButton({ id, handle, following, compact = false 
         variant={following ? "outline" : "secondary"}
         aria-pressed={following}
         disabled={pending}
-        className="self-start"
+        className="max-w-full self-start whitespace-normal py-2 text-left"
         onClick={() =>
           startTransition(async () => {
             setError(null);

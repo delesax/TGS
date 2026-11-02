@@ -5,7 +5,6 @@ import {
   cooldownSecondsLeft,
   countReplies,
   describeDispatchError,
-  dispatchInputSchema,
   editSecondsLeft,
   maxCharsFor,
   parseSources,
@@ -13,6 +12,7 @@ import {
   sanitiseSourceUrl,
   type DispatchRow,
 } from "./dispatches";
+import { dispatchInputSchema } from "./dispatch-schema";
 
 describe("sanitiseSourceUrl", () => {
   it("accepts http and https, adding https:// when none is typed", () => {

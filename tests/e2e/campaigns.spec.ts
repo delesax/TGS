@@ -100,7 +100,7 @@ test("an admin creates a Campaign; a Strategist sees it, records a before positi
   await expect(page.getByRole("heading", { level: 1, name: "Should e2e tests run on every change?" })).toBeVisible();
   await expect(page.getByText("Opinion, not advice.")).toBeVisible();
   await expect(page.getByText("Round 1: Opening arguments")).toBeVisible();
-  await expect(page.getByText("Dispatches open in the next update")).toBeVisible();
+  await expect(page.getByText("Dispatches open when the Campaign opens")).toBeVisible();
 
   // Sprint 2 carry-over: the Campaign page's buttons fit at 375px.
   await expectNoHorizontalOverflow(page);

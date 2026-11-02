@@ -17,6 +17,7 @@ export function FollowCampaignButton({ campaignId, slug, following }: { campaign
         variant={following ? "outline" : "secondary"}
         aria-pressed={following}
         disabled={pending}
+        className="max-w-full whitespace-normal py-2 text-left"
         onClick={() =>
           startTransition(async () => {
             setError(null);
