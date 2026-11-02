@@ -5,7 +5,7 @@ import { EmptyState, Page } from "@/components/page";
 import { Button } from "@/components/ui/button";
 import { requireAdmin } from "@/lib/auth";
 import { formatUkDateTime, statusAt } from "@/lib/campaigns";
-import { getServerNow } from "@/lib/campaign-data";
+import { getCampaignAdminFields, getServerNow } from "@/lib/campaign-data";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Manage Campaigns" };
@@ -21,18 +21,18 @@ type Row = {
   starts_at: string;
   ends_at: string;
   wave: number | null;
-  needs_owner_decision: string | null;
 };
 
 export default async function AdminCampaignsPage() {
   await requireAdmin("/admin/campaigns");
   const supabase = await createClient();
   const [{ data, error }, now] = await Promise.all([
-    supabase.from("campaigns").select("id, slug, title, category, format, status, starts_at, ends_at, wave, needs_owner_decision").order("starts_at"),
+    supabase.from("campaigns").select("id, slug, title, category, format, status, starts_at, ends_at, wave").order("starts_at"),
     getServerNow(),
   ]);
   if (error) throw new Error("Could not load Campaigns");
   const rows = data as Row[];
+  const adminFields = await getCampaignAdminFields(rows.map((r) => r.id));
 
   return (
     <Page title="Manage Campaigns" intro="Admins only. Every change is recorded in the audit log.">
@@ -54,9 +54,9 @@ export default async function AdminCampaignsPage() {
                 {formatUkDateTime(c.starts_at)} to {formatUkDateTime(c.ends_at)}
                 {c.wave ? ` · Launch wave ${c.wave}` : ""}
               </p>
-              {c.needs_owner_decision ? (
+              {adminFields.get(c.id)?.needs_owner_decision ? (
                 <p role="note" className="rounded-lg border-2 border-accent-foreground bg-accent p-3 text-base text-accent-foreground">
-                  <strong>Owner decision needed:</strong> {c.needs_owner_decision}
+                  <strong>Owner decision needed:</strong> {adminFields.get(c.id)?.needs_owner_decision}
                 </p>
               ) : null}
               <div className="flex flex-col gap-3 sm:flex-row">

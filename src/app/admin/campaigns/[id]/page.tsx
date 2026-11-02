@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Page } from "@/components/page";
 import { Button } from "@/components/ui/button";
 import { requireAdmin } from "@/lib/auth";
-import { getCampaign } from "@/lib/campaign-data";
+import { getCampaign, getCampaignAdminFields } from "@/lib/campaign-data";
 import { toUkInputValue } from "@/lib/campaigns";
 import { CampaignForm } from "../campaign-form";
 
@@ -20,6 +20,7 @@ export default async function EditCampaignPage({ params, searchParams }: PagePro
   if (!UUID.test(id)) notFound();
   const c = await getCampaign({ id });
   if (!c) notFound();
+  const adminFields = (await getCampaignAdminFields([c.id])).get(c.id);
 
   return (
     <Page title="Edit Campaign" intro={c.title} narrow>
@@ -28,9 +29,9 @@ export default async function EditCampaignPage({ params, searchParams }: PagePro
           Saved. The change has been recorded in the audit log.
         </p>
       ) : null}
-      {c.needs_owner_decision ? (
+      {adminFields?.needs_owner_decision ? (
         <p role="note" className="rounded-lg border-2 border-accent-foreground bg-accent p-4 text-lg text-accent-foreground">
-          <strong>Owner decision needed:</strong> {c.needs_owner_decision} It cannot be scheduled until this is cleared in the database.
+          <strong>Owner decision needed:</strong> {adminFields.needs_owner_decision} It cannot be scheduled until this is cleared in the database.
         </p>
       ) : null}
       <div className="flex flex-col gap-3 sm:flex-row">
@@ -57,7 +58,7 @@ export default async function EditCampaignPage({ params, searchParams }: PagePro
           isSensitive: c.is_sensitive,
           contentNote: c.content_note ?? "",
           opinionNotAdvice: c.opinion_not_advice,
-          notes: c.notes ?? "",
+          notes: adminFields?.notes ?? "",
           rounds: c.rounds.map((r) => ({ title: r.title, startsAt: toUkInputValue(r.starts_at), endsAt: toUkInputValue(r.ends_at) })),
         }}
       />
