@@ -22,6 +22,9 @@ export const metadata: Metadata = {
     template: "%s · The Grand Strategist",
   },
   description: "A time-boxed arena for structured reasoning. The best argument before the deadline wins.",
+  applicationName: "The Grand Strategist",
+  icons: { icon: "/icons/icon-192.png", apple: "/icons/apple-touch-icon.png" },
+  appleWebApp: { capable: true, title: "TGS", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {
