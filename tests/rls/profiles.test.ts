@@ -11,9 +11,15 @@ beforeAll(async () => {
 afterAll(() => deleteUsers([alice, bob, newcomer]));
 
 describe("profiles", () => {
-  it("are not readable by anonymous visitors", async () => {
-    const { data } = await anonClient().from("profiles").select("id").eq("id", alice.id);
-    expect(data ?? []).toHaveLength(0);
+  it("with a handle are readable by anonymous visitors (public columns only), without a handle they are not", async () => {
+    // Handles appear on public Campaign pages, so a Strategist's public profile is public.
+    const { data } = await anonClient().from("profiles").select("id, handle").eq("id", alice.id);
+    expect(data).toHaveLength(1);
+    const { error } = await anonClient().from("profiles").select("invite_id").eq("id", alice.id);
+    expect(error).not.toBeNull();
+
+    const { data: hidden } = await anonClient().from("profiles").select("id").eq("id", newcomer.id);
+    expect(hidden ?? []).toHaveLength(0);
   });
 
   it("with a handle are readable by other signed-in Strategists (public columns only)", async () => {

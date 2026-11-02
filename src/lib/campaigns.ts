@@ -7,11 +7,13 @@ export const CATEGORIES = ["financial_services", "energy", "technology", "educat
 export const FORMATS = ["open_arena", "oxford", "progressive"] as const;
 export const STATUSES = ["draft", "scheduled", "open", "closed"] as const;
 export const POSITIONS = ["for", "against", "undecided"] as const;
+export const DISPATCH_KINDS = ["argument", "rebuttal", "evidence"] as const;
 
 export type Category = (typeof CATEGORIES)[number];
 export type Format = (typeof FORMATS)[number];
 export type Status = (typeof STATUSES)[number];
 export type PositionChoice = (typeof POSITIONS)[number];
+export type DispatchKind = (typeof DISPATCH_KINDS)[number];
 
 export const CATEGORY_LABELS: Record<Category, string> = {
   financial_services: "Financial Services",
@@ -33,7 +35,14 @@ export const POSITION_LABELS: Record<PositionChoice, string> = {
   undecided: "Undecided",
 };
 
-export type CampaignRound = { position: number; title: string; starts_at: string; ends_at: string };
+export type CampaignRound = {
+  position: number;
+  title: string;
+  starts_at: string;
+  ends_at: string;
+  /** Kinds of Dispatch this round accepts. Missing means all three. */
+  allowed_kinds?: DispatchKind[];
+};
 
 export type CampaignTimes = { status: Status; starts_at: string; ends_at: string };
 
