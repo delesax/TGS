@@ -45,8 +45,8 @@ Use your browser's device mode at 375px, or open the Network URL that `next dev`
    - One Dispatch shows **Withdrawn by author.**
 2. **Threads.** The first thread has a long exchange: replies indent four levels, then continue with "Replying to @…". Use **Hide/Show N replies** to fold branches. At the bottom, **Show more Dispatches** loads the next 20 threads.
 3. **Sign in as `debater01@example.test`** and open the debate again.
-   - Round 2 accepts rebuttals and evidence only, so the box offers **Evidence**. Press **Post Dispatch** with nothing filled in: you get "Please check the highlighted answers" and "Say whether you used AI".
-   - Choose Evidence, write a note, and type `javascript:alert(1)` as the link: it is refused. Paste a real link with `?utm_source=x`, choose an AI-use answer, and post. The tracking code is gone from the link.
+   - Round 2 accepts rebuttals and evidence only, so the box is for **Evidence** (rebuttals go through **Reply**). Press **Post Dispatch** with nothing filled in: you get "Please check the highlighted answers" and "Say whether you used AI".
+   - Write a note and type `javascript:alert(1)` as the link: it is refused. Paste a real link with `?utm_source=x`, choose an AI-use answer, and post. The tracking code is gone from the link.
    - Press **Post Dispatch** again straight away: "You can post again in N seconds", counting down.
 4. **Reply, react, edit, withdraw.**
    - On someone else's Dispatch press **Reply**, write a rebuttal and post it; it appears nested.
