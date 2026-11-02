@@ -124,9 +124,22 @@ My run on a freshly reset database: lint and typecheck clean; unit **137** passe
 
 The reply and edit forms and the AI help now load only when opened, but the first-visit number did not move: what is left is React and Next.js's own code. A rewrite would be needed to go further; not started.
 
-## Hosted project: dry run (nothing applied)
+## Hosted project: dry run (not yet run; nothing applied)
 
-See the bottom of this file, added after the dry run.
+I could not run the dry run: it needs `DATABASE_URL` from `.env.local`, and loading that file was refused by this session's permissions. Nothing has been sent to the hosted project. Please run it yourself (it calls the CLI directly, so the connection string is not printed):
+
+```bash
+set -a && . ./.env.local && set +a && ./node_modules/.bin/supabase db push --dry-run --db-url "$DATABASE_URL"
+```
+
+Expected result: hosted is up to date to `20261103000300`, and exactly these two would be applied:
+
+- `20261104000100_ai_moderation.sql`
+- `20261104000200_account_deletion.sql`
+
+What to look for when reviewing the SQL: no table, column or row is dropped. Replaced in place: the `ai_decisions.subject_type` and `email_outbox.kind` CHECK constraints (widened), `email_recipients()` (one more column), the `dispatches.author_id` and `awards.profile_id` foreign keys (cascade → restrict), and the `profiles.id` → `auth.users` foreign key (removed; a trigger now anonymises instead of cascading). Two policies change with `ALTER POLICY`. The only DELETE statements remove a deleted account's own personal rows (passkeys, reactions, follows, email settings, queued emails, coach ratings, positions), plus a profile with nothing depending on it. Every new table has row-level security, and a test checks this.
+
+**After you approve the push**, the moderation sweeper on hosted needs `MODERATION_PROCESSOR_SECRET` in Vercel and two Vault secrets (`docs/LAUNCH_EMAIL_SETUP.md`, steps 15 and 18). Until then a Dispatch whose screening is interrupted stays "Checking…" for its author and hidden from others.
 
 ## Decisions for you
 
