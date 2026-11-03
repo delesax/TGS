@@ -124,15 +124,26 @@ My run on a freshly reset database: lint and typecheck clean; unit **137** passe
 
 The reply and edit forms and the AI help now load only when opened, but the first-visit number did not move: what is left is React and Next.js's own code. A rewrite would be needed to go further; not started.
 
-## Hosted project: dry run (not yet run; nothing applied)
+## Hosted project: dry run (nothing applied)
 
-I could not run the dry run: it needs `DATABASE_URL` from `.env.local`, and loading that file was refused by this session's permissions. Nothing has been sent to the hosted project. Please run it yourself (it calls the CLI directly, so the connection string is not printed):
+Run on 3 November with the CLI called directly, so the connection string is not printed:
 
 ```bash
 set -a && . ./.env.local && set +a && ./node_modules/.bin/supabase db push --dry-run --db-url "$DATABASE_URL"
 ```
 
-Expected result: hosted is up to date to `20261103000300`, and exactly these two would be applied:
+Output:
+
+```
+DRY RUN: migrations will *not* be pushed to the database.
+Connecting to remote database...
+Would push these migrations:
+ • 20261104000100_ai_moderation.sql
+ • 20261104000200_account_deletion.sql
+{"upToDate":false,"dryRun":true,"migrations":["20261104000100_ai_moderation.sql","20261104000200_account_deletion.sql"],"seeds":[],"roles":[],"message":"Finished supabase db push."}
+```
+
+So hosted is up to date to `20261103000300`, and exactly these two would be applied:
 
 - `20261104000100_ai_moderation.sql`
 - `20261104000200_account_deletion.sql`

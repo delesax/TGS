@@ -2,7 +2,7 @@
 
 ## Sprint 4: AI moderation, coach and admin (2 November 2026). Awaiting review
 
-Branch `sprint-4`, cut from `main` at `4a573ec` (Sprint 3 merged). **Nothing is applied to hosted**: the dry run is reported in DEMO.md. **No real AI call was made** by anything in this sprint: every test, the seed and the evaluations below ran on the built-in fake provider. The owner supplies `ANTHROPIC_API_KEY` later; until then hosted Dispatches follow the fallback rule below.
+Branch `sprint-4`, cut from `main` at `4a573ec` (Sprint 3 merged). **Nothing is applied to hosted**: the dry run (3 November) lists exactly the two new migrations; see DEMO.md. **No real AI call was made** by anything in this sprint: every test, the seed and the evaluations below ran on the built-in fake provider. The owner supplies `ANTHROPIC_API_KEY` later; until then hosted Dispatches follow the fallback rule below.
 
 ### Account deletion: the design (written before building it)
 - **Anonymise, never delete Dispatches.** The profile row becomes a *tombstone*: handle, display name, expertise, bio and mute details are cleared and `deleted_at` is set. It keeps its id, so Dispatches and awards still point at it and show as by "a deleted Strategist".
