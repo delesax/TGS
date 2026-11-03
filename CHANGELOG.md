@@ -2,7 +2,7 @@
 
 ## Sprint 4: AI moderation, coach and admin (2 November 2026). Awaiting review
 
-Branch `sprint-4`, cut from `main` at `4a573ec` (Sprint 3 merged). **Nothing is applied to hosted**: the dry run (3 November) lists exactly the two new migrations; see DEMO.md. **No real AI call was made** by anything in this sprint: every test, the seed and the evaluations below ran on the built-in fake provider. The owner supplies `ANTHROPIC_API_KEY` later; until then hosted Dispatches follow the fallback rule below.
+Branch `sprint-4`, cut from `main` at `4a573ec` (Sprint 3 merged). **Both migrations were applied to hosted on 3 November** at the owner's request, after a dry run that listed exactly those two (see DEMO.md). A second dry run confirms hosted is up to date. **No real AI call was made** by anything in this sprint: every test, the seed and the evaluations below ran on the built-in fake provider. The owner supplies `ANTHROPIC_API_KEY` later; until then hosted Dispatches follow the fallback rule below.
 
 ### Account deletion: the design (written before building it)
 - **Anonymise, never delete Dispatches.** The profile row becomes a *tombstone*: handle, display name, expertise, bio and mute details are cleared and `deleted_at` is set. It keeps its id, so Dispatches and awards still point at it and show as by "a deleted Strategist".
@@ -80,7 +80,7 @@ Thresholds also default to 0.70 (normal) and 0.40 (sensitive), and the AI input 
 - **Throttled performance** (Slow 4G, 4× CPU, 20-Strategist debate): first visit LCP 1.48 s, buttons work from **3.07 s** (Sprint 3: 3.08 s), 278 KB; returning Strategist LCP 0.96 s, interactive 1.03 s. Moving the reply/edit forms and AI help out of the first load did not move the number: what remains is React and Next.js's own runtime (about 150 KB compressed), which only a rewrite would change. Not started, as asked.
 
 ### Not done / known issues
-- **Nothing applied to hosted.** Pushing the two migrations, the Vault secrets for the moderation sweeper, and `MODERATION_PROCESSOR_SECRET` in Vercel wait for your OK.
+- **Migrations applied to hosted (3 November).** Still to do on hosted: `MODERATION_PROCESSOR_SECRET` in Vercel and the two moderation Vault secrets (`docs/LAUNCH_EMAIL_SETUP.md`, steps 15 and 18).
 - **Hosted has no AI until you add `ANTHROPIC_API_KEY`** (and leave `AI_PROVIDER` empty). Until then every Dispatch takes the fallback: visible and flagged in normal Campaigns, held in sensitive ones.
 - The real-model evaluations (`eval:moderation -- --real`, `eval:coach -- --real`) have not been run; the "100% held" and "coach rated 4/5" done-criteria need them.
 - A decided item stays in the queue with its confirmation until the page is reloaded (so the confirmation can be read).
