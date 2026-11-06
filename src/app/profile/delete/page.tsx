@@ -4,6 +4,7 @@ import { Download } from "lucide-react";
 import { DraftNotice, Page } from "@/components/page";
 import { Button } from "@/components/ui/button";
 import { requireStrategist } from "@/lib/auth";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { DeleteForm } from "./delete-form";
 
@@ -16,7 +17,8 @@ export default async function DeleteAccountPage() {
   const viewer = await requireStrategist("/profile/delete");
   const supabase = await createClient();
   const [{ data: settings }, { count }] = await Promise.all([
-    supabase.from("community_settings").select("account_deletion_enabled").single<{ account_deletion_enabled: boolean }>(),
+    // Read on the server: browsers cannot select this column.
+    createAdminClient().from("community_settings").select("account_deletion_enabled").single<{ account_deletion_enabled: boolean }>(),
     supabase.from("dispatches").select("id", { count: "exact", head: true }).eq("author_id", viewer.userId),
   ]);
   const enabled = Boolean(settings?.account_deletion_enabled);

@@ -25,7 +25,7 @@ export default async function AdminHome() {
     getModerationQueue(),
     getAiUsage(),
     getCoachUsefulness(),
-    supabase.from("community_settings").select("ai_enabled, ai_daily_cap_global, ai_model_screening, ai_model_nudge, ai_model_coach").single(),
+    supabase.rpc("admin_community_settings").single(),
   ]);
   const s = settings as { ai_enabled: boolean; ai_daily_cap_global: number; ai_model_screening: string | null; ai_model_nudge: string | null; ai_model_coach: string | null } | null;
   const today = usage.filter((u) => u.day === usage[0]?.day);

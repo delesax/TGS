@@ -1,4 +1,5 @@
 import "server-only";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { DEFAULT_LIMITS, type DispatchLimits, type DispatchRow } from "@/lib/dispatches";
 
@@ -131,7 +132,7 @@ export type AiHelp = { enabled: boolean; coachUsesPerDraft: number };
 
 /** Whether the tone check and the coach are offered (the AI kill switch turns both off). */
 export async function getAiHelp(): Promise<AiHelp> {
-  const supabase = await createClient();
-  const { data } = await supabase.from("community_settings").select("ai_enabled, coach_uses_per_draft").maybeSingle<{ ai_enabled: boolean; coach_uses_per_draft: number }>();
+  // Read on the server with the service role: browsers cannot select these columns.
+  const { data } = await createAdminClient().from("community_settings").select("ai_enabled, coach_uses_per_draft").maybeSingle<{ ai_enabled: boolean; coach_uses_per_draft: number }>();
   return { enabled: Boolean(data?.ai_enabled), coachUsesPerDraft: data?.coach_uses_per_draft ?? 0 };
 }

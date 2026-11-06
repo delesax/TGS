@@ -2,23 +2,9 @@ import "server-only";
 import { cache } from "react";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { resolveViewer, type Profile, type Viewer } from "@/lib/viewer";
 
-export type Profile = {
-  id: string;
-  handle: string | null;
-  display_name: string | null;
-  expertise_tag: string | null;
-  bio: string | null;
-  created_at: string;
-};
-
-export type Viewer = {
-  userId: string;
-  email: string;
-  /** From the JWT app_metadata claim, which only the server can set. Never a client flag. */
-  isAdmin: boolean;
-  profile: Profile | null;
-};
+export type { Profile, Viewer };
 
 /** The signed-in Strategist for this request, or null. Cached per request. */
 export const getViewer = cache(async (): Promise<Viewer | null> => {
@@ -30,11 +16,12 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, handle, display_name, expertise_tag, bio, created_at")
+    .select("id, handle, display_name, expertise_tag, bio, created_at, deleted_at")
     .eq("id", user.id)
     .maybeSingle<Profile>();
 
-  return { userId: user.id, email: user.email ?? "", isAdmin: user.app_metadata?.role === "admin", profile: profile ?? null };
+  // A deleted account (tombstone) counts as signed out.
+  return resolveViewer(user, profile ?? null);
 });
 
 /**

@@ -26,6 +26,11 @@ export async function chooseHandle(_prev: FormState, formData: FormData): Promis
   const handle = parsed.data;
   const admin = createAdminClient();
 
+  // A deleted account (tombstone) can never get a handle. getViewer() already treats
+  // it as signed out; this and the database trigger are the backstops.
+  const { data: own } = await admin.from("profiles").select("deleted_at").eq("id", viewer.userId).maybeSingle<{ deleted_at: string | null }>();
+  if (own?.deleted_at) return { formError: "This account has been deleted.", formHint: "Create a new account with a new invite if you want to take part again." };
+
   // Case-insensitive match; "_" is a wildcard in ILIKE, so escape it.
   const { data: taken } = await admin
     .from("profiles")
@@ -70,7 +75,8 @@ export async function chooseHandle(_prev: FormState, formData: FormData): Promis
     .from("profiles")
     .update({ handle, handle_set_at: new Date().toISOString() })
     .eq("id", viewer.userId)
-    .is("handle", null);
+    .is("handle", null)
+    .is("deleted_at", null);
 
   if (error) {
     // 23505: unique violation, someone took it a moment ago.

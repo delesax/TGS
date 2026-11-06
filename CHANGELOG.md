@@ -4,6 +4,16 @@
 
 Branch `sprint-4`, cut from `main` at `4a573ec` (Sprint 3 merged). **Both migrations were applied to hosted on 3 November** at the owner's request, after a dry run that listed exactly those two (see DEMO.md). A second dry run confirms hosted is up to date. **No real AI call was made** by anything in this sprint: every test, the seed and the evaluations below ran on the built-in fake provider. The owner supplies `ANTHROPIC_API_KEY` later; until then hosted Dispatches follow the fallback rule below.
 
+### Review fixes (migration `20261104000300`, added after the first review)
+The two earlier Sprint 4 migrations were already applied to hosted, so these are a third, new migration.
+- **Settings columns hidden from browsers.** The AI and account-deletion columns of `community_settings` can no longer be read by signed-out visitors or signed-in Strategists (including admins' own browser sessions). Every earlier column stays readable. Admins read the whole row through `admin_community_settings()` (role checked inside); the server uses the service role. The Settings page, the console home, the delete-account page and the AI-help check were changed to read this way.
+- **Tombstones can never get a handle again.** A trigger refuses a handle on any profile with `deleted_at` set, even for the service role. `getViewer()` treats such an account as signed out, and `chooseHandle` refuses it (and its update also requires `deleted_at is null`).
+- **`anonymise_profile()` also deletes** the account's coach and nudge records.
+- **Nudges and coaching stop at 80% of the daily AI cap**, so they cannot use up the calls screening needs (whole-number arithmetic, no rounding). Screening keeps the full cap.
+- **`judging_weights`:** everything is public except `created_by`.
+- **`queue_moderation_email()` comment corrected:** its dedupe key ends in a timestamp, so it does not dedupe; `apply_dispatch_screening()` is what stops repeated screening results queuing twice. (Comment only; behaviour unchanged.)
+- Tests: 33 new RLS tests and 4 new unit tests. Unit 141, RLS 155, Playwright 15 all pass on a freshly reset database.
+
 ### Account deletion: the design (written before building it)
 - **Anonymise, never delete Dispatches.** The profile row becomes a *tombstone*: handle, display name, expertise, bio and mute details are cleared and `deleted_at` is set. It keeps its id, so Dispatches and awards still point at it and show as by "a deleted Strategist".
 - **Detached from `auth.users`.** `profiles` used to cascade from `auth.users`, so deleting a user in the Supabase dashboard would have deleted their Dispatches (the Sprint 3 risk). The cascade is replaced by a trigger that runs *before* any auth user is deleted, however it happens: it anonymises the profile, and removes the row only when no Dispatch or award depends on it.

@@ -14,7 +14,8 @@ export default async function SettingsPage() {
   await requireAdmin("/admin/settings");
   const supabase = await createClient();
   const [{ data: settings, error }, { data: reactions }] = await Promise.all([
-    supabase.from("community_settings").select("*").single(),
+    // The AI columns are not readable by browser roles; admins read the row through this function.
+    supabase.rpc("admin_community_settings").single(),
     supabase.from("reaction_types").select("key, label, description, sort, active").order("sort"),
   ]);
   if (error || !settings) throw new Error("Could not load settings");
