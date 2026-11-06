@@ -5,7 +5,7 @@ import { Page } from "@/components/page";
 import { Button } from "@/components/ui/button";
 import { requireAdmin } from "@/lib/auth";
 import { getCampaign, getCampaignAdminFields } from "@/lib/campaign-data";
-import { toUkInputValue } from "@/lib/campaigns";
+import { DISPATCH_KINDS, toUkInputValue } from "@/lib/campaigns";
 import { CampaignForm } from "../campaign-form";
 
 export const metadata: Metadata = { title: "Edit Campaign" };
@@ -59,7 +59,12 @@ export default async function EditCampaignPage({ params, searchParams }: PagePro
           contentNote: c.content_note ?? "",
           opinionNotAdvice: c.opinion_not_advice,
           notes: adminFields?.notes ?? "",
-          rounds: c.rounds.map((r) => ({ title: r.title, startsAt: toUkInputValue(r.starts_at), endsAt: toUkInputValue(r.ends_at) })),
+          rounds: c.rounds.map((r) => ({
+            title: r.title,
+            startsAt: toUkInputValue(r.starts_at),
+            endsAt: toUkInputValue(r.ends_at),
+            allowedKinds: r.allowed_kinds ?? [...DISPATCH_KINDS],
+          })),
         }}
       />
     </Page>

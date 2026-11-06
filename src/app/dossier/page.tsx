@@ -11,8 +11,8 @@ import { createClient } from "@/lib/supabase/server";
 export const metadata: Metadata = { title: "Your Dossier" };
 export const dynamic = "force-dynamic";
 
-/** The Dossier lists up to this many of your Dispatches, newest first. */
-const DOSSIER_LIMIT = 200;
+/** Dispatches per Dossier page, newest first. */
+const PER_PAGE = 50;
 
 type FollowedCampaign = { campaign: { slug: string; title: string } | null };
 type FollowedStrategist = { followed: { id: string; handle: string | null } | null };
@@ -21,12 +21,19 @@ const memberSince = new Intl.DateTimeFormat("en-GB", { month: "long", year: "num
 
 export default async function DossierPage({ searchParams }: PageProps<"/dossier">) {
   const viewer = await requireStrategist("/dossier");
-  const { welcome } = await searchParams;
+  const { welcome, page: pageParam } = await searchParams;
+  const page = Math.max(1, Math.min(10_000, Number(pageParam) || 1));
   const p = viewer.profile;
 
   const supabase = await createClient();
-  const [{ data: dispatchRows }, { data: campaignFollows }, { data: strategistFollows }] = await Promise.all([
-    supabase.from("dispatches").select(SUMMARY_COLUMNS).eq("author_id", viewer.userId).order("created_at", { ascending: false }).limit(DOSSIER_LIMIT),
+  const [{ data: dispatchRows, count: dispatchTotal }, { data: campaignFollows }, { data: strategistFollows }] = await Promise.all([
+    supabase
+      .from("dispatches")
+      .select(SUMMARY_COLUMNS, { count: "exact" })
+      .eq("author_id", viewer.userId)
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .range((page - 1) * PER_PAGE, page * PER_PAGE - 1),
     supabase.from("campaign_follows").select("campaign:campaigns(slug, title)").eq("user_id", viewer.userId).order("created_at", { ascending: false }),
     supabase
       .from("strategist_follows")
@@ -94,7 +101,7 @@ export default async function DossierPage({ searchParams }: PageProps<"/dossier"
         <h2 id="dossier-dispatches" className="flex items-center gap-2 text-2xl font-semibold">
           <FileText aria-hidden className="size-6 text-primary" /> Dispatches
         </h2>
-        {groups.size ? (
+        {groups.size || page > 1 ? (
           <div className="flex flex-col gap-6">
             {[...groups.values()].map((g) => (
               <section key={g.slug} aria-label={`Your Dispatches in ${g.title}`} className="flex flex-col gap-3">
@@ -113,7 +120,25 @@ export default async function DossierPage({ searchParams }: PageProps<"/dossier"
                 </ul>
               </section>
             ))}
-            {dispatches.length === DOSSIER_LIMIT ? <p className="text-base text-muted-foreground">Showing your {DOSSIER_LIMIT} most recent Dispatches.</p> : null}
+            {(dispatchTotal ?? 0) > PER_PAGE ? (
+              <nav aria-label="Dispatch pages" className="flex flex-col gap-2">
+                <p className="text-base text-muted-foreground">
+                  Showing {(page - 1) * PER_PAGE + 1} to {(page - 1) * PER_PAGE + dispatches.length} of {dispatchTotal} Dispatches, newest first.
+                </p>
+                <div className="flex gap-4">
+                  {page > 1 ? (
+                    <Link href={`/dossier?page=${page - 1}#dossier-dispatches`} className="inline-flex min-h-12 items-center text-lg font-semibold text-primary underline">
+                      Newer Dispatches
+                    </Link>
+                  ) : null}
+                  {page * PER_PAGE < (dispatchTotal ?? 0) ? (
+                    <Link href={`/dossier?page=${page + 1}#dossier-dispatches`} className="inline-flex min-h-12 items-center text-lg font-semibold text-primary underline">
+                      Older Dispatches
+                    </Link>
+                  ) : null}
+                </div>
+              </nav>
+            ) : null}
           </div>
         ) : (
           <EmptyState

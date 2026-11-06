@@ -36,6 +36,11 @@ export async function SiteHeader() {
             </li>
             {viewer ? (
               <>
+                {viewer.isAdmin ? (
+                  <li>
+                    <NavLink href="/admin">Admin</NavLink>
+                  </li>
+                ) : null}
                 <li>
                   <NavLink href="/profile">Account</NavLink>
                 </li>

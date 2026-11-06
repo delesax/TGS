@@ -11,6 +11,7 @@ const WHAT: Record<UnsubscribeKind, string> = {
   replies: "emails when someone replies to your Dispatches",
   campaign_updates: "emails about Campaigns you follow",
   closing_soon: "reminders before a Campaign you are in closes",
+  moderation: "emails about moderation decisions on your Dispatches",
   all: "all emails from The Grand Strategist",
 };
 

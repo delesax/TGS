@@ -53,7 +53,7 @@ export default async function CampaignsPage() {
             <Link href="/admin/campaigns/new">Create a Campaign</Link>
           </Button>
           <Button asChild variant="secondary">
-            <Link href="/admin/reports">Reports</Link>
+            <Link href="/admin/moderation">Moderation</Link>
           </Button>
           <Button asChild variant="outline">
             <Link href="/admin/campaigns">Manage Campaigns{drafts ? ` (${drafts} draft${drafts === 1 ? "" : "s"})` : ""}</Link>

@@ -2,7 +2,7 @@ import "server-only";
 import { publicEnv } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { MAX_ATTEMPTS, idempotencyKey, planDelivery, retryDelayMinutes, type OutboxRow, type PlannedMessage, type RecipientInfo } from "./plan";
-import { campaignEmail, replyDigest, type CampaignPayload, type ReplyItem } from "./templates";
+import { campaignEmail, moderationEmail, replyDigest, type CampaignPayload, type ModerationPayload, type ReplyItem } from "./templates";
 import { resolveTransport, type Transport } from "./transport";
 
 // The one server-side email module. Reads the outbox, decides what to send,
@@ -13,6 +13,7 @@ export type ProcessSummary = { claimed: number; sent: number; skipped: number; d
 function content(site: string, recipient: RecipientInfo, message: PlannedMessage) {
   const who = { handle: recipient.handle, unsubscribeToken: recipient.unsubscribe_token };
   if (message.kind === "reply") return replyDigest(site, who, message.rows.map((r) => r.payload as unknown as ReplyItem));
+  if (message.kind === "moderation_outcome") return moderationEmail(site, who, message.rows[0].payload as unknown as ModerationPayload);
   return campaignEmail(site, who, message.kind, message.rows[0].payload as unknown as CampaignPayload);
 }
 

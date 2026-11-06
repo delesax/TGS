@@ -1,7 +1,7 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export const UNSUBSCRIBE_KINDS = ["replies", "campaign_updates", "closing_soon", "all"] as const;
+export const UNSUBSCRIBE_KINDS = ["replies", "campaign_updates", "closing_soon", "moderation", "all"] as const;
 export type UnsubscribeKind = (typeof UNSUBSCRIBE_KINDS)[number];
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

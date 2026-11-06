@@ -38,6 +38,11 @@ export default defineConfig({
       EMAIL_TRANSPORT: "mailpit",
       MAILPIT_URL: env.mailpitUrl,
       EMAIL_PROCESSOR_SECRET: env.emailSecret,
+      MODERATION_PROCESSOR_SECRET: env.moderationSecret,
+      // The keyword-driven stand-in. The real AI API is never called by tests:
+      // the key is blanked too, in case .env.local ever holds one.
+      AI_PROVIDER: "fake",
+      ANTHROPIC_API_KEY: "",
     },
   },
 });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { MAX_ATTEMPTS, idempotencyKey, planDelivery, retryDelayMinutes, type OutboxRow, type RecipientInfo } from "./plan";
-import { campaignEmail, replyDigest } from "./templates";
+import { campaignEmail, moderationEmail, replyDigest } from "./templates";
 import { resolveTransport } from "./transport";
 
 const recipient: RecipientInfo = {
@@ -11,6 +11,7 @@ const recipient: RecipientInfo = {
   replies: true,
   campaign_updates: true,
   closing_soon: true,
+  moderation: true,
   unsubscribed_all: false,
   unsubscribe_token: "11111111-2222-3333-4444-555555555555",
   sent_last_24h: 0,
@@ -102,5 +103,22 @@ describe("resolveTransport", () => {
     expect(resolveTransport({ RESEND_API_KEY: "re_test", EMAIL_FROM: "TGS <n@example.com>" }).kind).toBe("resend");
     expect(resolveTransport({ MAILPIT_URL: "http://127.0.0.1:54324" }).kind).toBe("mailpit");
     expect(resolveTransport({ EMAIL_TRANSPORT: "mailpit", MAILPIT_URL: "http://x", RESEND_API_KEY: "re" }).kind).toBe("mailpit");
+  });
+});
+
+describe("moderation emails", () => {
+  it("say the outcome in plain words, never a private reason, with the moderation unsubscribe", () => {
+    const who = { handle: "Ada", unsubscribeToken: "11111111-2222-3333-4444-555555555555" };
+    const base = { dispatch_id: "d1", campaign_slug: "c", campaign_title: "Should <b>x</b> happen?" };
+    const held = moderationEmail("https://tgs.test", who, { ...base, outcome: "held" });
+    expect(held.subject).toBe("Your Dispatch is waiting for a check");
+    expect(held.text).toMatch(/appeal once/);
+    expect(held.preference).toBe("moderation");
+    expect(held.unsubscribeUrl).toContain("kind=moderation");
+    expect(held.html).not.toContain("<b>x</b>");
+    expect(moderationEmail("https://tgs.test", who, { ...base, outcome: "released", appeal: true }).subject).toBe("Your appeal was upheld");
+    const removed = moderationEmail("https://tgs.test", who, { ...base, outcome: "removed", appeal: true });
+    expect(removed.subject).toBe("Your appeal was not upheld");
+    expect(removed.text).toMatch(/not deleted/);
   });
 });

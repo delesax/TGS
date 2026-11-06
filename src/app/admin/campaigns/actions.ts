@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { FormState } from "@/components/form";
 import { getViewer } from "@/lib/auth";
-import { MAX_ROUND_ROWS } from "@/lib/campaigns";
+import { DISPATCH_KINDS, MAX_ROUND_ROWS } from "@/lib/campaigns";
 import { campaignInputSchema } from "@/lib/campaign-schema";
 import { createClient } from "@/lib/supabase/server";
 
@@ -14,7 +14,12 @@ const text = (formData: FormData, name: string) => String(formData.get(name) ?? 
 function readForm(formData: FormData) {
   const rounds = [];
   for (let n = 1; n <= MAX_ROUND_ROWS; n++) {
-    const row = { title: text(formData, `round${n}-title`), startsAt: text(formData, `round${n}-startsAt`), endsAt: text(formData, `round${n}-endsAt`) };
+    const row = {
+      title: text(formData, `round${n}-title`),
+      startsAt: text(formData, `round${n}-startsAt`),
+      endsAt: text(formData, `round${n}-endsAt`),
+      allowedKinds: DISPATCH_KINDS.filter((k) => formData.get(`round${n}-kind-${k}`) === "on"),
+    };
     if (row.title.trim() || row.startsAt || row.endsAt) rounds.push({ n, ...row });
   }
   return {
@@ -33,7 +38,7 @@ function readForm(formData: FormData) {
       contentNote: text(formData, "contentNote"),
       opinionNotAdvice: formData.get("opinionNotAdvice") === "on",
       notes: text(formData, "notes"),
-      rounds: rounds.map(({ title, startsAt, endsAt }) => ({ title, startsAt, endsAt })),
+      rounds: rounds.map(({ title, startsAt, endsAt, allowedKinds }) => ({ title, startsAt, endsAt, allowedKinds })),
     },
   };
 }
@@ -75,7 +80,7 @@ export async function saveCampaign(_prev: FormState, formData: FormData): Promis
       opinion_not_advice: v.opinionNotAdvice,
       notes: v.notes || null,
     },
-    p_rounds: v.rounds.map((r) => ({ title: r.title, starts_at: r.startsAt, ends_at: r.endsAt })),
+    p_rounds: v.rounds.map((r) => ({ title: r.title, starts_at: r.startsAt, ends_at: r.endsAt, allowed_kinds: r.allowedKinds })),
   });
 
   if (error) {

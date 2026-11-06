@@ -1,6 +1,6 @@
-# Sprint 3 demo: Dispatches and discussion
+# Sprint 4 demo: AI moderation, coach and admin
 
-Everything below runs on **local** Supabase (Docker Desktop must be running). Nothing here touches the hosted project. **Closed test only:** there is no automatic screening until Sprint 4.
+Everything below runs on **local** Supabase (Docker Desktop must be running) with the **fake AI provider**: a built-in, keyword-driven stand-in. Nothing here calls the real AI or touches the hosted project.
 
 ## Setup (once per session)
 
@@ -12,19 +12,25 @@ npx supabase start
 npx supabase db reset
 ```
 
-`db reset` rebuilds the local database from the migrations, adds the three `[Sample]` Campaigns and the invite code `LOCAL-DEV-INVITE`, and stores the local email processor's address and dummy secret in Vault.
+`db reset` rebuilds the local database from the migrations and adds the `[Sample]` Campaigns, the invite code `LOCAL-DEV-INVITE`, and dummy local Vault secrets for the email processor and the moderation sweeper.
 
 ```bash
 npm run test:env
 ```
 
-Load the 20-Strategist debate (local only, and safe to run twice):
+This writes `.env.test.local` for local Supabase, including `AI_PROVIDER=fake`.
+
+Load the gold set as real Dispatches (40, screened by the fake provider) and the Sprint 3 debate. Both are local only and safe to run twice:
+
+```bash
+set -a && . ./.env.test.local && set +a && npm run seed:abuse
+```
 
 ```bash
 set -a && . ./.env.test.local && set +a && npm run seed:debate
 ```
 
-Start the app. If a `next dev` is already running, stop it first (Ctrl+C), because it needs the new settings:
+Start the app (stop any running `next dev` first):
 
 ```bash
 set -a && . ./.env.test.local && set +a && npx next dev --port 3100
@@ -32,68 +38,70 @@ set -a && . ./.env.test.local && set +a && npx next dev --port 3100
 
 Open http://localhost:3100. Emails go to the local inbox at http://127.0.0.1:54324.
 
-**Test Strategists:** `debater01@example.test` to `debater20@example.test` (handles `Test_Amara` to `Test_Tamsin`), password `debate-test-password`. These are local test data only.
-
-## Click-through on your phone-sized screen
-
-Use your browser's device mode at 375px, or open the Network URL that `next dev` prints on your phone if it is on the same Wi-Fi.
-
-1. **Read the debate signed out.** Go to Campaigns, then **[Test data] Should high streets be car-free on Saturdays?**
-   - Under **Dispatches** there is "Sign in to post" and the threads, newest first.
-   - Each Dispatch shows the author, its position as a word and icon ("For" with a plus, "Against" with a minus, "Undecided" with a question mark) and a solid, dashed or dotted left edge.
-   - It also shows the kind (Argument, Rebuttal, Evidence), round, time, sources with the website name, and the AI-use label ("Written without AI", "Written with AI help" or "Mostly written by AI").
-   - One Dispatch shows **Withdrawn by author.**
-   - Tap an author's handle: their Strategist page shows only the handle, "Strategist since …" and their public Dispatches, with **Sign in to follow**. No display name, expertise or bio while signed out.
-   - Search for `blue badge` from the header: Campaigns and Dispatches only. The **Strategists** filter says **Sign in to search for Strategists**.
-2. **Threads.** The first thread has a long exchange: replies indent four levels, then continue with "Replying to @…". Use **Hide/Show N replies** to fold branches. At the bottom, **Show more Dispatches** loads the next 20 threads.
-3. **Sign in as `debater01@example.test`** and open the debate again.
-   - Round 2 accepts rebuttals and evidence only, so the box is for **Evidence** (rebuttals go through **Reply**). Press **Post Dispatch** with nothing filled in: you get "Please check the highlighted answers" and "Say whether you used AI".
-   - Write a note and type `javascript:alert(1)` as the link: it is refused. Paste a real link with `?utm_source=x`, choose an AI-use answer, and post. The tracking code is gone from the link.
-   - Press **Post Dispatch** again straight away: "You can post again in N seconds", counting down.
-4. **Reply, react, edit, withdraw.**
-   - On someone else's Dispatch press **Reply**, write a rebuttal and post it; it appears nested.
-   - Press **Persuasive**: it fills in and the count goes up. Press again to take it back.
-   - On your own new Dispatch, **Edit (N min left)** works for 5 minutes and then the Dispatch shows "edited".
-   - **Withdraw** asks you to confirm and then shows "Withdrawn by author." You cannot react to your own Dispatches.
-5. **Report.** On another Strategist's Dispatch press **Report**, choose a reason and send it. The form says plainly that there is no automatic screening yet.
-6. **New Dispatches without reloading.** Keep the debate open in one window. In a private window, sign in as `debater02@example.test` and post a rebuttal. Switch back to the first window: within 30 seconds, or straight away when the window regains focus, a **"1 new Dispatch. Show"** button appears.
-7. **Follow.** Tap an author's handle to open their Strategist page. Signed in, it also shows their display name, expertise tag and bio if they set them. Press **Follow**. Open **Dossier**: your Dispatches are grouped by Campaign with their AI-use labels, the withdrawn one is marked, and **Following** lists the Campaign (followed automatically when you posted) and the Strategist.
-8. **Search.** Use the header search box with `blue badge`. Results come from Campaigns, Dispatches and handles, with the matches highlighted. Try the **Dispatches** and **Strategists** filters, then search for `Test_Am` to find a handle (people search works only when signed in).
-9. **Email.** Open http://127.0.0.1:54324: the test Strategists received digests such as "3 replies to your Dispatches".
-   - Your own reply from step 4 arrives about 10 minutes later. Replies are gathered into one email; the wait is set in `community_settings.reply_digest_minutes`.
-   - Open an email and use **Stop these emails**: a page asks you to confirm with one button.
-   - **Account → Email settings** shows the three kinds of email, all on by default, and **Stop all emails**.
-10. **Your data.** **Account → Download my data** saves a JSON file with your profile, Dispatches and their history, positions, reactions, follows, reports and email settings. **Deleting your account** explains that it is not switched on yet.
-11. **Admin.** Make yourself an admin (below), sign out and back in, then go to **Campaigns → Reports**.
-    - The report from step 5 is there. **Hide this Dispatch** with a reason: the public now sees "Hidden by a moderator."
-    - **Hidden Dispatches → Restore it** brings the text back. Each step is in the audit log (Supabase Studio at http://127.0.0.1:54323 → `audit_log`).
-12. **Sensitive Campaign.** As an admin, create a Campaign marked sensitive with a content note and open it. The Dispatches and the compose box stay folded behind the note until you press **I have read the note. Show the Dispatches**. A financial or medical Campaign shows "Opinion, not advice" on the box and on every Dispatch.
-13. **Offline and install.** The service worker runs only in a production build, so try this with `npm run build && npx next start --port 3100` (with the same `set -a …` prefix). Open any page, then turn Wi-Fi off and open another: **You are offline** appears, with "Try again". In Chrome, the footer shows a small **Install the app** button. The icons are placeholders.
-
-To make yourself an admin locally (sign out and back in afterwards):
+Make yourself an admin (then sign out and back in):
 
 ```bash
 set -a && . ./.env.test.local && set +a && npm run admin:set -- --email you@example.com
 ```
 
-## Throttled load test
+**Test Strategists** (local test data only): `debater01@example.test` … `debater20@example.test`, password `debate-test-password`; and the gold-set authors `abuse01@example.test` … `abuse05@example.test`, password `abuse-seed-password`.
+
+## Click-through at 375px
+
+Use your browser's device mode at 375px wide.
+
+1. **Post an abusive Dispatch and watch it held.** Sign in as `debater01@example.test`, open **[Test data] Should high streets be car-free on Saturdays?**, and post an Evidence or Argument Dispatch (whichever the round allows) containing `You're an idiot and nobody likes you.`
+   - The message says it is saved but **a person will check it before others can see it**.
+   - Your copy shows **Held.** "A person will check this before others can see it. Only you can see it."
+   - In a private window (signed out), the Dispatch is not there.
+   - Your Dossier marks it **Held**.
+2. **Appeal it.** On your held Dispatch press **Appeal**, give a reason, **Send appeal**. Press **Close**: the card now says you appealed. There is no second Appeal button: one appeal per Dispatch.
+3. **Override it as admin.** Sign in as your admin account. The header shows **Admin**.
+   - **Admin console** shows the queue count, the AI spend log and coach usefulness.
+   - **Moderation**: your Dispatch is near the top, marked **Appeal** and **Held**, with the AI's category (Harassment), confidence, reason, model and prompt version, and the appeal reason. The 15 gold-set abusive Dispatches are there too, threats and doxxing first ("Held, high priority").
+   - Choose **Release**, press **Save decision** without a reason: it asks for one. Give a reason and save. The private window now shows the Dispatch.
+   - Try **Remove** on a gold-set item: others now see "Removed by a moderator."; the original is kept, not deleted.
+   - If you are the admin who kept something held and then decide its appeal, a red warning says so (one admin in the pilot) and the audit log notes it.
+4. **Nudge and coach.** As `debater02@example.test`, start writing `@Test_Amara is clearly clueless.` and press **Check my tone**: a private note says it reads as a personal attack. Replace the text with a fair argument and press **Get feedback (3 left)**: clarity, evidence, the strongest opposing point and tone, plus questions. It never rewrites your text. Press **Yes** under "Was this useful?" (and add a comment if you like). The console home shows the usefulness rate.
+5. **Mute a user.** As admin, **Users**, find `Test_Bilal` (that is `debater02@example.test`), open **Mute posting**, give a reason and save. Sign in as `debater02@example.test` and open the debate: "Posting is paused for your account" with your reason, and no compose box. Unmute from the same place.
+6. **Settings.** As admin, **Settings**: untick **AI features on** and save. Post as any Strategist: the Dispatch appears at once (normal Campaign) and shows up in **Moderation** as "Unscreened: needs a human look". Post in **[Test data] Moderation check: sensitive topic**: it is held instead. Tick **AI features on** again. Each change is in the audit log with before and after values.
+7. **Judging weights.** **Judging weights** shows version 1 (40/25/25/10). Change them so they do not add up to 100: the total turns red and saving is refused. Save a valid set: version 2 applies only to Campaigns not yet open; opened Campaigns stay locked to their version.
+8. **Audit log.** **Audit log**: filter by action `moderation.` to see every release, removal and dismissal with the reason, or by your handle. **Download as CSV** saves the filtered log.
+9. **Account deletion (off by default).** As any Strategist, **Account → Delete my account**: it says deletion is not switched on yet. As admin, **Settings → Accounts**, tick **Let Strategists delete their own account**, save. Back as the Strategist: a DRAFT page offers **Download my data**, explains what is removed and kept, and asks for your handle and password. After deleting, your Dispatches show as by "A deleted Strategist". Untick the setting again afterwards.
+10. **Paging.** Your Dossier shows 50 Dispatches a page with **Older Dispatches** and **Newer Dispatches**. **Download my data** still gives one JSON file, now streamed.
+
+Emails: http://127.0.0.1:54324 shows "Your Dispatch is waiting for a check" and "Your appeal was upheld" for the author (the processor runs once a minute while `next dev` is up on port 3100). **Account → Email settings** has the new "moderation decisions" switch.
+
+## Evaluations
 
 ```bash
-npm run test:env
+npm run eval:moderation
 ```
 
 ```bash
-npx playwright test tests/e2e/performance.spec.ts
+npm run eval:coach
 ```
 
-It loads the debate on Chrome's "Slow 4G" profile with a 4x CPU slowdown and writes the numbers to `test-results/performance.json`. My run:
+Both use the fake provider and write reports to `evals/out/`. My run of `eval:moderation` (fake provider):
 
-| | Debate on screen | Buttons work |
+| | Result | Target |
 | --- | --- | --- |
-| First visit, empty cache | 1.48 s | 3.08 s |
-| Signed-in Strategist coming back | 1.06 s | 1.09 s |
+| Clearly abusive held | **100%** (15 of 15) | 100% |
+| Benign held by mistake | **0%** (0 of 15) | 10% or less |
+| Borderline | 0 held, 10 visible | either is fine |
+| Prompt-injection attempts | all 4 handled as labelled | |
 
-If port 3100 is busy with your `next dev`, add `E2E_SITE_URL=http://localhost:3200` before `npx playwright test`. Restart `next dev` afterwards, because the test's production build confuses a running dev server.
+**These are not Haiku's numbers.** The fake provider is a keyword list, so they show the pipeline works end to end, not how good the real model is. With your key in `.env.local`, run the real evaluations yourself (I will not):
+
+```bash
+npm run eval:moderation -- --real
+```
+
+```bash
+npm run eval:coach -- --real
+```
+
+The real moderation run checks its worst-case cost first and refuses to start above £5 (it should cost a few pence). Then rate each row of `evals/out/coach-real-*.csv` from 1 to 5; the sprint is done when the average is 4 or better.
 
 ## Running all the tests
 
@@ -105,89 +113,57 @@ npm run test:env
 npm test
 ```
 
-`npm test` runs the unit, RLS and Playwright tests against local Supabase only.
+My run on a freshly reset database: lint and typecheck clean; unit **137** passed; RLS **122** passed; Playwright **15** passed (all at 375px, fake provider).
+
+## Throttled load (carry-over)
+
+| | Debate on screen | Buttons work | Downloaded |
+| --- | --- | --- | --- |
+| First visit, empty cache | 1.48 s | 3.07 s (Sprint 3: 3.08 s) | 278 KB |
+| Signed-in Strategist coming back | 0.96 s | 1.03 s | 35 KB |
+
+The reply and edit forms and the AI help now load only when opened, but the first-visit number did not move: what is left is React and Next.js's own code. A rewrite would be needed to go further; not started.
 
 ## Hosted project: dry run (nothing applied)
 
-The command I ran, which calls the CLI directly and redacts the connection string:
+Run on 3 November with the CLI called directly, so the connection string is not printed:
 
 ```bash
 set -a && . ./.env.local && set +a && ./node_modules/.bin/supabase db push --dry-run --db-url "$DATABASE_URL"
 ```
 
-Result: the hosted project is up to date to Sprint 2, and these would be applied:
+Output:
 
-- `20261103000100_invite_consumed_on_confirmation.sql`
-- `20261103000110_campaign_private_columns.sql`
-- `20261103000200_dispatches_discussion.sql`
-- `20261103000300_email_notifications.sql`
-
-There is no DROP or TRUNCATE in them. The only DELETE statements remove a Strategist's own reaction or follow when they take it back, plus the Sprint 2 step in `save_campaign()` that removes rounds an admin deleted. Every new table has row-level security, and a test checks this.
-
-**After you approve the push**, email needs these owner steps on hosted:
-
-1. In Resend, verify the sending domain. Then set `RESEND_API_KEY`, `EMAIL_FROM` (for example `The Grand Strategist <notifications@your-domain>`) and `EMAIL_PROCESSOR_SECRET` (any long random string) in Vercel → Project → Settings → Environment Variables. Do not paste them into chat.
-2. In Supabase → SQL Editor, store the processor's address and the same secret in Vault, replacing both placeholders:
-
-```sql
-select vault.create_secret('https://YOUR-VERCEL-URL/api/email/process', 'email_processor_url');
+```
+DRY RUN: migrations will *not* be pushed to the database.
+Connecting to remote database...
+Would push these migrations:
+ • 20261104000100_ai_moderation.sql
+ • 20261104000200_account_deletion.sql
+{"upToDate":false,"dryRun":true,"migrations":["20261104000100_ai_moderation.sql","20261104000200_account_deletion.sql"],"seeds":[],"roles":[],"message":"Finished supabase db push."}
 ```
 
-```sql
-select vault.create_secret('THE-SAME-SECRET-AS-VERCEL', 'email_processor_secret');
-```
+So hosted is up to date to `20261103000300`, and exactly these two would be applied:
 
-Until both are done, nothing is sent and emails wait safely in `email_outbox`.
+- `20261104000100_ai_moderation.sql`
+- `20261104000200_account_deletion.sql`
+
+What to look for when reviewing the SQL: no table, column or row is dropped. Replaced in place: the `ai_decisions.subject_type` and `email_outbox.kind` CHECK constraints (widened), `email_recipients()` (one more column), the `dispatches.author_id` and `awards.profile_id` foreign keys (cascade → restrict), and the `profiles.id` → `auth.users` foreign key (removed; a trigger now anonymises instead of cascading). Two policies change with `ALTER POLICY`. The only DELETE statements remove a deleted account's own personal rows (passkeys, reactions, follows, email settings, queued emails, coach ratings, positions), plus a profile with nothing depending on it. Every new table has row-level security, and a test checks this.
+
+**After you approve the push**, the moderation sweeper on hosted needs `MODERATION_PROCESSOR_SECRET` in Vercel and two Vault secrets (`docs/LAUNCH_EMAIL_SETUP.md`, steps 15 and 18). Until then a Dispatch whose screening is interrupted stays "Checking…" for its author and hidden from others.
 
 ## Decisions for you
 
-These are listed in full in CHANGELOG.md, with defaults that can be changed without a release:
+All nine are listed with the defaults I built in CHANGELOG.md ("Defaults chosen for the owner decisions"). In short:
 
-- the reaction set;
-- the edit window and how withdrawing works;
-- length and rate limits;
-- the account-deletion wording (not built; proposal in the CHANGELOG);
-- the email sender, sending domain and daily cap;
-- whether report-and-hide is enough for a closed test;
-- ~~whether Strategist profiles may be public~~ (decided 2 November: signed-out visitors see the handle, join date and public Dispatches only; people search needs sign-in).
+1. Fallback when the AI is unavailable: post unscreened and flagged; sensitive Campaigns hold.
+2. Undeclared-AI flag: soft flag for review only.
+3. Coach: Sonnet (about 20× Haiku's price; switch in Settings), never suggests wording.
+4. Caps: 3,000 AI calls a day; 40 nudges and coach calls per Strategist a day; coach 3 per draft and 10 a day; evaluations £5.
+5. Privacy policy: DRAFT AI paragraph on `/privacy`; needs a lawyer's eye before real invitees.
+6. Retention of AI decisions and coach feedback: kept until you decide (no default was given).
+7. Appeals with one admin: allowed, with a warning and an audit note.
+8. Account deletion: built, off, all wording DRAFT; positions on closed Campaigns kept unlinked.
+9. Screening scope: handles only; display names and bios can be switched on.
 
----
-
-## Sprint 1 reference: hosted project setup
-
-**0. Fix `DATABASE_URL` so migrations can be pushed.**
-Supabase dashboard → your TGS project → **Connect** → **Session pooler** → copy the URI and put your database password in it. Replace the `DATABASE_URL=` line in `.env.local` with it. Do not paste it into chat. Then tell me and I will run the dry run again, show you the result and wait for your OK before the real push. Or run it yourself (call the CLI directly, not through `npx`: npx prints the full command, password included):
-
-```bash
-set -a && . ./.env.local && set +a && ./node_modules/.bin/supabase db push --dry-run --db-url "$DATABASE_URL"
-```
-
-**1. Auth settings.** Dashboard → Authentication → URL Configuration:
-- Site URL: `http://localhost:3000` for now (your Vercel URL later)
-- Redirect URLs: add `http://localhost:3000/**` and your Vercel URL followed by `/**`
-
-Then Authentication → Providers → Email (or Sign In / Up): set the minimum password length to **10** and keep "Confirm email" **on**.
-
-Optional, so the email link works when opened on a different device: Authentication → Emails → "Confirm signup" template, change the link to
-`{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/onboarding`
-
-**2. Create invite codes** (writes to whichever project `.env.local` points at; the script prints the host first):
-
-```bash
-npm run invite:create -- --count 3
-```
-
-```bash
-npm run invite:create -- --uses 30 --note "Pilot class" --days 30
-```
-
-Each code comes with a sign-up link such as `http://localhost:3000/signup?code=TGS-XXXX-XXXX-XXXX`.
-
-To make yourself an admin (not needed this sprint):
-
-```bash
-npm run admin:set -- --email you@example.com
-```
-
----
-
+Email set-up for launch is a separate owner checklist: `docs/LAUNCH_EMAIL_SETUP.md`.

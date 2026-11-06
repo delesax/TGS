@@ -54,7 +54,7 @@ export async function createUser(opts: { admin?: boolean; handle?: string | null
 }
 
 export async function deleteUsers(users: TestUser[]) {
-  for (const u of users) await service.auth.admin.deleteUser(u.id);
+  await purgeUsers(users);
 }
 
 export async function createCampaign(overrides: Record<string, unknown> = {}): Promise<string> {
@@ -74,4 +74,29 @@ export async function createCampaign(overrides: Record<string, unknown> = {}): P
     .single();
   if (error) throw error;
   return data.id;
+}
+
+/**
+ * Applies a screening result as the app's server does after posting
+ * (Sprint 4: Dispatches start as pending). "allow" makes it visible.
+ */
+export async function applyScreening(dispatchId: string, outcome: "allow" | "hold" | "block" | "unavailable" = "allow", extra: Record<string, unknown> = {}) {
+  const result =
+    outcome === "unavailable"
+      ? { outcome, reason: "AI unavailable (test)", ...extra }
+      : { outcome, model: "test-model", prompt_version: "test.v1", provider: "fake", reason: `Test ${outcome}.`, category: outcome === "allow" ? "none" : "harassment", confidence: 0.9, output: {}, ...extra };
+  const { data, error } = await service.rpc("apply_dispatch_screening", { p_dispatch_id: dispatchId, p_result: result });
+  if (error) throw error;
+  return data as string;
+}
+
+/**
+ * Removes test users and everything they wrote. Since Sprint 4 deleting a
+ * user never deletes Dispatches (it leaves a tombstone), so tests clear their
+ * own Dispatches first, with the service role.
+ */
+export async function purgeUsers(users: { id: string }[]) {
+  const ids = users.map((u) => u.id);
+  if (ids.length) await service.from("dispatches").delete().in("author_id", ids);
+  for (const id of ids) await service.auth.admin.deleteUser(id);
 }

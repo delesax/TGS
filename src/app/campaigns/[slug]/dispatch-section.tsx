@@ -5,7 +5,7 @@ import { DispatchThreads } from "@/components/dispatch/dispatch-threads";
 import { Button } from "@/components/ui/button";
 import type { Viewer } from "@/lib/auth";
 import type { Campaign, MyPosition } from "@/lib/campaign-data";
-import { getComposeContext, getDispatchLimits, getMyReactions, getReactionTypes, getThreadPage } from "@/lib/dispatch-data";
+import { getAiHelp, getComposeContext, getDispatchLimits, getMyReactions, getReactionTypes, getThreadPage } from "@/lib/dispatch-data";
 import { DISPATCH_KINDS, formatUkDateTime, type CampaignRound, type DispatchKind, type Status } from "@/lib/campaigns";
 import { KIND_LABELS, cooldownSecondsLeft } from "@/lib/dispatches";
 
@@ -37,11 +37,12 @@ export async function DispatchSection({
 }) {
   const signedIn = Boolean(viewer?.profile?.handle);
   const roundPosition = round?.position ?? null;
-  const [page, limits, reactionTypes, compose] = await Promise.all([
+  const [page, limits, reactionTypes, compose, aiHelp] = await Promise.all([
     getThreadPage(campaign.id),
     getDispatchLimits(),
     getReactionTypes(),
     signedIn ? getComposeContext(campaign.id, viewer!.userId, roundPosition) : Promise.resolve(null),
+    getAiHelp(),
   ]);
   const mine = signedIn ? await getMyReactions(page.rows.map((r) => r.id), viewer!.userId) : {};
 
@@ -97,6 +98,13 @@ export async function DispatchSection({
         This is an Oxford-style Campaign: each Dispatch argues one side. You are recorded as Undecided.
       </ComposeNotice>
     );
+  } else if (compose?.muted) {
+    composer = (
+      <ComposeNotice title="Posting is paused for your account">
+        A moderator has paused your posting{compose.muted.reason ? `: ${compose.muted.reason}` : "."} You can still read the debate and react. If you think
+        this is a mistake, reply to any email from TGS.
+      </ComposeNotice>
+    );
   } else if (compose && compose.postedThisRound >= limits.max_dispatches_per_round) {
     composer = (
       <ComposeNotice title={`You have posted ${limits.max_dispatches_per_round} Dispatches ${hasRounds ? "in this round" : "here"}`}>
@@ -125,6 +133,7 @@ export async function DispatchSection({
           kinds={topLevelKinds}
           opinionNotAdvice={campaign.opinion_not_advice}
           initialWait={cooldownSecondsLeft(compose?.lastPostedAt ?? null, now, limits)}
+          aiHelp={aiHelp}
         />
       </div>
     );
@@ -148,6 +157,8 @@ export async function DispatchSection({
         limits,
         reactionTypes,
         serverNow: now,
+        myAppeals: compose?.appeals ?? {},
+        aiHelp,
       }}
     />
   );

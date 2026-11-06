@@ -10,9 +10,33 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { DispatchKind } from "@/lib/campaigns";
+import type { AiHelp as AiHelpSettings } from "@/lib/dispatch-data";
+import dynamic from "next/dynamic";
 import { AI_USES, AI_USE_LABELS, KIND_LABELS, MAX_SOURCES, maxCharsFor, type AiUse, type DispatchLimits, type Source } from "@/lib/dispatches";
 
 export type ComposeTarget = { id: string; handle: string | null };
+
+/** A random v4 UUID. randomUUID needs HTTPS; getRandomValues works on plain-HTTP test addresses too. */
+function newDraftKey(): string {
+  if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  const b = crypto.getRandomValues(new Uint8Array(16));
+  b[6] = (b[6] & 0x0f) | 0x40;
+  b[8] = (b[8] & 0x3f) | 0x80;
+  const h = [...b].map((x) => x.toString(16).padStart(2, "0")).join("");
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
+}
+
+// The tone check and coach load separately, after the form itself.
+const AiHelp = dynamic(() => import("./ai-help").then((m) => m.AiHelp), { ssr: false });
+
+/** A private nudge about tone. Only the author sees it. */
+function NudgeNote({ nudge }: { nudge: string }) {
+  return (
+    <p role="note" className="rounded-lg border-2 border-accent-foreground bg-accent p-3 text-lg text-accent-foreground">
+      <strong>A private note:</strong> {nudge} <span className="text-base">Only you can see this.</span>
+    </p>
+  );
+}
 
 type Props = {
   campaignId: string;
@@ -27,6 +51,8 @@ type Props = {
   /** Seconds of cooldown left when the page loaded. */
   initialWait?: number;
   opinionNotAdvice?: boolean;
+  /** Tone check and coach, when the AI is switched on. */
+  aiHelp?: AiHelpSettings;
   onDone?: () => void;
   onCancel?: () => void;
 };
@@ -74,7 +100,7 @@ function useDraft(key: string, initial: string) {
   return [edited ?? (initial || stored), update] as const;
 }
 
-export function ComposeForm({ campaignId, slug, limits, kinds, replyTo, editing, initialWait = 0, opinionNotAdvice, onDone, onCancel }: Props) {
+export function ComposeForm({ campaignId, slug, limits, kinds, replyTo, editing, initialWait = 0, opinionNotAdvice, aiHelp, onDone, onCancel }: Props) {
   const [state, action, pending] = useActionState(editing ? editDispatch : postDispatch, {} as DispatchFormState);
   const online = useOnline();
   const idBase = editing ? `edit-${editing.id}` : replyTo ? `reply-${replyTo.id}` : "compose";
@@ -82,6 +108,8 @@ export function ComposeForm({ campaignId, slug, limits, kinds, replyTo, editing,
   const [kind, setKind] = React.useState<DispatchKind | null>(fixedKind);
   const [body, setBody] = useDraft(`tgs-draft:${campaignId}:${idBase}`, editing?.body ?? "");
   const [sourceRows, setSourceRows] = React.useState(Math.max(1, editing?.sources.length ?? 1));
+  // Counts coach uses per draft. Random, made here; the draft text is never stored.
+  const [draftKey, setDraftKey] = React.useState(newDraftKey);
 
   // Cooldown: count down from the server's answer.
   const [wait, setWait] = React.useState(initialWait);
@@ -102,7 +130,9 @@ export function ComposeForm({ campaignId, slug, limits, kinds, replyTo, editing,
     if (state.postedAt && handled.current !== state.postedAt) {
       handled.current = state.postedAt;
       if (!editing) setBody("");
-      onDone?.();
+      setDraftKey(newDraftKey());
+      // Keep the box open long enough to read a private nudge.
+      if (!state.nudge) onDone?.();
     }
   }, [state, editing, setBody, onDone]);
 
@@ -116,6 +146,7 @@ export function ComposeForm({ campaignId, slug, limits, kinds, replyTo, editing,
   return (
     <ActionForm action={action} aria-label={label} className="gap-5">
       <FormMessage state={state} />
+      {state.nudge ? <NudgeNote nudge={`${state.nudge} You can still edit your Dispatch for a few minutes.`} /> : null}
       <input type="hidden" name="campaignId" value={campaignId} />
       <input type="hidden" name="slug" value={slug} />
       {editing ? <input type="hidden" name="dispatchId" value={editing.id} /> : null}
@@ -235,6 +266,10 @@ export function ComposeForm({ campaignId, slug, limits, kinds, replyTo, editing,
           </label>
         ))}
       </fieldset>
+
+      {aiHelp?.enabled && !editing ? (
+        <AiHelp campaignId={campaignId} kind={kind ?? "argument"} body={body} draftKey={draftKey} usesPerDraft={aiHelp.coachUsesPerDraft} key={draftKey} />
+      ) : null}
 
       {!online ? (
         <p role="status" className="flex items-start gap-2 rounded-lg border-2 border-accent-foreground bg-accent p-3 text-lg text-accent-foreground">

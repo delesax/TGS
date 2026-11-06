@@ -10,14 +10,14 @@ import { EmailForm, type EmailPrefs } from "./email-form";
 export const metadata: Metadata = { title: "Email settings" };
 export const dynamic = "force-dynamic";
 
-const DEFAULTS: EmailPrefs = { replies: true, campaign_updates: true, closing_soon: true, unsubscribed_all_at: null };
+const DEFAULTS: EmailPrefs = { replies: true, campaign_updates: true, closing_soon: true, moderation: true, unsubscribed_all_at: null };
 
 export default async function EmailSettingsPage() {
   const viewer = await requireStrategist("/profile/email");
   const supabase = await createClient();
   const { data } = await supabase
     .from("notification_preferences")
-    .select("replies, campaign_updates, closing_soon, unsubscribed_all_at")
+    .select("replies, campaign_updates, closing_soon, moderation, unsubscribed_all_at")
     .eq("user_id", viewer.userId)
     .maybeSingle<EmailPrefs>();
 

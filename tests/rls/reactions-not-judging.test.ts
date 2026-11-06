@@ -10,7 +10,8 @@ import "./helpers"; // loads and checks the LOCAL test environment
 const sql = postgres(process.env.DATABASE_URL!, { max: 1, onnotice: () => {} });
 afterAll(() => sql.end());
 
-const ALLOWED_FUNCTIONS = ["refresh_reaction_counts", "toggle_reaction"];
+// anonymise_profile only removes a deleted account's own reactions.
+const ALLOWED_FUNCTIONS = ["anonymise_profile", "refresh_reaction_counts", "toggle_reaction"];
 const REACTION_PATTERN = /dispatch_reactions|reaction_counts|reaction_types/;
 
 describe("reactions never feed judging", () => {

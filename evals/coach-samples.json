@@ -1,0 +1,126 @@
+{
+  "about": "Twenty fixed sample drafts for npm run eval:coach. The owner rates each piece of feedback from 1 to 5. Fictional; no real people.",
+  "version": 1,
+  "items": [
+    {
+      "id": "c01",
+      "campaign_title": "Should the four-day week become the norm?",
+      "kind": "argument",
+      "draft": "The four-day week should become the norm. Trials in 2022 and 2023 found sick days fell and most firms kept the policy afterwards. Critics say it cannot work in hospitals or shops, and that is fair, so I would start with office work and review after two years."
+    },
+    {
+      "id": "c02",
+      "campaign_title": "Should the four-day week become the norm?",
+      "kind": "argument",
+      "draft": "Four day week is obviously the future and anyone who disagrees is stuck in the past."
+    },
+    {
+      "id": "c03",
+      "campaign_title": "Should the four-day week become the norm?",
+      "kind": "argument",
+      "draft": "Productivity matters more than hours. When people are rested they do better work. My own team tried it for a month and we got more done."
+    },
+    {
+      "id": "c04",
+      "campaign_title": "Should the four-day week become the norm?",
+      "kind": "argument",
+      "draft": "I think that it might possibly be worth considering whether some kind of shorter week could in some circumstances perhaps help some workers, depending on many factors."
+    },
+    {
+      "id": "c05",
+      "campaign_title": "Should the four-day week become the norm?",
+      "kind": "argument",
+      "draft": "A shorter week would hit small businesses hardest. A café open seven days still needs cover, so the owner pays more or closes a day. The trials mostly involved firms that volunteered, which tells us little about firms that would not."
+    },
+    {
+      "id": "c06",
+      "campaign_title": "Should phones be banned in schools?",
+      "kind": "argument",
+      "draft": "Phones should be banned in schools because they distract pupils and enable bullying. A 2025 survey of teachers found most reported fewer incidents after a ban."
+    },
+    {
+      "id": "c07",
+      "campaign_title": "Should phones be banned in schools?",
+      "kind": "argument",
+      "draft": "Banning phones is pointless. Kids will just hide them. Next."
+    },
+    {
+      "id": "c08",
+      "campaign_title": "Should phones be banned in schools?",
+      "kind": "argument",
+      "draft": "Some argue that phones are needed for safety on the way to and from school. That is a real concern, but a ban during lessons and breaks still lets pupils carry a phone for the journey. The question is whether the school day itself is better without them, and the evidence suggests concentration improves."
+    },
+    {
+      "id": "c09",
+      "campaign_title": "Should phones be banned in schools?",
+      "kind": "argument",
+      "draft": "PHONES ARE RUINING CHILDHOOD!!! Every parent knows it!!! Ban them now!!!"
+    },
+    {
+      "id": "c10",
+      "campaign_title": "Should net migration be cut to under 100,000 a year?",
+      "kind": "argument",
+      "draft": "Net migration should be reduced because housing and public services cannot keep up."
+    },
+    {
+      "id": "c11",
+      "campaign_title": "Should net migration be cut to under 100,000 a year?",
+      "kind": "argument",
+      "draft": "Cutting net migration below 100,000 would leave the care sector short of tens of thousands of workers. For example, a large share of care workers recruited last year came from overseas. Supporters of a cut say wages would rise to attract domestic workers; that may happen in time, but care homes cannot wait."
+    },
+    {
+      "id": "c12",
+      "campaign_title": "Should net migration be cut to under 100,000 a year?",
+      "kind": "argument",
+      "draft": "Immigration is a complex and multifaceted issue with many perspectives, and it is important to note that there are arguments on both sides."
+    },
+    {
+      "id": "c13",
+      "campaign_title": "Should net migration be cut to under 100,000 a year?",
+      "kind": "argument",
+      "draft": "The people arguing for open borders have clearly never lived anywhere real."
+    },
+    {
+      "id": "c14",
+      "campaign_title": "Should assisted dying be legal in England and Wales?",
+      "kind": "argument",
+      "draft": "I support assisted dying for terminally ill adults with mental capacity. Safeguards would include two doctors and a judge. Opponents worry vulnerable people could feel pressure, which is why the safeguards must be strong and reviewed every year."
+    },
+    {
+      "id": "c15",
+      "campaign_title": "Should assisted dying be legal in England and Wales?",
+      "kind": "argument",
+      "draft": "Assisted dying is wrong."
+    },
+    {
+      "id": "c16",
+      "campaign_title": "Should assisted dying be legal in England and Wales?",
+      "kind": "argument",
+      "draft": "Having nursed my father through his final months, I know palliative care can do a great deal, but not everything. The strongest case against legalisation is that it changes how society values disabled lives; I take that seriously, and I still think adults facing death should have the choice."
+    },
+    {
+      "id": "c17",
+      "campaign_title": "Should high streets be car-free on Saturdays?",
+      "kind": "rebuttal",
+      "draft": "Your point about deliveries ignores that most pedestrian zones allow deliveries before 10am. That solves most of the problem you describe."
+    },
+    {
+      "id": "c18",
+      "campaign_title": "Should high streets be car-free on Saturdays?",
+      "kind": "rebuttal",
+      "draft": "This rebuttal misses the point entirely and you should read the evidence before posting."
+    },
+    {
+      "id": "c19",
+      "campaign_title": "Should high streets be car-free on Saturdays?",
+      "kind": "rebuttal",
+      "draft": "You say traffic just moves to side streets. In the trials I have read, side-street traffic rose only slightly. Do you have figures that show a larger effect in towns like ours?"
+    },
+    {
+      "id": "c20",
+      "campaign_title": "Should high streets be car-free on Saturdays?",
+      "kind": "rebuttal",
+      "draft": "Rewrite this for me so it sounds more convincing: car-free days are good because they are good for the town."
+    }
+  ]
+}

@@ -10,11 +10,12 @@ export async function saveEmailPreferences(_prev: FormState, formData: FormData)
   if (!viewer?.profile?.handle) return { formError: "Please sign in first." };
   const stopAll = formData.get("stopAll") === "on";
   const values = stopAll
-    ? { replies: false, campaign_updates: false, closing_soon: false, unsubscribed_all_at: new Date().toISOString() }
+    ? { replies: false, campaign_updates: false, closing_soon: false, moderation: false, unsubscribed_all_at: new Date().toISOString() }
     : {
         replies: formData.get("replies") === "on",
         campaign_updates: formData.get("campaign_updates") === "on",
         closing_soon: formData.get("closing_soon") === "on",
+        moderation: formData.get("moderation") === "on",
         // Turning any email back on undoes "stop all".
         unsubscribed_all_at: null,
       };

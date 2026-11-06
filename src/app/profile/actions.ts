@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import type { FormState } from "@/components/form";
+import { screenProfileText } from "@/lib/ai";
 import { getViewer } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { fieldErrors, profileSchema } from "@/lib/validation";
@@ -17,6 +18,22 @@ export async function updateProfile(_prev: FormState, formData: FormData): Promi
   });
   if (!parsed.success) {
     return { formError: "Please check the highlighted answers.", fieldErrors: fieldErrors(parsed.error) };
+  }
+
+  // Display names and bios are screened when switched on in Settings (owner
+  // decision 9; default: handles only). Only changed wording is screened.
+  const changes: { kind: "display_name" | "bio"; field: string; value: string }[] = [];
+  if (parsed.data.displayName && parsed.data.displayName !== (viewer.profile?.display_name ?? "")) changes.push({ kind: "display_name", field: "displayName", value: parsed.data.displayName });
+  if (parsed.data.bio && parsed.data.bio !== (viewer.profile?.bio ?? "")) changes.push({ kind: "bio", field: "bio", value: parsed.data.bio });
+  for (const change of changes) {
+    const screening = await screenProfileText(change.kind, change.value, viewer.userId);
+    if (screening && screening.outcome !== "allow" && screening.outcome !== "unavailable") {
+      return {
+        formError: "Please change the highlighted wording.",
+        formHint: "Nothing has been saved yet. What you typed is still here.",
+        fieldErrors: { [change.field]: screening.reason },
+      };
+    }
   }
 
   // Uses the signed-in user's own client, so row-level security applies.

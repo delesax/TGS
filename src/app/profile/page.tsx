@@ -96,9 +96,11 @@ export default async function ProfilePage() {
           <div className="flex flex-col gap-2 rounded-lg border-2 border-dashed border-border p-4">
             <h3 className="text-xl font-semibold">Deleting your account</h3>
             <p className="text-lg">
-              Account deletion is not switched on yet during this closed test. The wording is being agreed, because Verdicts and the audit record depend
-              on Dispatches. If you want your account deleted now, reply to your invitation email and we will do it by hand.
+              See what is removed and what is kept, and delete your account if this is switched on.
             </p>
+            <Button asChild variant="outline" className="self-start">
+              <Link href="/profile/delete">Delete my account</Link>
+            </Button>
           </div>
         </CardContent>
       </Card>
