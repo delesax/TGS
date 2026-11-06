@@ -4,12 +4,44 @@ import * as React from "react";
 import { useActionState } from "react";
 import { ActionForm, CheckboxField, FormMessage, SubmitButton, TextAreaField, TextField, type FormState } from "@/components/form";
 import { Label } from "@/components/ui/label";
+import { useDecisionLog } from "./decision-log";
 import { decideHandle, moderateDispatch, resolveFlag, saveJudgingWeights, saveReactionType, saveSettings, setPostingMute, type SettingsValues } from "./actions";
 
 type Choice = { value: string; label: string; hint?: string };
 
-/** A decision with a required reason: radio choices, a reason box, one button. */
-function DecisionForm({
+/**
+ * A decision with a required reason: radio choices, a reason box, one button.
+ * Inside the moderation queue a successful decision goes to the "Just decided"
+ * log, the list refreshes, and this form starts afresh (so an item that stays in
+ * the queue can be decided again). Elsewhere the confirmation stays in place.
+ */
+function DecisionForm(props: {
+  id: string;
+  label: string;
+  /** What was decided on, for the confirmation: for example "@Ada: “text…”". */
+  summary?: string;
+  hidden: Record<string, string>;
+  choices: Choice[];
+  action: (state: FormState, data: FormData) => Promise<FormState>;
+  warning?: string;
+  submitLabel?: string;
+}) {
+  const log = useDecisionLog();
+  const [round, setRound] = React.useState(0);
+  return (
+    <DecisionFormBody
+      key={round}
+      {...props}
+      inQueue={Boolean(log)}
+      onDone={(message) => {
+        log?.add(props.summary ?? props.label, message);
+        setRound((r) => r + 1);
+      }}
+    />
+  );
+}
+
+function DecisionFormBody({
   id,
   label,
   hidden,
@@ -17,19 +49,35 @@ function DecisionForm({
   action,
   warning,
   submitLabel = "Save decision",
+  inQueue,
+  onDone,
 }: {
   id: string;
   label: string;
+  summary?: string;
   hidden: Record<string, string>;
   choices: Choice[];
   action: (state: FormState, data: FormData) => Promise<FormState>;
   warning?: string;
   submitLabel?: string;
+  inQueue: boolean;
+  onDone: (message: string) => void;
 }) {
   const [state, run, pending] = useActionState(action, {} as FormState);
   const errors = state.fieldErrors ?? {};
+  const reported = React.useRef(false);
+  React.useEffect(() => {
+    if (inQueue && state.success && !reported.current) {
+      reported.current = true;
+      onDone(state.success);
+    }
+  }, [inQueue, state.success, onDone]);
   if (state.success) {
-    return (
+    return inQueue ? (
+      <p role="status" className="text-base text-muted-foreground">
+        Saved. See “Just decided” above.
+      </p>
+    ) : (
       <p role="status" className="rounded-lg border-2 border-success bg-success/10 p-3 text-lg font-semibold">
         {state.success} <span className="font-normal">Reload the page to update the list.</span>
       </p>
@@ -71,7 +119,7 @@ function DecisionForm({
   );
 }
 
-export function DispatchDecision({ dispatchId, status, hasReports, sameAdminWarning }: { dispatchId: string; status: string; hasReports: boolean; sameAdminWarning?: boolean }) {
+export function DispatchDecision({ dispatchId, summary, status, hasReports, sameAdminWarning }: { dispatchId: string; summary: string; status: string; hasReports: boolean; sameAdminWarning?: boolean }) {
   const choices: Choice[] = [];
   if (status !== "visible") choices.push({ value: "release", label: "Release", hint: "Make it visible to everyone." });
   if (status === "held") choices.push({ value: "keep_held", label: "Keep held", hint: "Only the author can see it." });
@@ -81,6 +129,7 @@ export function DispatchDecision({ dispatchId, status, hasReports, sameAdminWarn
     <DecisionForm
       id={dispatchId}
       label="Decide on this Dispatch"
+      summary={summary}
       hidden={{ dispatchId }}
       choices={choices}
       action={moderateDispatch}
@@ -93,15 +142,16 @@ export function DispatchDecision({ dispatchId, status, hasReports, sameAdminWarn
   );
 }
 
-export function FlagDecision({ flagId }: { flagId: string }) {
-  return <DecisionForm id={flagId} label="Close this flag" hidden={{ flagId }} choices={[{ value: "dismiss", label: "Close" }]} action={resolveFlag} submitLabel="Close flag, no change" />;
+export function FlagDecision({ flagId, summary }: { flagId: string; summary?: string }) {
+  return <DecisionForm id={flagId} label="Close this flag" summary={summary} hidden={{ flagId }} choices={[{ value: "dismiss", label: "Close" }]} action={resolveFlag} submitLabel="Close flag, no change" />;
 }
 
-export function HandleDecision({ flagId }: { flagId: string }) {
+export function HandleDecision({ flagId, summary }: { flagId: string; summary?: string }) {
   return (
     <DecisionForm
       id={flagId}
       label="Decide on this handle"
+      summary={summary}
       hidden={{ flagId }}
       choices={[
         { value: "release", label: "Release", hint: "The handle becomes theirs, if it is still free." },

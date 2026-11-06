@@ -260,3 +260,64 @@ test("the sweeper re-screens a Dispatch left pending, and only with the secret",
   const { data: after } = await service.from("dispatches").select("moderation_status, screening").eq("id", data.id).single();
   expect(after).toEqual({ moderation_status: "visible", screening: "screened" });
 });
+
+test("a decided item leaves the queue and its confirmation stays, without a reload", async ({ browser }) => {
+  const admin = await makeStrategist("QADMIN", true);
+  const first = await makeStrategist("QONE");
+  const second = await makeStrategist("QTWO");
+  const tag1 = `queue-one-${randomUUID().slice(0, 6)}`;
+  const tag2 = `queue-two-${randomUUID().slice(0, 6)}`;
+  // Two held Dispatches, as the AI would have left them.
+  for (const [author, tag] of [[first, tag1], [second, tag2]] as const) {
+    const { data, error } = await service
+      .from("dispatches")
+      .insert({ campaign_id: campaignId, author_id: author.id, kind: "argument", position: "for", body: `Held for the queue test ${tag}`, ai_use: "none", moderation_status: "pending", screening: "awaiting", screen_requested_at: new Date().toISOString() })
+      .select("id")
+      .single();
+    if (error) throw error;
+    const { error: applyError } = await service.rpc("apply_dispatch_screening", {
+      p_dispatch_id: data.id,
+      p_result: { outcome: "hold", model: "test", prompt_version: "test.v1", provider: "fake", reason: "Test hold.", category: "harassment", confidence: 0.9, output: {} },
+    });
+    if (applyError) throw applyError;
+  }
+
+  const m = await signIn(browser, admin.email);
+  await m.goto("/admin/moderation");
+  // A full reload would clear this marker.
+  await m.evaluate(() => ((window as unknown as { __kept: boolean }).__kept = true));
+  const count = async () => Number(/\((\d+)\)/.exec((await m.getByRole("heading", { name: /^Dispatches \(\d+\)$/ }).textContent()) ?? "")?.[1]);
+  const before = await count();
+  const item = (tag: string) => m.locator("li").filter({ hasText: tag }).filter({ has: m.getByRole("form", { name: "Decide on this Dispatch" }) });
+
+  await item(tag1).getByLabel(/^Release/).check();
+  await item(tag1).getByLabel("Reason (required, kept in the audit log)").fill("Fine on a second look.");
+  await item(tag1).getByRole("button", { name: "Save decision" }).click();
+
+  // The confirmation appears, the item leaves the list, and the count drops, all without a reload.
+  const log = m.getByRole("status", { name: "Decisions you just made" });
+  await expect(log.getByText(tag1, { exact: false })).toBeVisible();
+  await expect(log.getByText("Released. It is visible to everyone.", { exact: false })).toBeVisible();
+  await expect(item(tag1)).toHaveCount(0);
+  await expect.poll(count).toBe(before - 1);
+  await expectNoHorizontalOverflow(m);
+
+  // A second decision adds to the log; the first confirmation is still there.
+  await item(tag2).getByLabel(/^Keep held/).check();
+  await item(tag2).getByLabel("Reason (required, kept in the audit log)").fill("Still over the line.");
+  await item(tag2).getByRole("button", { name: "Save decision" }).click();
+  await expect(log.getByText("Just decided (2)")).toBeVisible();
+  await expect(log.getByText(tag1, { exact: false })).toBeVisible();
+  // Kept held stays in the queue, and its form starts afresh so it can be decided again.
+  await expect(item(tag2).getByRole("button", { name: "Save decision" })).toBeVisible();
+  await expect(item(tag2).getByLabel("Reason (required, kept in the audit log)")).toHaveValue("");
+  await expectNoHorizontalOverflow(m);
+
+  // The page was never reloaded, and a confirmation can be dismissed.
+  expect(await m.evaluate(() => (window as unknown as { __kept?: boolean }).__kept)).toBe(true);
+  await log.getByRole("button", { name: "Dismiss this confirmation" }).first().click();
+  await expect(log.getByText("Just decided (1)")).toBeVisible();
+
+  const { data: rows } = await service.from("dispatches").select("moderation_status").like("body", "Held for the queue test queue-%").in("author_id", [first.id, second.id]);
+  expect(rows!.map((r) => r.moderation_status).sort()).toEqual(["held", "visible"]);
+});

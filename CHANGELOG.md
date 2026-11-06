@@ -1,5 +1,14 @@
 # Changelog
 
+## Sprint 4 hardening (6 November 2026). Awaiting review
+
+Branch `sprint-4-hardening`, cut from the `sprint-4` head `4ba8692` because PR #3 had not been merged when it was started. Merge PR #3 first; this branch's own pull request then shows only the changes below. **Not applied to hosted.**
+
+- **Tombstones are permanent** (`20261104000400_tombstone_hardening.sql`). The trigger that already stopped a deleted account getting a handle now also refuses to clear `deleted_at` once set, for every role, including the service role and direct SQL. `anonymise_profile()` and `before_auth_user_deleted()` are unaffected (7 new RLS tests cover both, including deleting a sign-in).
+- **Moderation queue confirmations.** After a decision, the queue refreshes at once: the decided item leaves the list and the count drops, while a "Just decided" log above the list keeps each confirmation (it survives the refresh, can be dismissed, and is sticky so it stays in view on a phone). An item that stays in the queue after "Keep held" can be decided again straight away. A new Playwright check at 375px covers it, including that the page is never reloaded.
+- **`npm audit`.** No non-breaking fixes exist, so nothing changed. Eight moderate advisories remain, all one chain (`minimatch` denial of service, reached through `eslint-config-next` → `typescript-eslint`). Development tooling only, not shipped. The only fix is `--force`, which downgrades `eslint-config-next`: not applied.
+- **Owner docs** (separate commit): `docs/DRAFT_WORDING.md` (all DRAFT copy, verbatim) and `docs/OWNER_DECISIONS.md` (the nine Sprint 4 and four launch-topic decisions, their defaults and how to change them).
+
 ## Sprint 4: AI moderation, coach and admin (2 November 2026). Awaiting review
 
 Branch `sprint-4`, cut from `main` at `4a573ec` (Sprint 3 merged). **Both migrations were applied to hosted on 3 November** at the owner's request, after a dry run that listed exactly those two (see DEMO.md). A second dry run confirms hosted is up to date. **No real AI call was made** by anything in this sprint: every test, the seed and the evaluations below ran on the built-in fake provider. The owner supplies `ANTHROPIC_API_KEY` later; until then hosted Dispatches follow the fallback rule below.
@@ -93,7 +102,7 @@ Thresholds also default to 0.70 (normal) and 0.40 (sensitive), and the AI input 
 - **Migrations applied to hosted (3 November).** Still to do on hosted: `MODERATION_PROCESSOR_SECRET` in Vercel and the two moderation Vault secrets (`docs/LAUNCH_EMAIL_SETUP.md`, steps 15 and 18).
 - **Hosted has no AI until you add `ANTHROPIC_API_KEY`** (and leave `AI_PROVIDER` empty). Until then every Dispatch takes the fallback: visible and flagged in normal Campaigns, held in sensitive ones.
 - The real-model evaluations (`eval:moderation -- --real`, `eval:coach -- --real`) have not been run; the "100% held" and "coach rated 4/5" done-criteria need them.
-- A decided item stays in the queue with its confirmation until the page is reloaded (so the confirmation can be read).
+- ~~A decided item stays in the queue with its confirmation until the page is reloaded.~~ Fixed in the hardening branch (see below).
 - `/profile/export` streams Dispatches, but edit history and sealed text for them are gathered before the end of the file; fine at pilot size.
 - Handles cannot be changed after onboarding, so "screen again when a handle changes" applies only to choosing one.
 - Undeclared-AI detection is a weak signal by design; expect both misses and false flags.

@@ -6,6 +6,7 @@ import { REASON_LABELS, getModerationQueue, type QueueItem } from "@/lib/admin-d
 import { CATEGORY_LABELS } from "@/lib/ai/policy";
 import { formatUkShort } from "@/lib/campaigns";
 import { DispatchDecision, FlagDecision, HandleDecision } from "../admin-forms";
+import { DecisionLogProvider } from "../decision-log";
 import { AdminNav } from "../admin-nav";
 
 export const metadata: Metadata = { title: "Moderation" };
@@ -126,6 +127,7 @@ function Item({ item, adminId }: { item: QueueItem; adminId: string }) {
       <div className="flex flex-col gap-4 border-t border-border pt-3">
         <DispatchDecision
           dispatchId={d.id}
+          summary={`@${d.author?.handle ?? "a deleted Strategist"}: “${words.length > 60 ? `${words.slice(0, 60).trimEnd()}…` : words}”`}
           status={d.moderation_status}
           hasReports={item.reports.length > 0}
           sameAdminWarning={Boolean(item.appeal?.original_actor && item.appeal.original_actor === adminId)}
@@ -134,7 +136,7 @@ function Item({ item, adminId }: { item: QueueItem; adminId: string }) {
           ? item.flags.map((f) => (
               <details key={f.id} className="rounded-lg border border-border p-3">
                 <summary className="min-h-12 cursor-pointer py-2 text-lg font-semibold">Or close the “{REASON_LABELS[f.kind as "unscreened"]}” flag with no change</summary>
-                <FlagDecision flagId={f.id} />
+                <FlagDecision flagId={f.id} summary={`Flag on @${d.author?.handle ?? "a deleted Strategist"}’s Dispatch`} />
               </details>
             ))
           : null}
@@ -152,6 +154,7 @@ export default async function ModerationPage() {
       intro="Held Dispatches, appeals, reports and anything the AI could not check, most severe and newest first. Every decision needs a reason and is audit-logged; the author is told the outcome in plain words."
     >
       <AdminNav current="/admin/moderation" />
+      <DecisionLogProvider>
       <section aria-labelledby="dispatches-h" className="flex flex-col gap-4">
         <h2 id="dispatches-h" className="text-2xl font-bold">
           Dispatches ({items.length})
@@ -182,7 +185,7 @@ export default async function ModerationPage() {
                     : "Accepted while the AI was unavailable (deny-list only). In use now."}{" "}
                   Asked {formatUkShort(h.created_at)}.
                 </p>
-                {h.kind === "held_handle" ? <HandleDecision flagId={h.flagId} /> : <FlagDecision flagId={h.flagId} />}
+                {h.kind === "held_handle" ? <HandleDecision flagId={h.flagId} summary={`Handle @${h.handle}`} /> : <FlagDecision flagId={h.flagId} summary={`Handle @${h.handle}`} />}
               </li>
             ))}
           </ul>
@@ -190,6 +193,7 @@ export default async function ModerationPage() {
           <EmptyState title="No handles waiting">Handles the AI did not allow wait here for a person.</EmptyState>
         )}
       </section>
+      </DecisionLogProvider>
     </Page>
   );
 }
