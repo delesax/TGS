@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { runDeleteAccount } from "../../scripts/lib/delete-account-cli";
-import { applyScreening, createCampaign, createUser, deleteUsers, service, type TestUser } from "./helpers";
+import { applyScreening, createCampaign, createUser, service, type TestUser } from "./helpers";
 
 let person: TestUser;
 let campaignId: string;

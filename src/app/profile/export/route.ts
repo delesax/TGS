@@ -1,17 +1,16 @@
 import { NextResponse } from "next/server";
 import { getViewer } from "@/lib/auth";
+import { EXPORT_BATCH, exportDispatchBatch, exportHead } from "@/lib/export-data";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-const BATCH = 500;
-
 /**
- * "Download my data" (UK GDPR right of access). A JSON file of the signed-in
- * Strategist's own profile, Dispatches (with edit history, and the original
- * text of any they withdrew or that were hidden or removed), positions,
- * reactions, follows, reports, appeals, coach ratings and email preferences.
+ * "Download my data" (UK GDPR right of access). A JSON file of everything we
+ * hold about the signed-in Strategist: see src/lib/export-data.ts for what is
+ * included and, just as important, what is left out because it is somebody
+ * else's data. Dispatches come with their edit history and the original text
+ * of any they withdrew or that were hidden or removed.
  * Dispatches are read and written in batches of 500 and streamed, so a long
  * history never has to sit in memory at once. Never cached.
  */
@@ -19,64 +18,32 @@ export async function GET() {
   const viewer = await getViewer();
   if (!viewer) return NextResponse.json({ error: "Please sign in first." }, { status: 401, headers: { "Cache-Control": "no-store" } });
   const me = viewer.userId;
-  const supabase = await createClient();
+  const admin = createAdminClient();
 
-  const [profile, positions, reactions, campaignFollows, strategistFollows, reports, appeals, coach, emailPrefs] = await Promise.all([
-    supabase.from("profiles").select("id, handle, display_name, expertise_tag, bio, created_at").eq("id", me).single(),
-    supabase.from("campaign_positions").select("campaign_id, before_position, after_position, before_at, after_at").eq("user_id", me),
-    supabase.from("dispatch_reactions").select("dispatch_id, reaction, created_at").eq("user_id", me),
-    supabase.from("campaign_follows").select("campaign_id, created_at").eq("user_id", me),
-    supabase.from("strategist_follows").select("followed_id, created_at").eq("follower_id", me),
-    supabase.from("dispatch_reports").select("dispatch_id, reason, details, status, created_at").eq("reporter_id", me),
-    supabase.from("dispatch_appeals").select("dispatch_id, reason, status, created_at, decided_at").eq("author_id", me),
-    supabase.from("coach_feedback").select("campaign_id, helpful, comment, rated_at, created_at").eq("user_id", me),
-    supabase.from("notification_preferences").select("replies, campaign_updates, closing_soon, moderation, unsubscribed_all_at").eq("user_id", me).maybeSingle(),
-  ]);
-  const failed = [profile, positions, reactions, campaignFollows, strategistFollows, reports, appeals, coach].find((r) => r.error);
-  if (failed) {
-    console.error("export failed", failed.error?.code);
+  let data: Awaited<ReturnType<typeof exportHead>>;
+  try {
+    data = await exportHead(admin, me, viewer.email);
+  } catch (e) {
+    console.error("export failed", e instanceof Error ? e.message : e);
     return NextResponse.json({ error: "We could not prepare your data. Please try again." }, { status: 503, headers: { "Cache-Control": "no-store" } });
   }
-  const admin = createAdminClient();
   await admin.from("audit_log").insert({ actor_id: me, action: "account.exported", target_table: "profiles", target_id: me, details: {} });
 
   const encoder = new TextEncoder();
   const head = {
     exported_at: new Date().toISOString(),
     about:
-      "Your data from The Grand Strategist. Dispatches are public while visible; reactions, follows, positions, reports, appeals, coach ratings and email settings are private to you and the TGS team.",
-    account: { email: viewer.email, ...profile.data },
-    positions: positions.data,
-    reactions_given: reactions.data,
-    following: { campaigns: campaignFollows.data, strategists: strategistFollows.data },
-    reports_made: reports.data,
-    appeals_made: appeals.data,
-    coach_feedback_ratings: coach.data,
-    email_preferences: emailPrefs.data ?? null,
+      "Your data from The Grand Strategist. Dispatches are public while visible. Everything else here is private to you and the people who run The Grand Strategist. Other people's personal data is left out.",
+    ...data,
   };
 
   // Writes `"key": [ ...rows ]`, one batch of Dispatch ids at a time.
   async function* batches() {
-    for (let offset = 0; ; offset += BATCH) {
-      const { data, error } = await supabase
-        .from("dispatches")
-        .select("id, campaign_id, parent_id, kind, position, body, sources, ai_use, round_position, moderation_status, created_at, edited_at, withdrawn_at, hidden_at, reaction_counts")
-        .eq("author_id", me)
-        .order("created_at")
-        .order("id")
-        .range(offset, offset + BATCH - 1);
-      if (error) throw new Error("Could not read Dispatches");
-      const rows = data ?? [];
-      if (!rows.length) return;
-      const ids = rows.map((d) => d.id);
-      const [{ data: revisions }, { data: sealed }] = await Promise.all([
-        supabase.from("dispatch_revisions").select("dispatch_id, body, sources, ai_use, revised_at").in("dispatch_id", ids).order("revised_at"),
-        // Your own words from Dispatches you withdrew or a moderator hid or removed.
-        // The sealed table is admin-only, so it is read with the service role, limited to your Dispatches.
-        admin.from("dispatch_sealed_content").select("dispatch_id, sealed_for, body, sources, sealed_at").in("dispatch_id", ids),
-      ]);
-      yield { rows, revisions: revisions ?? [], sealed: sealed ?? [] };
-      if (rows.length < BATCH) return;
+    for (let offset = 0; ; offset += EXPORT_BATCH) {
+      const batch = await exportDispatchBatch(admin, me, offset);
+      if (!batch.rows.length) return;
+      yield batch;
+      if (batch.rows.length < EXPORT_BATCH) return;
     }
   }
 
