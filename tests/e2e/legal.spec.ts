@@ -229,3 +229,67 @@ test.describe("cookie and storage audit", () => {
     expect(names.every((n) => /^sb-[^-]+-auth-token(\.\d+)?$/.test(n)), names.join(", ")).toBe(true);
   });
 });
+
+test.describe("positions: withdrawing and the Oxford side", () => {
+  test("Stop recording my positions deletes open positions, clears the consent and says so", async ({ browser }) => {
+    const user = await makeUser("STOP");
+    const now = Date.now();
+    const { data: campaign } = await service
+      .from("campaigns")
+      .insert({ slug: `e2e-stop-${randomUUID().slice(0, 8)}`, title: "Stop test Campaign", category: "education", status: "open", starts_at: new Date(now - 60_000).toISOString(), ends_at: new Date(now + 86_400_000).toISOString() })
+      .select("id")
+      .single();
+    try {
+      await service.from("profiles").update({ positions_consent_at: new Date().toISOString(), positions_consent_version: "test" }).eq("id", user.id);
+      await service.from("campaign_positions").insert({ campaign_id: campaign!.id, user_id: user.id, after_position: "for" });
+      const p = await signIn(browser, user.email);
+      await p.goto("/profile");
+      await expect(p.getByRole("heading", { name: "Your Campaign positions" })).toBeVisible();
+      await p.getByRole("button", { name: "Stop recording my positions" }).click();
+      await expect(p.getByText("We have stopped recording your positions. 1 position on open Campaigns was deleted.")).toBeVisible();
+      await expectNoHorizontalOverflow(p);
+      const { data: profile } = await service.from("profiles").select("positions_consent_at").eq("id", user.id).single();
+      expect(profile!.positions_consent_at).toBeNull();
+      expect((await service.from("campaign_positions").select("user_id").eq("user_id", user.id)).data).toEqual([]);
+      await p.reload();
+      await expect(p.getByText("You have not agreed to us recording your positions")).toBeVisible();
+    } finally {
+      await service.from("campaigns").delete().eq("id", campaign!.id);
+    }
+  });
+
+  test("an Oxford-style Campaign asks which side a Dispatch argues; no position is needed to post", async ({ browser }) => {
+    const user = await makeUser("OXFD");
+    await service.from("community_settings").update({ cooldown_seconds: 0 }).eq("id", true);
+    const now = Date.now();
+    const slug = `e2e-oxford-${randomUUID().slice(0, 8)}`;
+    const { data: campaign } = await service
+      .from("campaigns")
+      .insert({ slug, title: "Oxford side test", category: "education", format: "oxford", status: "open", starts_at: new Date(now - 60_000).toISOString(), ends_at: new Date(now + 86_400_000).toISOString() })
+      .select("id")
+      .single();
+    try {
+      const p = await signIn(browser, user.email);
+      await p.goto(`/campaigns/${slug}`);
+      const compose = p.getByRole("form", { name: "Write a Dispatch" });
+      await expect(compose.getByText("Which side does your Dispatch argue?")).toBeVisible();
+      await compose.getByLabel(/^Argument/).check();
+      await compose.getByLabel("Your Dispatch").fill("Without choosing a side first.");
+      await compose.getByLabel(/^None\. I wrote this myself\./).check();
+      await compose.getByRole("button", { name: "Post Dispatch" }).click();
+      await expect(p.getByText("Choose For or Against to post here.").first()).toBeVisible();
+      await compose.getByLabel("Against", { exact: true }).check();
+      await compose.getByRole("button", { name: "Post Dispatch" }).click();
+      await expect(p.getByText("Your Dispatch has been posted.", { exact: false })).toBeVisible();
+      const { data } = await service.from("dispatches").select("position, side").eq("campaign_id", campaign!.id).single();
+      expect(data).toEqual({ position: "against", side: "against" });
+      // No private position was ever recorded.
+      expect((await service.from("campaign_positions").select("user_id").eq("user_id", user.id)).data).toEqual([]);
+      await expectNoHorizontalOverflow(p);
+    } finally {
+      await service.from("dispatches").delete().eq("campaign_id", campaign!.id);
+      await service.from("campaigns").delete().eq("id", campaign!.id);
+      await service.from("community_settings").update({ cooldown_seconds: 30 }).eq("id", true);
+    }
+  });
+});

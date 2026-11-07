@@ -198,7 +198,7 @@ test("account deletion is off by default, and when on it anonymises and keeps Di
   await p.goto("/profile/delete");
   await expect(p.getByText("Self-service deletion is not switched on yet during this closed test.")).toBeVisible();
   await expect(p.getByText("We will delete it by hand and confirm within one month.", { exact: false })).toBeVisible();
-  await expect(p.getByRole("link", { name: "Contact us about your data" })).toBeVisible();
+  await expect(p.locator("#main").getByRole("link", { name: "Contact us about your data" })).toBeVisible();
   await expect(p.getByRole("link", { name: "Back to your account" })).toBeVisible();
   await expect(p.getByText("DRAFT: this page is complete but has not yet had its final legal review.", { exact: false })).toBeVisible();
   await expect(p.getByRole("button", { name: "Delete my account" })).toHaveCount(0);

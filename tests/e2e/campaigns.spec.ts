@@ -116,6 +116,8 @@ test("an admin creates a Campaign; a Strategist sees it, records a before positi
   await page.getByRole("button", { name: "Record my position" }).click();
   await expect(page.getByText("Choose For, Against or Undecided.").first()).toBeVisible();
   await page.getByLabel("Against").check();
+  // Recording a position is optional and needs consent the first time.
+  await page.getByLabel("I agree to you recording my position on Campaigns.").check();
   await page.getByRole("button", { name: "Record my position" }).click();
   await expect(page.getByText("Your starting position has been recorded.")).toBeVisible();
   await page.reload();
