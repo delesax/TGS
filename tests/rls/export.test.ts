@@ -12,7 +12,14 @@ let campaignId: string;
 let myDispatch: string;
 let otherDispatch: string;
 let inviteCode: string;
-let head: Record<string, any>;
+type Head = {
+  account: Record<string, unknown>;
+  consents: Record<string, unknown>;
+  passkeys: Record<string, unknown>[];
+  following: { campaigns: unknown[]; strategists: unknown[] };
+  [key: string]: unknown;
+};
+let head: Head;
 
 beforeAll(async () => {
   const invite = await createInvite();
@@ -67,7 +74,7 @@ beforeAll(async () => {
   await service.from("privacy_requests").insert({ type: "complaint", email, message: "Sent before I had an account." });
   await service.from("privacy_requests").insert({ type: "question", email: `someone-else-${randomUUID()}@example.test`, message: "NOT-MINE" });
 
-  head = (await exportHead(service, me.id, email)) as Record<string, any>;
+  head = (await exportHead(service, me.id, email)) as Head;
 });
 
 afterAll(async () => {
@@ -86,7 +93,7 @@ describe("Download my data includes", () => {
     expect(head.account).toMatchObject({ email: me.email, id: me.id, display_name: "Me Myself", invite_code_used: inviteCode });
     expect(head.account.handle).toMatch(/^Me_/);
     expect(head.consents).toMatchObject({ terms_version: "tv-1", privacy_version: "pv-1", positions_consent_version: "pv-1" });
-    for (const k of ["age_confirmed_at", "terms_accepted_at", "public_acknowledged_at", "positions_consent_at"]) expect(head.consents[k], k).not.toBeNull();
+    for (const k of ["age_confirmed_at", "terms_accepted_at", "public_acknowledged_at", "positions_consent_at"]) expect((head.consents as Record<string, unknown>)[k], k).not.toBeNull();
   });
 
   it("Dispatches with their AI-use declarations", async () => {
