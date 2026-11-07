@@ -30,6 +30,17 @@ You will need: access to the domain's DNS settings (wherever `thegrandstrategist
 11. Save. Then go to **Authentication → Rate Limits** and raise **Emails sent per hour** to a level that suits the pilot (for example 100).
 12. Go to **Authentication → URL Configuration**. Set **Site URL** to `https://thegrandstrategist.com` and add `https://thegrandstrategist.com/**` to **Redirect URLs** (keep the existing Vercel address too).
 
+12a. Go to **Authentication → Emails → Templates** and open **Confirm sign up**. Set the subject to `Confirm your email address for The Grand Strategist`. Replace the whole message body with the text below, exactly as written, then press **Save**:
+
+    ```html
+    <h2>Confirm your email address</h2>
+    <p>Welcome to The Grand Strategist. Press the link below to confirm your email address and choose your handle.</p>
+    <p><a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/onboarding">Confirm my email address</a></p>
+    <p>If you did not sign up, you can ignore this email.</p>
+    ```
+
+    **Why this matters:** Supabase's built-in template sends the person through Supabase first and then hands the app a one-time code that only works in the same browser they signed up in. Open the email on a phone's mail app or a different browser and the app says "That confirmation link did not work", even though Supabase has already confirmed the address and used up the invite place. This template sends the app a link that works on any device. The app already understands it (`/auth/confirm` reads `token_hash` and `type`). It builds the link from the **Site URL** in step 12, so do step 12 first; with the wrong Site URL the link points at the wrong website.
+
 ## Part 3. Vercel: the app's email settings
 
 13. Open the Vercel dashboard, then the TGS project, then **Settings → Environment Variables**.
@@ -72,6 +83,7 @@ Tick each one. If one fails, the email waits in the queue; nothing is lost.
 - [ ] Resend shows the domain as **Verified**.
 - [ ] Sign up with a new invite on the live site: the confirmation email arrives within a minute, from `notifications@thegrandstrategist.com`, and is not in spam.
 - [ ] The link in that email opens the live site (not localhost) and lets you choose a handle.
+- [ ] Open that link on a different device or browser from the one you signed up in (for example sign up on a computer, open the email on a phone). It still lets you choose a handle, with no "did not work" message. This is the check for step 12a.
 - [ ] Follow a test Campaign, then have a second test account reply to one of your Dispatches. Within about 15 minutes (the reply digest waits 10), a "replied to your Dispatch" email arrives.
 - [ ] The email's **Stop these emails** link opens a confirmation page on the live site, and pressing the button turns that email type off under **Account → Email settings**.
 - [ ] In Resend, **Logs** shows the emails as delivered.
@@ -84,3 +96,4 @@ Tick each one. If one fails, the email waits in the queue; nothing is lost.
 - Emails stay `queued`: check steps 14, 16 and 17 (the secret in Vercel and in Vault must match exactly, and the address must be the custom domain).
 - Emails show `failed` with "domain not verified": finish Part 1.
 - Sign-up emails do not arrive: check Part 2, and the Supabase rate limit in step 11.
+- The confirmation link says "That confirmation link did not work" but signing in works: the address was confirmed, and step 12a (the **Confirm sign up** template) is missing or was saved with different text. Redo step 12a; the person can simply sign in meanwhile.
