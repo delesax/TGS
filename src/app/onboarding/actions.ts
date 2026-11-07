@@ -104,7 +104,8 @@ export async function chooseHandle(_prev: FormState, formData: FormData): Promis
     action: "profile.handle_set",
     target_table: "profiles",
     target_id: viewer.userId,
-    details: { handle },
+    // No handle here: audit_log can never be edited, so a handle written into it would outlive account deletion.
+    details: {},
   });
 
   redirect("/dossier?welcome=1");

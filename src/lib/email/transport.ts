@@ -10,15 +10,17 @@ export type OutgoingEmail = {
   html: string;
   /** Same key for a retry of the same message, so the provider sends it once. */
   idempotencyKey: string;
-  unsubscribeUrl: string;
-  unsubscribePostUrl: string;
+  /** Omitted for emails that are not subscriptions (security and account emails, replies to a request). */
+  unsubscribeUrl?: string;
+  unsubscribePostUrl?: string;
 };
 
 export type Transport =
   | { kind: "resend" | "mailpit"; from: string; send: (email: OutgoingEmail) => Promise<string> }
   | { kind: "misconfigured"; reason: string };
 
-function headersFor(email: OutgoingEmail) {
+function headersFor(email: OutgoingEmail): Record<string, string> {
+  if (!email.unsubscribeUrl || !email.unsubscribePostUrl) return {};
   return {
     "List-Unsubscribe": `<${email.unsubscribePostUrl}>, <${email.unsubscribeUrl}>`,
     "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
