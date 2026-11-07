@@ -243,7 +243,7 @@ export function describeDispatchError(error: { message?: string; details?: strin
     case "POSITION_REQUIRED":
       return { code, message: "Record your position first.", hint: "Use the Your position box on this page, then post." };
     case "POSITION_SIDE_REQUIRED":
-      return { code, message: "Choose For or Against to post here.", hint: "This is an Oxford-style Campaign, so each Dispatch argues one side. Change your position above." };
+      return { code, message: "Choose For or Against to post here.", hint: "This is an Oxford-style Campaign, so each Dispatch argues one side. Choose the side your Dispatch argues.", field: "side" };
     case "ROUND_LIMIT":
       return {
         code,

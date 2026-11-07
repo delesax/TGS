@@ -6,6 +6,7 @@ import { Countdown } from "@/components/countdown";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getViewer } from "@/lib/auth";
+import { hasPositionsConsent } from "@/lib/positions-consent";
 import { getCampaign, getMyPosition, getServerNow } from "@/lib/campaign-data";
 import { POSITION_LABELS, currentRound, formatUkDateTime, statusAt } from "@/lib/campaigns";
 import { DispatchSection } from "./dispatch-section";
@@ -26,7 +27,9 @@ export default async function CampaignPage({ params }: PageProps<"/campaigns/[sl
 
   const status = statusAt(campaign, now);
   const round = status === "open" ? currentRound(campaign.rounds, now) : null;
-  const position = viewer?.profile?.handle ? await getMyPosition(campaign.id, viewer.userId) : null;
+  const [position, consented] = viewer?.profile?.handle
+    ? await Promise.all([getMyPosition(campaign.id, viewer.userId), hasPositionsConsent(viewer.userId)])
+    : [null, false];
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-8 sm:py-12">
@@ -102,7 +105,7 @@ export default async function CampaignPage({ params }: PageProps<"/campaigns/[sl
         <CardHeader>
           <CardTitle>Your position</CardTitle>
           <CardDescription>
-            Say where you stand before the debate, and again once it is under way. Only you and the judges see this. It is how we measure who changed minds.
+            Optional. Say where you stand before the debate, and again once it is under way. It is private to you and our moderation team. It is how we measure who changed minds. You can take part without it.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -117,7 +120,7 @@ export default async function CampaignPage({ params }: PageProps<"/campaigns/[sl
               <Link href="/onboarding">Choose your handle first</Link>
             </Button>
           ) : status === "scheduled" ? (
-            <PositionForm campaignId={campaign.id} slug={campaign.slug} stage="before" current={position?.before_position ?? null} />
+            <PositionForm campaignId={campaign.id} slug={campaign.slug} stage="before" current={position?.before_position ?? null} consented={consented} hasAnyPosition={Boolean(position)} />
           ) : status === "open" ? (
             <>
               <p className="text-lg">
@@ -125,7 +128,7 @@ export default async function CampaignPage({ params }: PageProps<"/campaigns/[sl
                   ? `Before the debate you said: ${POSITION_LABELS[position.before_position]}.`
                   : "You did not record a position before the debate started."}
               </p>
-              <PositionForm campaignId={campaign.id} slug={campaign.slug} stage="after" current={position?.after_position ?? null} />
+              <PositionForm campaignId={campaign.id} slug={campaign.slug} stage="after" current={position?.after_position ?? null} consented={consented} hasAnyPosition={Boolean(position)} />
             </>
           ) : status === "closed" ? (
             <p className="text-lg">
@@ -173,7 +176,7 @@ export default async function CampaignPage({ params }: PageProps<"/campaigns/[sl
         </section>
       ) : null}
 
-      {status !== "draft" ? <DispatchSection campaign={campaign} viewer={viewer} status={status} round={round} now={now} position={position} /> : null}
+      {status !== "draft" ? <DispatchSection campaign={campaign} viewer={viewer} status={status} round={round} now={now} /> : null}
 
       <div className="flex flex-col gap-3 sm:flex-row">
         <Button asChild variant="outline">

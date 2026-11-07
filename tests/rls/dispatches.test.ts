@@ -20,7 +20,7 @@ let otherOpenId: string;
 const campaignIds: string[] = [];
 const hour = 3_600_000;
 
-type PostArgs = { kind?: string; body?: string; ai_use?: string | null; parent?: string | null; sources?: unknown[]; campaign?: string };
+type PostArgs = { kind?: string; body?: string; ai_use?: string | null; parent?: string | null; sources?: unknown[]; campaign?: string; side?: string };
 
 async function post(user: TestUser | SupabaseClient, args: PostArgs = {}) {
   const client = "client" in user ? user.client : user;
@@ -31,6 +31,7 @@ async function post(user: TestUser | SupabaseClient, args: PostArgs = {}) {
     p_ai_use: args.ai_use === undefined ? "none" : args.ai_use,
     p_parent_id: args.parent ?? null,
     p_sources: args.sources ?? [],
+    ...(args.side ? { p_side: args.side } : {}),
   });
 }
 
@@ -100,10 +101,10 @@ afterAll(async () => {
 });
 
 describe("posting through post_dispatch()", () => {
-  it("posts a visible argument with the author's position, audits it and follows the Campaign", async () => {
+  it("posts a visible argument (no side outside Oxford), audits it and follows the Campaign", async () => {
     const id = await postOk(author);
     const { data } = await anonClient().from("dispatches").select("kind, position, moderation_status, round_position, depth, root_id").eq("id", id).single();
-    expect(data).toEqual({ kind: "argument", position: "for", moderation_status: "visible", round_position: null, depth: 0, root_id: id });
+    expect(data).toEqual({ kind: "argument", position: null, moderation_status: "visible", round_position: null, depth: 0, root_id: id });
 
     const { data: log } = await service.from("audit_log").select("action, actor_id").eq("target_id", id).order("id");
     // Created by the author, then made visible by screening (actor: the system).
@@ -120,9 +121,27 @@ describe("posting through post_dispatch()", () => {
     expect((await post(noHandle)).error?.message).toMatch(/^NOT_ONBOARDED/);
   });
 
-  it("needs a recorded position, and For or Against in an Oxford-style Campaign", async () => {
-    expect((await post(noPosition)).error?.message).toMatch(/^POSITION_REQUIRED/);
+  it("does not need a recorded position; an Oxford-style Campaign needs a chosen side, which is not the private position", async () => {
+    // No position on record: posting in an ordinary Campaign works, and the Dispatch carries no side.
+    const id = await postOk(noPosition);
+    const { data: plain } = await service.from("dispatches").select("position, side").eq("id", id).single();
+    expect(plain).toEqual({ position: null, side: null });
+
+    // Oxford: a side is required, and "undecided" is not a side.
     expect((await post(author, { campaign: oxfordId })).error?.message).toMatch(/^POSITION_SIDE_REQUIRED/);
+    expect((await post(author, { campaign: oxfordId, side: "undecided" })).error?.message).toMatch(/^POSITION_SIDE_REQUIRED/);
+
+    // The published side is the chosen one. The author's private position there is "undecided" and is never copied.
+    const oxfordPost = await postOk(author, { campaign: oxfordId, side: "against" });
+    const { data: oxford } = await service.from("dispatches").select("position, side").eq("id", oxfordPost).single();
+    expect(oxford).toEqual({ position: "against", side: "against" });
+  });
+
+  it("never copies a private position onto a Dispatch in an ordinary Campaign", async () => {
+    // reader recorded "against" privately on openId.
+    const id = await postOk(reader);
+    const { data } = await service.from("dispatches").select("position").eq("id", id).single();
+    expect(data!.position).toBeNull();
   });
 
   it("refuses draft, scheduled and closed Campaigns by server time", async () => {

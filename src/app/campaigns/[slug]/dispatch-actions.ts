@@ -74,6 +74,7 @@ export async function postDispatch(_prev: DispatchFormState, formData: FormData)
   const campaignId = z.uuid().safeParse(formData.get("campaignId"));
   if (!slug.success || !campaignId.success) return { formError: "Something went wrong.", formHint: "Reload the page and try again." };
 
+  const side = z.enum(["for", "against"]).safeParse(formData.get("side"));
   const { sources, errors: sourceErrors } = parseSources(readSources(formData));
   const limits = await getDispatchLimits();
   const parsed = dispatchInputSchema(limits).safeParse({
@@ -99,6 +100,9 @@ export async function postDispatch(_prev: DispatchFormState, formData: FormData)
     p_ai_use: input.aiUse,
     p_parent_id: input.parentId,
     p_sources: input.sources,
+    // Only Oxford-style Campaigns use it (each Dispatch argues one side). It is
+    // the side the author publishes, not their private position.
+    p_side: side.success ? side.data : null,
   });
   if (error) return problemState(error);
 

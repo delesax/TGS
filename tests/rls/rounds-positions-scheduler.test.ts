@@ -155,9 +155,14 @@ describe("campaign_positions", () => {
     expect(insertError?.message).toMatch(/POSITION_LOCKED/);
   });
 
-  it("cannot be deleted", async () => {
-    const { data } = await strategist.client.from("campaign_positions").delete().eq("user_id", strategist.id).select();
+  it("cannot be deleted once the Campaign has closed (open ones can be cleared: see positions-consent.test.ts)", async () => {
+    const id = await campaign({ status: "open", starts_at: iso(Date.now() - 10 * minute), ends_at: iso(Date.now() + 10 * minute) });
+    await strategist.client.from("campaign_positions").insert({ campaign_id: id, user_id: strategist.id, after_position: "for" });
+    await service.from("campaigns").update({ status: "closed", starts_at: iso(Date.now() - 20 * minute), ends_at: iso(Date.now() - minute) }).eq("id", id);
+    const { data } = await strategist.client.from("campaign_positions").delete().eq("campaign_id", id).eq("user_id", strategist.id).select();
     expect(data ?? []).toHaveLength(0);
+    const { data: still } = await service.from("campaign_positions").select("campaign_id").eq("campaign_id", id).eq("user_id", strategist.id);
+    expect(still).toHaveLength(1);
   });
 });
 
