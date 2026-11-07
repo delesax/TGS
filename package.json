@@ -23,6 +23,7 @@
     "admin:set": "tsx scripts/make-admin.ts",
     "test:env": "bash scripts/local-test-env.sh",
     "topics:load": "tsx scripts/load-topics.ts",
+    "account:delete": "tsx scripts/delete-account.ts",
     "campaign:test": "tsx scripts/test-campaign.ts",
     "seed:debate": "tsx scripts/seed-debate.ts",
     "seed:abuse": "tsx scripts/seed-abuse.ts",
