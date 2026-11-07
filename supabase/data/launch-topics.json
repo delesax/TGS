@@ -10,21 +10,21 @@
   "topics": [
     {
       "slug": "bank-of-england-rate-decision-november",
-      "title": "Should the Bank of England raise interest rates on 5 November?",
+      "title": "Should the Bank of England keep interest rates high until inflation is firmly back at 2%, even if that slows growth?",
       "category": "financial_services",
       "format": "open_arena",
-      "suggested_format": "Poll-and-argue, closing just before the announcement so each call can be scored against the real result.",
+      "suggested_format": "Open arena. Opinion, not advice.",
       "wave": 2,
-      "summary": "Bank Rate is 3.75%. The Monetary Policy Committee held it for the sixth meeting running on 17 September, by 6 votes to 3; the three dissenters wanted 4%. The July report projected CPI peaking at 3.2% in the final quarter of 2026. The next decision is due at noon on Thursday 5 November 2026.",
-      "argument_for": "Inflation is still rising and the committee is already split.",
-      "argument_against": "Energy-driven prices may fade, growth is fragile, and mortgage holders feel every quarter-point.",
+      "summary": "The Bank's target for inflation is 2%. Bank Rate and CPI inflation figures are refreshed on the day the Campaign opens.",
+      "argument_for": "Stable prices protect savers and wages over time, and cutting too early risks inflation returning.",
+      "argument_against": "High rates hurt mortgage holders and businesses now, and a weak economy can bring inflation down by itself.",
       "sources": [
         "https://www.investmentweek.co.uk/news/4535896/bank-england-bucks-trend-global-interest-rate-hikes-hold-375",
         "https://www.financecalendar.com/event/bank-of-england-mpc-rate-decision-november-2026/"
       ],
       "is_sensitive": false,
       "opinion_not_advice": true,
-      "needs_owner_decision": "The 5 November decision falls before the 1 December soft launch, so this topic cannot run as written. Choose the next MPC date or replace the topic."
+      "public_summary": "As of [opening date], Bank Rate is [x]% and CPI inflation is [y]%. The Bank's target is 2%. [One sentence on the latest decision and vote.]"
     },
     {
       "slug": "bank-surcharge-energy-bill-support",
@@ -61,7 +61,7 @@
     },
     {
       "slug": "rosebank-after-jackdaw",
-      "title": "Having approved Jackdaw, should the UK also approve Rosebank?",
+      "title": "Should the UK approve new North Sea oil and gas projects such as Rosebank?",
       "category": "energy",
       "format": "open_arena",
       "suggested_format": "Open debate, with an energy economist and a climate scientist on the panel.",
@@ -75,7 +75,8 @@
       ],
       "is_sensitive": false,
       "opinion_not_advice": false,
-      "needs_owner_decision": "Owner suggests holding back until the AI moderator is tested on calmer topics."
+      "needs_owner_decision": "Owner suggests holding back until the AI moderator is tested on calmer topics.",
+      "admin_notes": "Open only when ALL are true: (1) eval:moderation --real met its targets; (2) at least two wave-1 Campaigns have finished with every hold and appeal answered within 48 hours; (3) a second reviewer is in place."
     },
     {
       "slug": "energy-price-shock-tax-cuts-subsidies",
@@ -245,8 +246,8 @@
       "slug": "assisted-dying-or-fix-care-first",
       "title": "Should assisted dying legislation return, or should palliative and social care be fixed first?",
       "category": "health_social_care",
-      "format": "open_arena",
-      "suggested_format": "Closed, moderated debate with stricter AI moderation and clear rules on respect. The most sensitive of the fifteen: do not run first.",
+      "format": "oxford",
+      "suggested_format": "Oxford format, three rounds, stricter AI moderation and clear rules on respect.",
       "wave": 4,
       "summary": "The assisted dying bill, reintroduced in the Commons on 11 September 2026 by Lauren Edwards, was defeated at second reading by 286 votes to 270, after running out of time in the Lords in April. The Prime Minister did not vote and has said palliative and social care funding should be fixed first. Campaigners expect the issue to return when, not if.",
       "argument_for": "The Commons has backed the principle before, and people with terminal illness cannot wait for a perfect care system.",
@@ -256,7 +257,9 @@
       ],
       "is_sensitive": true,
       "opinion_not_advice": true,
-      "needs_owner_decision": "Needs your approved wording for the content note and any support-resources text (CLAUDE.md rule 15). The loader must not invent it. 'Closed, moderated' is not a format in the database yet; stricter moderation arrives in Sprint 4."
+      "needs_owner_decision": "Needs your approved wording for the content note and any support-resources text (CLAUDE.md rule 15). The loader must not invent it. 'Closed, moderated' is not a format in the database yet; stricter moderation arrives in Sprint 4.",
+      "content_note": "This Campaign is about assisted dying, death and terminal illness. Some Strategists will have lived through bereavement, serious illness or suicide. Argue the position, not the person. A Dispatch that encourages self-harm or suicide, or that attacks people for their illness, disability or choices, will be held for a person to read and may be removed. If this topic affects you, support is available: Samaritans 116 123 (free, any time); Cruse Bereavement Support 0808 808 1677; Marie Curie Support Line 0800 090 2309.",
+      "admin_notes": "Format: Oxford, three rounds (opening, rebuttal, closing). Rounds are created in Admin → Campaigns before it opens, with the dates. Check each phone number on the day it opens. Open only after the three Rosebank conditions, with the second reviewer on call for the first 48 hours."
     }
   ]
 }

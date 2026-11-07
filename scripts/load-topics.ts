@@ -17,9 +17,9 @@ import { describeTarget, loadEnv, requireVar } from "./lib/env";
 
 loadEnv();
 
-const { values } = parseArgs({ options: { start: { type: "string" }, file: { type: "string", default: "supabase/data/launch-topics.json" } } });
+const { values } = parseArgs({ options: { start: { type: "string" }, concurrent: { type: "boolean", default: false }, file: { type: "string", default: "supabase/data/launch-topics.json" } } });
 if (!values.start) {
-  console.error("Usage: npm run topics:load -- --start YYYY-MM-DD   (the date the first topic opens, UK time)");
+  console.error("Usage: npm run topics:load -- --start YYYY-MM-DD [--concurrent]   (the date the first topic opens, UK time)");
   process.exit(1);
 }
 
@@ -30,7 +30,7 @@ async function main() {
     for (const issue of parsed.error.issues) console.error(`  ${issue.path.join(".")}: ${issue.message}`);
     process.exit(1);
   }
-  const rows = buildTopicRows(parsed.data, values.start!);
+  const rows = buildTopicRows(parsed.data, values.start!, { concurrent: values.concurrent });
 
   const url = requireVar("NEXT_PUBLIC_SUPABASE_URL");
   console.log(`Target: ${describeTarget(url)}`);

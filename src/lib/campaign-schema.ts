@@ -40,7 +40,7 @@ export const campaignInputSchema = z
     startsAt: ukTime("start date and time"),
     endsAt: ukTime("end date and time"),
     isSensitive: z.boolean(),
-    contentNote: z.string().trim().max(500, "Keep the content note to 500 characters or fewer."),
+    contentNote: z.string().trim().max(1000, "Keep the content note to 1,000 characters or fewer."),
     opinionNotAdvice: z.boolean(),
     notes: z.string().trim().max(2000, "Keep the notes to 2,000 characters or fewer."),
     rounds: z.array(roundInputSchema).max(10, "A Campaign can have at most 10 rounds."),
