@@ -13,6 +13,8 @@ export type RetentionJob = {
   period: string;
   /** Database table(s) the job deletes from. */
   table: string;
+  /** False for housekeeping that the policy page does not list. */
+  inPolicy?: boolean;
 };
 
 export const RETENTION_JOBS: RetentionJob[] = [
@@ -21,7 +23,7 @@ export const RETENTION_JOBS: RetentionJob[] = [
   { job: "retention-reports-flags", data: "Reports and moderation flags", period: "12 months after they are resolved", table: "dispatch_reports, moderation_flags" },
   { job: "retention-coach-feedback", data: "Coach feedback and ratings", period: "90 days", table: "coach_feedback" },
   { job: "retention-emails", data: "Queued and sent emails", period: "30 days", table: "email_outbox" },
-  { job: "retention-webauthn-challenges", data: "Expired passkey challenges", period: "1 day", table: "webauthn_challenges" },
+  { job: "retention-webauthn-challenges", data: "Expired passkey challenges", period: "1 day", table: "webauthn_challenges", inPolicy: false },
   { job: "retention-privacy-requests", data: "Privacy requests and complaints", period: "six years after they are closed", table: "privacy_requests" },
   { job: "retention-audit-log", data: "Safety and accountability record", period: "six years", table: "audit_log" },
 ];
