@@ -73,6 +73,10 @@ test.describe("Sign-up with an invite code", () => {
     await page.getByLabel("Invite code").fill(inviteCode);
     await page.getByRole("button", { name: "Create account" }).click();
     await expect(page.getByRole("heading", { level: 1, name: "Check your email" })).toBeVisible();
+    // Cookie audit (privacy policy, "Cookies and similar technologies"): what the site stores right after sign-up.
+    const afterSignUp = await page.context().cookies();
+    expect(afterSignUp.length).toBeGreaterThan(0);
+    for (const c of afterSignUp) expect(c.name, "only code-verifier cookies exist at this point").toMatch(/^sb-.+code-verifier$/);
 
     // Click the link in the confirmation email.
     await page.goto(await confirmationLink(email));

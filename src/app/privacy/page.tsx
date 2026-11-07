@@ -215,8 +215,8 @@ export default function PrivacyPage() {
           caption="Cookies and similar storage used by the site"
           columns={["Name", "What it does", "How long"]}
           rows={[
-            ["sb-…-auth-token (a cookie; the middle part is our project code)", "Keeps you signed in. Set only after you sign in.", "Until you sign out, up to about a week without use"],
-            ["sb-…-auth-token-code-verifier (a cookie)", "Protects a sign-in or email-confirmation step from being hijacked. Set only during those steps.", "Minutes; removed when the step ends"],
+            ["sb-…-auth-token (a cookie, sometimes in two parts ending .0 and .1; the middle of the name is our project code)", "Keeps you signed in. Set only after you sign in.", "400 days at most (the longest browsers allow), or until you sign out"],
+            ["sb-…-code-verifier (up to three cookies with names ending code-verifier)", "Protects the email-confirmation link you get when you create an account from being hijacked. Set only when you create an account.", "400 days at most; they hold a random code and nothing about you"],
             ["tgs-draft:… (session storage in your browser)", "Keeps an unsent Dispatch if you refresh the page. Never sent to us.", "Until you close the tab"],
             ["tgs-content-note:… (session storage in your browser)", "Remembers you have seen a content note on a sensitive Campaign.", "Until you close the tab"],
             ["tgs-install-dismissed (local storage in your browser)", "Remembers you closed the “add to your home screen” hint.", "Until you clear your browser data"],
@@ -224,7 +224,7 @@ export default function PrivacyPage() {
           ]}
         />
         <p>
-          <Pending>Owner: the lifetimes above are the defaults of our sign-in provider and were not measured on the live site. Check them on launch day.</Pending>
+          <Pending>Owner: measured on a test copy of the site; check the names and lifetimes again on launch day</Pending>
         </p>
 
         <H2>Changes</H2>
