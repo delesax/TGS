@@ -110,7 +110,7 @@ pg_cron runs in **UTC**: the jobs run at 03:17 to 03:31 UTC, which is 03:17 to 0
 
 ## What I did not finish or could not do
 
-- **Hosted dry run of the draft-Campaign script:** needs the hosted keys in `.env.local`, which I may not read. I ran its logic against stand-in rows on the local database (tests). Run `npx tsx scripts/update-draft-topics.ts` from the main checkout to see the real diff. Not run with `--confirm`.
+- **Hosted dry run of the draft-Campaign script:** done once with your OK, read-only, run from the main checkout so it could load the hosted keys without printing them. All three hosted rows are still `draft`; the diff is exactly the decisions (Bank of England: new title, template summary, notes, owner decision cleared, brief; Rosebank: new title and the three-conditions note; assisted dying: Oxford, your content note, notes, brief). Output is in the shared notes folder (`hosted-draft-topics-dry-run.txt`). **Not run with `--confirm`.**
 - **Supabase-sent emails** (sign-up confirmation, password reset): their footer is set in the Supabase dashboard; the snippet is in `docs/legal/AUTH_EMAIL_FOOTER.md`.
 - **A real `reviewed = true` flip:** by design not done.
 - **Age assurance, appeals and AI-usage retention, emailed-request logging, an admin "withdraw consent" button:** recorded as owner decisions in the `docs/legal/` files.
