@@ -43,11 +43,27 @@ test.describe("Sign-up with an invite code", () => {
     await page.getByRole("link", { name: "I have an invite code" }).click();
     await expect(page.getByRole("heading", { level: 1, name: "Create your account" })).toBeVisible();
 
+    // All three boxes are required, and each missing box has its own message.
+    await page.getByLabel("Invite code").fill(inviteCode);
+    await page.getByLabel("Email address").fill(email);
+    await page.getByLabel("Choose a password").fill("a long pilot password");
+    await page.getByRole("button", { name: "Create account" }).click();
+    await expect(page.getByText("Please tick the box to confirm you are 18 or over.")).toBeVisible();
+    await expect(page.getByText("Please tick the box to confirm you understand that your Dispatches are public.")).toBeVisible();
+    await expect(page.getByText("Please tick the box to agree to the terms of use and confirm you have read the privacy policy.")).toBeVisible();
+    await page.getByLabel("I am 18 or over.").check();
+    await page.getByLabel(/I understand that my Dispatches are public/).check();
+    await page.getByRole("button", { name: "Create account" }).click();
+    await expect(page.getByText("Please tick the box to agree to the terms of use")).toBeVisible();
+    await expect(page.getByText("Please tick the box to confirm you are 18 or over.")).toHaveCount(0);
+    // The wording is exact.
+    await expect(page.getByLabel(/I understand that my Dispatches are public/)).toBeVisible();
+    await expect(page.getByText("I understand that my Dispatches are public, and that if I delete my account they stay in the debate record without my name.")).toBeVisible();
+
     // A wrong invite code is refused with a clear message, and nothing typed is lost.
     await page.getByLabel("Invite code").fill("TGS-WRNG-WRNG-WRNG");
     await page.getByLabel("Email address").fill(email);
     await page.getByLabel("Choose a password").fill("a long pilot password");
-    await page.getByLabel("I am 18 or over.").check();
     await page.getByLabel(/I agree to the/).check();
     await page.getByRole("button", { name: "Create account" }).click();
     await expect(page.getByRole("alert").filter({ hasText: "Your invite code was not accepted." })).toBeVisible();

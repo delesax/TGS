@@ -32,6 +32,7 @@ describe("signUpSchema", () => {
     password: "correct horse battery",
     inviteCode: "TGS-ABCD-EFGH",
     ageConfirmed: true,
+    publicAcknowledged: true,
     termsAccepted: true,
   };
 

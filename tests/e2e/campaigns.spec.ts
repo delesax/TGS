@@ -19,7 +19,7 @@ async function makeUser(prefix: string, admin = false) {
     email,
     password,
     email_confirm: true,
-    user_metadata: { invite_code: code, age_confirmed: true, terms_accepted: true },
+    user_metadata: { invite_code: code, age_confirmed: true, terms_accepted: true, public_acknowledged: true, terms_version: "test", privacy_version: "test" },
     app_metadata: admin ? { role: "admin" } : {},
   });
   if (error) throw error;

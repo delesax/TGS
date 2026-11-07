@@ -23,7 +23,7 @@ async function makeStrategist(prefix: string) {
     email,
     password,
     email_confirm: true,
-    user_metadata: { invite_code: code, age_confirmed: true, terms_accepted: true },
+    user_metadata: { invite_code: code, age_confirmed: true, terms_accepted: true, public_acknowledged: true, terms_version: "test", privacy_version: "test" },
   });
   if (error) throw error;
   userIds.push(data.user.id);
