@@ -121,4 +121,9 @@ None added.
 7. Review and open the PR for `sprint-5-judging` when you are ready (not opened).
 
 ## Commit and merge check
-See the end of this file after the commit.
+- Work commit: `2aef6ad` "Sprint 5: judging and the Verdict" on `sprint-5-judging` (local only; not pushed). This log was then updated in a second commit.
+- Trial merges (`git merge-tree`, nothing changed on any branch):
+  - with `legal-hardening` (`ccb2822`): two small conflicts, both "keep both sides": `CHANGELOG.md` (each branch adds an entry at the top) and `tests/rls/every-table-has-rls.test.ts` (each branch appends tables to the same list). `package.json`, `admin-nav.tsx`, the Campaign page, `dispatch-section.tsx` and `templates.ts` merge automatically.
+  - with `sprint-4-audit-handle` (`bc88132`): one conflict in `CHANGELOG.md` (keep both entries).
+- After merging legal-hardening, re-run `npm run test:rls` and the seed: legal adds positions consent (the seed already sets `positions_consent_at` when the column exists) and drops the position requirement for posting.
+- Local database: the local Supabase (shared by all worktrees) was reset with these migrations and holds the seeded test Campaign. `npx supabase db reset` from any branch rebuilds it for that branch.
