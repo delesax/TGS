@@ -27,7 +27,10 @@
     "seed:debate": "tsx scripts/seed-debate.ts",
     "seed:abuse": "tsx scripts/seed-abuse.ts",
     "eval:moderation": "tsx scripts/eval-moderation.ts",
-    "eval:coach": "tsx scripts/eval-coach.ts"
+    "eval:coach": "tsx scripts/eval-coach.ts",
+    "eval:judging": "tsx scripts/eval-judging.ts",
+    "eval:judge": "tsx scripts/eval-judging.ts",
+    "seed:judging": "tsx scripts/seed-judging.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.4.0",

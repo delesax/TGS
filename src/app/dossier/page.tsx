@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Award, Bell, FileText, Medal } from "lucide-react";
+import { Bell, FileText } from "lucide-react";
+import { TitlesAndAwards } from "@/components/judging/awards-section";
 import { DispatchSummaryItem, SUMMARY_COLUMNS, type DispatchSummary } from "@/components/dispatch/dispatch-summary";
 import { FollowStrategistButton } from "@/components/dispatch/follow-strategist-button";
 import { EmptyState, Page } from "@/components/page";
 import { Button } from "@/components/ui/button";
 import { requireStrategist } from "@/lib/auth";
+import { getAwardsFor } from "@/lib/judging/data";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Your Dossier" };
@@ -26,7 +28,7 @@ export default async function DossierPage({ searchParams }: PageProps<"/dossier"
   const p = viewer.profile;
 
   const supabase = await createClient();
-  const [{ data: dispatchRows, count: dispatchTotal }, { data: campaignFollows }, { data: strategistFollows }] = await Promise.all([
+  const [{ data: dispatchRows, count: dispatchTotal }, { data: campaignFollows }, { data: strategistFollows }, awards, { count: judging }] = await Promise.all([
     supabase
       .from("dispatches")
       .select(SUMMARY_COLUMNS, { count: "exact" })
@@ -40,6 +42,8 @@ export default async function DossierPage({ searchParams }: PageProps<"/dossier"
       .select("followed:profiles!strategist_follows_followed_id_fkey(id, handle)")
       .eq("follower_id", viewer.userId)
       .order("created_at", { ascending: false }),
+    getAwardsFor(viewer.userId),
+    supabase.from("judge_assignments").select("campaign_id", { count: "exact", head: true }).eq("judge_id", viewer.userId).is("submitted_at", null),
   ]);
   const dispatches = (dispatchRows as unknown as DispatchSummary[]) ?? [];
   // Group by Campaign, keeping the order of each Campaign's newest Dispatch.
@@ -79,23 +83,16 @@ export default async function DossierPage({ searchParams }: PageProps<"/dossier"
         </Link>
       </section>
 
-      <section aria-labelledby="dossier-titles" className="flex flex-col gap-3">
-        <h2 id="dossier-titles" className="flex items-center gap-2 text-2xl font-semibold">
-          <Medal aria-hidden className="size-6 text-primary" /> Titles
-        </h2>
-        <EmptyState title="No titles yet">
-          Win a Campaign to be named Grand Strategist. Your title will be shown here for good.
-        </EmptyState>
-      </section>
+      {judging ? (
+        <p role="note" className="rounded-lg border-2 border-primary p-4 text-lg">
+          You are on a judging panel.{" "}
+          <Link href="/judging" className="font-semibold text-primary underline">
+            Open your judging
+          </Link>
+        </p>
+      ) : null}
 
-      <section aria-labelledby="dossier-awards" className="flex flex-col gap-3">
-        <h2 id="dossier-awards" className="flex items-center gap-2 text-2xl font-semibold">
-          <Award aria-hidden className="size-6 text-primary" /> Awards
-        </h2>
-        <EmptyState title="No awards yet">
-          Awards such as Best rebuttal and Best evidence are given when each Campaign closes.
-        </EmptyState>
-      </section>
+      <TitlesAndAwards awards={awards} own />
 
       <section aria-labelledby="dossier-dispatches" className="flex flex-col gap-3">
         <h2 id="dossier-dispatches" className="flex items-center gap-2 text-2xl font-semibold">

@@ -1,5 +1,22 @@
 # Changelog
 
+## Sprint 5: Judging and Verdict (11 November 2026). Awaiting review
+
+Branch `sprint-5-judging`, cut from `main` at `eec5c7c`. **Not applied to hosted**: two new migrations, tested on local Supabase only. **No real AI call was made**: every test, the seed and the evaluation ran on the fake provider. Full details, decisions and the owner checklist: `docs/SESSION_LOG_SPRINT_5.md`; click-through: `docs/DEMO_SPRINT_5.md`.
+
+- **Migrations** `20261111000100_judging_schema.sql` and `20261111000200_judging_functions.sql`. New tables (all with row-level security): `judging_settings`, `judge_assignments`, `panel_scores`, `peer_votes`, `steelman_flags`, `mind_change_picks`, `ai_rubric_jobs`, `ai_rubric_scores`, `verdicts`, `verdict_appeals`, `reputation`. `awards` gains `verdict_id` and `dispatch_id`. Two CHECK constraints widened (`ai_usage.feature`, `email_outbox.kind`); `ai_reserve_call()` recreated with the two judging features. Nothing dropped.
+- **Panel**: admins assign judges by handle; judges see only assigned, closed Campaigns, score each Dispatch 1-5 on logic, evidence, originality and responsiveness, save drafts, and submit, which locks the scores for every role. Nobody, admins included, reads a judge's scores before they submit.
+- **Peer votes**: participants only, never their own Dispatch, one per Dispatch, 5 vote credits, from the close for 72 hours. Weighted 1 + log2(1 + reputation points), capped at 3x the median voter.
+- **AI rubric** (Sonnet, `prompts/judge-rubric.v1.md`): four criteria plus a steelman check, queued and run by `/api/judging/process` (pg_cron + pg_net + shared secret), idempotent per Dispatch and prompt version, counted against the global daily AI cap (stops at 80%, like nudges), admin override with a reason.
+- **Steelman bonus** up to +5: AI-detected and confirmed by at least two other people; never self-awarded. **Mind-change**: "this changed my mind" picks credited only from people whose before/after position moved.
+- **Blend**: every part normalised to 0-100, weights snapshotted into the Verdict, documented tie-breaks; a missing part is never reweighted: the draft is marked "needs attention" and cannot be published until an admin fixes it or overrides the weights with a reason.
+- **Verdict workflow**: draft computed automatically at close + 96 hours (or by an admin), templated rationale (optional AI wording, off by default, marked AI-assisted), admin review, recompute, publish (Grand Strategist, four awards, reputation, leaderboard, emails), 7-day appeal window, final. Versioned: a recompute discards, a revised Verdict supersedes. Every compute, edit, publish, appeal and decision is audit-logged by user id, never handle.
+- **Pages**: `/campaigns/[slug]/verdict`, `/campaigns/[slug]/vote`, `/judging`, `/judging/[campaignId]`, `/leaderboard`, `/admin/judging` (status board, settings, weights) and `/admin/judging/[campaignId]`; titles and awards on Dossiers.
+- **Emails**: judge assigned, voting open, Verdict published, appeal outcome (existing outbox and preferences).
+- **Gold set** `evals/judging/gold-set.json` (30 synthetic Dispatches, DRAFT labels) and `npm run eval:judging` (also `eval:judge`), with `--real` for the model.
+- **Seed** `npm run seed:judging`: 12 users, a closed Campaign, panel, votes, picks, fake AI scores and a draft Verdict; one run at a time, repeat runs write nothing.
+- **Tests**: unit, RLS and Playwright suites green; see the session log for counts.
+
 ## Sprint 4 hardening (6 November 2026). Awaiting review
 
 Branch `sprint-4-hardening`, cut from the `sprint-4` head `4ba8692` because PR #3 had not been merged when it was started. Merge PR #3 first; this branch's own pull request then shows only the changes below. **Not applied to hosted.**

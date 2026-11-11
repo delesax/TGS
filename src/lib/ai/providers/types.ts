@@ -1,6 +1,6 @@
 import type { ProviderName } from "../types";
 
-export type AiTask = "screen_dispatch" | "screen_text" | "nudge" | "coach";
+export type AiTask = "screen_dispatch" | "screen_text" | "nudge" | "coach" | "judge_rubric" | "judge_rationale";
 
 export type ProviderRequest = {
   task: AiTask;

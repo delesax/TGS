@@ -59,7 +59,7 @@ export async function DispatchSection({
   if (status === "closed") {
     composer = (
       <ComposeNotice title="This Campaign has closed" action={<Button asChild variant="outline"><Link href="/campaigns">See open Campaigns</Link></Button>}>
-        Dispatches, edits and reactions stopped at the deadline. Read the debate below; the Verdict will be published on this page.
+        Dispatches, edits and reactions stopped at the deadline. Read the debate below; the Verdict, once published, is linked at the top of this page.
       </ComposeNotice>
     );
   } else if (status !== "open") {

@@ -10,6 +10,8 @@ export const PROMPTS = {
   screen_text: { name: "screen-text", version: 1 },
   nudge: { name: "nudge", version: 1 },
   coach: { name: "coach", version: 1 },
+  judge_rubric: { name: "judge-rubric", version: 1 },
+  judge_rationale: { name: "judge-rationale", version: 1 },
 } as const;
 
 export type PromptKey = keyof typeof PROMPTS;

@@ -8,11 +8,14 @@ import {
   JSON_SCHEMAS,
   coachSchema,
   dispatchScreenSchema,
+  judgeRationaleSchema,
+  judgeRubricSchema,
   nudgeSchema,
   parseStrict,
   textScreenSchema,
   type CoachOutput,
   type DispatchScreenOutput,
+  type JudgeRubricOutput,
   type NudgeOutput,
   type TextScreenOutput,
 } from "./schemas";
@@ -67,7 +70,7 @@ export async function callStructured<T>(
           model: opts.model,
           system,
           user: opts.user,
-          schema: JSON_SCHEMAS[opts.task === "screen_text" ? "screen_text" : opts.task],
+          schema: JSON_SCHEMAS[opts.task],
           maxTokens: opts.maxTokens,
           signal: controller.signal,
         }),
@@ -253,4 +256,82 @@ export async function coachWith(deps: EngineDeps, draft: string, campaign: { tit
   );
   if (!result.ok) return result;
   return { ok: true, feedback: result.value, record: result.record };
+}
+
+// ---------------------------------------------------------------------------
+// Judging (Sprint 5): the AI rubric, one part of four in a Verdict
+// ---------------------------------------------------------------------------
+
+export type RubricInput = {
+  body: string;
+  kind: "argument" | "rebuttal" | "evidence";
+  campaign: { title: string; category: string };
+  /** The Dispatch this one replies to, as context only. */
+  parentBody?: string | null;
+};
+
+export type RubricResult =
+  | { ok: true; scores: JudgeRubricOutput; record: CallRecord }
+  | { ok: false; why: Unavailable; record: CallRecord | null };
+
+/**
+ * Privacy: the model sees the Dispatch text, its kind, the text it replies to
+ * and the Campaign question. Never names, handles, IDs or the AI-use declaration.
+ * Counts towards the global daily cap (system calls, no per-Strategist cap).
+ */
+export async function judgeRubricWith(deps: EngineDeps, input: RubricInput): Promise<RubricResult> {
+  const model = resolveModel("judging", deps.settings, deps.env);
+  const blocks = [{ label: "dispatch", text: input.body }];
+  if (input.parentBody) blocks.unshift({ label: "replying_to", text: input.parentBody });
+  const user = buildUserMessage(
+    { "Campaign question": input.campaign.title, "Campaign kind": input.campaign.category.replace(/_/g, " "), "Dispatch kind": input.kind },
+    blocks,
+  );
+  const length = input.body.length + (input.parentBody?.length ?? 0);
+  const result = await guarded(deps, "judge_rubric", null, length, (p) =>
+    callStructured<JudgeRubricOutput>(p, {
+      task: "judge_rubric",
+      prompt: "judge_rubric",
+      model,
+      user,
+      schema: judgeRubricSchema,
+      timeoutMs: deps.timeouts?.judging ?? TIMEOUT_MS.judging,
+      maxTokens: 4000,
+    }),
+  );
+  if (!result.ok) return result;
+  return { ok: true, scores: result.value, record: result.record };
+}
+
+export type RationaleWordingResult = { ok: true; rationale: string; record: CallRecord } | { ok: false; why: Unavailable; record: CallRecord | null };
+
+/** Every @{user:...} token, in order. The rewording must keep exactly the same set. */
+export function rationaleTokens(text: string): string[] {
+  return [...text.matchAll(/@\{user:[0-9a-f-]{36}\}/g)].map((m) => m[0]).sort();
+}
+
+/**
+ * Optional: rewords a templated rationale. Rejected (the template is kept) if
+ * a single @{user:...} token or number changed.
+ */
+export async function judgeRationaleWith(deps: EngineDeps, template: string): Promise<RationaleWordingResult> {
+  const model = resolveModel("judging", deps.settings, deps.env);
+  const user = buildUserMessage({}, [{ label: "draft", text: template }]);
+  const numbers = (t: string) => [...t.matchAll(/\d+(?:\.\d+)?/g)].map((m) => m[0]).sort().join(",");
+  const tokens = rationaleTokens(template).join(",");
+  const strip = (t: string) => t.replace(/@\{user:[0-9a-f-]{36}\}/g, "");
+  const result = await guarded(deps, "judge_rationale", null, template.length, (p) =>
+    callStructured(p, {
+      task: "judge_rationale",
+      prompt: "judge_rationale",
+      model,
+      user,
+      schema: judgeRationaleSchema,
+      timeoutMs: deps.timeouts?.judging ?? TIMEOUT_MS.judging,
+      maxTokens: 4000,
+      accept: (v) => rationaleTokens(v.rationale).join(",") === tokens && numbers(strip(v.rationale)) === numbers(strip(template)),
+    }),
+  );
+  if (!result.ok) return result;
+  return { ok: true, rationale: result.value.rationale, record: result.record };
 }

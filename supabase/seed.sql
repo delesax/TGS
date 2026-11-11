@@ -45,3 +45,9 @@ select vault.create_secret('local-email-processor-secret', 'email_processor_secr
 -- Dispatches stuck in "Checking…" through the app on port 3100. Dummy secret.
 select vault.create_secret('http://host.docker.internal:3100/api/moderation/sweep', 'moderation_processor_url', 'Local development only');
 select vault.create_secret('local-moderation-processor-secret', 'moderation_processor_secret', 'Local development only');
+
+-- Judging processor for LOCAL development (Sprint 5): pg_cron asks the app on
+-- port 3100 to score Dispatches with the AI rubric and compute due draft
+-- Verdicts. Dummy local secret, not used anywhere else.
+select vault.create_secret('http://host.docker.internal:3100/api/judging/process', 'judging_processor_url', 'Local development only');
+select vault.create_secret('local-judging-processor-secret', 'judging_processor_secret', 'Local development only');

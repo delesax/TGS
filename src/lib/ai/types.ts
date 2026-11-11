@@ -10,8 +10,8 @@ export type ScreeningResult = {
   output: Record<string, unknown>;
 };
 
-/** The four AI features, one entry point each (src/lib/ai/index.ts). */
-export type AiFeature = "screen_handle" | "screen_profile" | "screen_dispatch" | "nudge" | "coach";
+/** The AI features, one entry point each (src/lib/ai/index.ts). */
+export type AiFeature = "screen_handle" | "screen_profile" | "screen_dispatch" | "nudge" | "coach" | "judge_rubric" | "judge_rationale";
 
 export type ProviderName = "anthropic" | "fake";
 

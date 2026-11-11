@@ -3,9 +3,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { DispatchSummaryItem, SUMMARY_COLUMNS, type DispatchSummary } from "@/components/dispatch/dispatch-summary";
 import { FollowStrategistButton } from "@/components/dispatch/follow-strategist-button";
+import { TitlesAndAwards } from "@/components/judging/awards-section";
 import { EmptyState, Page } from "@/components/page";
 import { Button } from "@/components/ui/button";
 import { getViewer } from "@/lib/auth";
+import { getAwardsFor } from "@/lib/judging/data";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -43,7 +45,7 @@ export default async function StrategistPage({ params }: PageProps<"/strategists
   if (!profile) notFound();
 
   const supabase = await createClient();
-  const [{ data: dispatches }, { data: follow }] = await Promise.all([
+  const [{ data: dispatches }, { data: follow }, awards] = await Promise.all([
     supabase
       .from("dispatches")
       .select(SUMMARY_COLUMNS)
@@ -54,6 +56,7 @@ export default async function StrategistPage({ params }: PageProps<"/strategists
     viewer?.profile?.handle && viewer.userId !== profile.id
       ? supabase.from("strategist_follows").select("followed_id").eq("follower_id", viewer.userId).eq("followed_id", profile.id).maybeSingle()
       : Promise.resolve({ data: null }),
+    getAwardsFor(profile.id),
   ]);
   const list = (dispatches as unknown as DispatchSummary[]) ?? [];
   const isMe = viewer?.userId === profile.id;
@@ -78,6 +81,8 @@ export default async function StrategistPage({ params }: PageProps<"/strategists
           </Button>
         )}
       </section>
+
+      <TitlesAndAwards awards={awards} own={isMe} />
 
       <section aria-labelledby="recent-heading" className="flex flex-col gap-3">
         <h2 id="recent-heading" className="text-2xl font-semibold">

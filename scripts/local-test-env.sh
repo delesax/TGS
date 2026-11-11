@@ -31,6 +31,8 @@ MAILPIT_URL=${mail_url:-http://127.0.0.1:54324}
 EMAIL_PROCESSOR_SECRET=local-email-processor-secret
 # Matches the dummy Vault secret in supabase/seed.sql. Local only.
 MODERATION_PROCESSOR_SECRET=local-moderation-processor-secret
+# Matches the dummy Vault secret in supabase/seed.sql. Local only.
+JUDGING_PROCESSOR_SECRET=local-judging-processor-secret
 # The keyword-driven stand-in: tests never call the real AI API.
 AI_PROVIDER=fake
 EOF

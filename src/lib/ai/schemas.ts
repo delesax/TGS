@@ -60,6 +60,29 @@ export const coachSchema = z.strictObject({
 });
 export type CoachOutput = z.infer<typeof coachSchema>;
 
+// Judging (Sprint 5): the four-part rubric with a steelman check, and the
+// optional plain-English wording of a Verdict's rationale.
+const criterion = z.number().int().min(1).max(5);
+
+export const judgeRubricSchema = z.strictObject({
+  logic: criterion,
+  evidence: criterion,
+  originality: criterion,
+  responsiveness: criterion,
+  rationale: z.string().trim().min(10).max(600),
+  steelman: z.strictObject({
+    present: z.boolean(),
+    confidence: confidence,
+    note: z.string().trim().max(300),
+  }),
+});
+export type JudgeRubricOutput = z.infer<typeof judgeRubricSchema>;
+
+export const judgeRationaleSchema = z.strictObject({
+  rationale: z.string().trim().min(20).max(4000),
+});
+export type JudgeRationaleOutput = z.infer<typeof judgeRationaleSchema>;
+
 // JSON schemas sent to the API (structured outputs). Kept simple: object
 // shapes and enums; ranges are checked by zod afterwards.
 const obj = (properties: Record<string, unknown>) => ({
@@ -89,6 +112,15 @@ export const JSON_SCHEMAS = {
     tone: obj({ rating: enumOf(["constructive", "mixed", "hostile"]), comment: str }),
     questions: { type: "array", items: str },
   }),
+  judge_rubric: obj({
+    logic: { type: "integer" },
+    evidence: { type: "integer" },
+    originality: { type: "integer" },
+    responsiveness: { type: "integer" },
+    rationale: str,
+    steelman: obj({ present: { type: "boolean" }, confidence: num, note: str }),
+  }),
+  judge_rationale: obj({ rationale: str }),
 } as const;
 
 /** Parses model text as JSON and validates it. Returns null for anything else. */

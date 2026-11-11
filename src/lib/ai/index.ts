@@ -65,6 +65,11 @@ async function deps(): Promise<EngineDeps> {
   };
 }
 
+/** The engine's dependencies (provider, settings, caps, spend log), for server modules such as judging. */
+export async function aiEngineDeps(): Promise<EngineDeps> {
+  return deps();
+}
+
 function decisionColumns(record: CallRecord | null) {
   return record
     ? { model: record.model, prompt_version: record.promptVersion, provider: record.provider, input_tokens: record.inputTokens, output_tokens: record.outputTokens, latency_ms: record.latencyMs }

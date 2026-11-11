@@ -32,6 +32,9 @@ export async function SiteHeader() {
               <NavLink href="/campaigns">Campaigns</NavLink>
             </li>
             <li>
+              <NavLink href="/leaderboard">Leaderboard</NavLink>
+            </li>
+            <li>
               <NavLink href="/dossier">Dossier</NavLink>
             </li>
             {viewer ? (

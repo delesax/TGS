@@ -1,5 +1,5 @@
 import { normaliseHandle } from "../handle-stub";
-import type { CoachOutput, DispatchScreenOutput, NudgeOutput, TextScreenOutput } from "../schemas";
+import type { CoachOutput, DispatchScreenOutput, JudgeRubricOutput, NudgeOutput, TextScreenOutput } from "../schemas";
 import { extractBlocks } from "../untrusted";
 import type { AiProvider, ProviderRequest, ProviderResponse } from "./types";
 
@@ -224,6 +224,56 @@ export function fakeCoach(raw: string): CoachOutput {
   };
 }
 
+// Judging (Sprint 5): a crude, deterministic stand-in for the rubric. It counts
+// surface features (connectives, evidence words, engagement with the other
+// side, vocabulary). Good enough to exercise the whole pipeline and the eval
+// harness; it is NOT a judge, and its eval numbers say nothing about the real model.
+const count = (text: string, patterns: RegExp[]) => patterns.reduce((n, re) => n + (text.match(re)?.length ?? 0), 0);
+const clamp15 = (n: number) => Math.max(1, Math.min(5, Math.round(n)));
+
+const STEELMAN = /\b(?:the strongest (?:case|argument|point|objection) (?:for|against)|to be fair to|restating (?:your|their|the other) (?:view|case)|the best case for the other side|i accept that (?:opponents|critics|the other side)|opponents are right that|critics rightly)\b/;
+
+export function fakeJudgeRubric(raw: string, kind: string, parent: string | null): JudgeRubricOutput {
+  const text = normalise(raw);
+  const words = text.match(/[a-z']+/g) ?? [];
+  const short = raw.trim().length < 80;
+  const hostile = NUDGE_RULES.some((r) => r.pattern.test(text));
+  const connectives = count(text, [/\bbecause\b/g, /\btherefore\b/g, /\bwhich means\b/g, /\bas a result\b/g, /\bso that\b/g, /\bit follows\b/g, /\bif\b[^.]*\bthen\b/g, /\bsince\b/g]);
+  const claim = /\b(?:should|must|i (?:think|believe|argue)|the case (?:for|against))\b/.test(text) ? 1 : 0;
+  const evidence = count(text, [
+    /\b\d[\d,.]*\s?(?:%|per cent|percent)/g,
+    /£\s?\d/g,
+    /\b(?:19|20)\d\d\b/g,
+    /\b(?:study|studies|report|survey|data|figures|statistics|research|trial|audit|census)\b/g,
+    /\baccording to\b/g,
+    /\b(?:ons|nhs|ofgem|ofsted|oecd|ifs|bank of england)\b/g,
+    /\bfor (?:example|instance)\b/g,
+    /https?:\/\//g,
+  ]);
+  const engagement = count(text, [
+    /\byou (?:argue|say|claim|suggest)\b/g,
+    /\bthe other side\b/g,
+    /\b(?:opponents|critics|sceptics|supporters)\b/g,
+    /\b(?:however|admittedly|to be fair|fair point|i accept|that assumes|your point)\b/g,
+  ]);
+  const longWords = new Set(words.filter((w) => w.length > 6)).size;
+
+  const steelmanPresent = STEELMAN.test(text);
+  const scores = {
+    logic: short ? 1 : clamp15(1.5 + connectives + claim - (hostile ? 2 : 0)),
+    evidence: short ? 1 : clamp15(1 + evidence * 0.9),
+    originality: short ? 1 : clamp15(longWords < 5 ? 1 : longWords < 10 ? 2 : longWords < 18 ? 3 : longWords < 28 ? 4 : 5),
+    responsiveness: short ? 1 : clamp15(1 + engagement + (kind === "rebuttal" && parent ? 1 : 0) + (steelmanPresent ? 1 : 0) - (hostile ? 1 : 0)),
+  };
+  return {
+    ...scores,
+    rationale: `Stand-in scores from surface features: ${connectives} reasoning link(s), ${evidence} evidence marker(s), ${engagement} sign(s) of engaging with others.`,
+    steelman: steelmanPresent
+      ? { present: true, confidence: 0.8, note: "Restates the opposing case before answering it." }
+      : { present: false, confidence: 0.2, note: "No fair restatement of the opposing view found." },
+  };
+}
+
 const wait = (signal: AbortSignal) =>
   new Promise<never>((_, reject) => {
     if (signal.aborted) return reject(new Error("aborted"));
@@ -246,7 +296,11 @@ export const fakeProvider: AiProvider = {
           ? fakeScreenText(blocks.name ?? "")
           : req.task === "nudge"
             ? fakeNudge(blocks.draft ?? "")
-            : fakeCoach(blocks.draft ?? "");
+            : req.task === "judge_rubric"
+              ? fakeJudgeRubric(blocks.dispatch ?? "", /Dispatch kind: (\w+)/.exec(req.user)?.[1] ?? "argument", blocks.replying_to ?? null)
+              : req.task === "judge_rationale"
+                ? { rationale: blocks.draft ?? "" }
+                : fakeCoach(blocks.draft ?? "");
     return { text: JSON.stringify(output), ...tokens };
   },
 };

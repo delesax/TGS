@@ -3,7 +3,18 @@ import { formatUkDateTime } from "@/lib/campaigns";
 // Email wording and markup. Pure functions, unit tested. Plain text and HTML
 // say the same thing; HTML is simple, large and readable, with a language set.
 
-export type EmailKind = "reply" | "campaign_opened" | "campaign_round_changed" | "campaign_closed" | "campaign_closing_soon" | "moderation_outcome";
+export type EmailKind =
+  | "reply"
+  | "campaign_opened"
+  | "campaign_round_changed"
+  | "campaign_closed"
+  | "campaign_closing_soon"
+  | "moderation_outcome"
+  // Sprint 5 judging (wording in judging-templates.ts)
+  | "judge_assigned"
+  | "peer_voting_open"
+  | "verdict_published"
+  | "verdict_appeal_outcome";
 
 export type ReplyItem = { dispatch_id: string; campaign_slug: string; campaign_title: string; replier_handle: string | null; excerpt: string };
 export type CampaignPayload = { campaign_slug: string; campaign_title: string; ends_at?: string; round?: number | null; round_title?: string | null };
@@ -17,6 +28,12 @@ export const PREFERENCE_FOR_KIND: Record<EmailKind, PreferenceKey> = {
   campaign_closed: "campaign_updates",
   campaign_closing_soon: "closing_soon",
   moderation_outcome: "moderation",
+  // No new preference: judging news about a Campaign is a Campaign update,
+  // and an appeal outcome is a decision about the person's own participation.
+  judge_assigned: "campaign_updates",
+  peer_voting_open: "campaign_updates",
+  verdict_published: "campaign_updates",
+  verdict_appeal_outcome: "moderation",
 };
 
 export type EmailContent = { subject: string; text: string; html: string; unsubscribeUrl: string; preference: PreferenceKey };
@@ -40,7 +57,7 @@ const PREFERENCE_WORDS: Record<PreferenceKey, string> = {
 
 type Block = { heading?: string; lines: string[]; link?: { href: string; label: string } };
 
-function render(site: string, recipient: Recipient, preference: PreferenceKey, subject: string, intro: string, blocks: Block[]): EmailContent {
+export function render(site: string, recipient: Recipient, preference: PreferenceKey, subject: string, intro: string, blocks: Block[]): EmailContent {
   const unsubscribeUrl = unsubscribeLink(site, recipient.unsubscribeToken, preference);
   const settingsUrl = `${site}/profile/email`;
   const greeting = recipient.handle ? `Hello @${recipient.handle},` : "Hello,";
@@ -131,7 +148,12 @@ export function moderationEmail(site: string, recipient: Recipient, m: Moderatio
   return render(site, recipient, "moderation", w.subject, w.intro, [{ heading: m.campaign_title, lines: w.lines, link: { href, label: "See your Dispatch" } }]);
 }
 
-export function campaignEmail(site: string, recipient: Recipient, kind: Exclude<EmailKind, "reply" | "moderation_outcome">, c: CampaignPayload): EmailContent {
+export function campaignEmail(
+  site: string,
+  recipient: Recipient,
+  kind: "campaign_opened" | "campaign_round_changed" | "campaign_closed" | "campaign_closing_soon",
+  c: CampaignPayload,
+): EmailContent {
   const href = `${site}/campaigns/${c.campaign_slug}`;
   const deadline = c.ends_at ? `Deadline: ${formatUkDateTime(c.ends_at)}.` : "";
   switch (kind) {
