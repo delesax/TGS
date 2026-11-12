@@ -8,8 +8,8 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 
 | Branch | State | Latest commit | Hosted |
 | --- | --- | --- | --- |
-| `main` | Sprints 1–4 and **Sprint 5 merged (PRs #6 and #7, 12 Nov)**, launch email docs | see `git log origin/main` | Sprint 4 migrations applied; Sprint 5 migrations **not** applied |
-| `sprint-5-judging` | **Fully merged to `main` (PR #6 code, PR #7 log).** Nothing left on the branch | see `git log` | Nothing applied |
+| `main` | Sprints 1–4 and **Sprint 5 merged (PRs #6 and #7, 12 Nov)**, launch email docs | see `git log origin/main` | Sprint 4 migrations applied; **Sprint 5 migrations applied 12 Nov** (`20261111000100`, `20261111000200`) |
+| `sprint-5-judging` | **Fully merged to `main` (PR #6 code, PR #7 log).** Nothing left on the branch | see `git log` | Migrations applied to hosted (see `main`) |
 | `legal-hardening` | Built and **pushed 12 Nov** (local is 1 log commit ahead of origin), no PR yet (owns legal pages, account deletion, DEMO.md); six migrations written, not applied | see `git log origin/legal-hardening` | Nothing applied |
 | `sprint-4-audit-handle` | On origin, no PR; one migration `20261104000500_audit_no_handle.sql` (stops new handle writes in `decide_held_handle`; old rows untouched; main's onboarding still writes the handle, fixed only by legal-hardening) | `bc88132` | Nothing applied |
 | `launch-email-confirm-template` | Doc edits (Resend `updates` subdomain, 20i, DMARC optional) committed and **pushed 12 Nov**; owner to open PR | `968fdaf` | — |
@@ -21,15 +21,24 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 - Sprint 5: ratify the 30 DRAFT labels in `evals/judging/gold-set.json`.
 - Sprint 5: edit the three PLACEHOLDER strings in `src/lib/judging/notices.ts`.
 - Sprint 5: add Vault secrets `judging_processor_url`, `judging_processor_secret` and the Vercel variable `JUDGING_PROCESSOR_SECRET` (optional: `AI_MODEL_JUDGING`).
-- Sprint 5: ratify the gold-set labels (the real eval passed on the draft labels, 12 Nov); add `ANTHROPIC_API_KEY` to Vercel when ready.
 - PR descriptions for all four branches are in `~/Desktop/pr-descriptions.md` (outside the repo). Apply legal-hardening migrations and deploy its code within minutes of each other: migrations first breaks sign-up and positions on live main; code first breaks export, privacy contact and positions.
 - Open PRs (owner): `launch-email-confirm-template` (https://github.com/delesax/TGS/compare/main...launch-email-confirm-template) (`sprint-5-judging` is already merged as PR #6).
 - Hosted migrations: apply in timestamp order (audit-handle, then legal-hardening, then Sprint 5) to avoid `--include-all`.
-- Sprint 5 code is on `main` but its migrations are not on hosted: the new judging pages will error on the live site until you apply `20261111000100_judging_schema.sql` and `20261111000200_judging_functions.sql` to hosted only after the dry run lists exactly those two.
+- Sprint 5 on hosted: judging only does anything once a Campaign closes. Add the Vault secrets above so the AI scoring kick can run (without them the work waits).
+- Rotate the hosted database password: it was printed once into a Claude session's output on 12 Nov (a filter let the CLI's echo of the connection string through).
 - Sprint 5 and legal-hardening both add `docs/CLAUDE_LOG.md`: expect an add/add conflict (and in `CHANGELOG.md` and `tests/rls/every-table-has-rls.test.ts`) when the second one merges; keep both sides.
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-12 — Sprint 5 migrations applied to hosted
+
+- On the owner's "go", ran `supabase db push` from `TGS/` on `main` (`7a439cd`) against hosted. The dry run beforehand listed exactly `20261111000100_judging_schema.sql` and `20261111000200_judging_functions.sql`; both applied.
+- Verified read-only: all 11 new tables have RLS on; `judging-tick` and `judging-kick` are in `cron.job` (every minute, active; there are two jobs, not three); `judging_settings` has its one default row; a fresh dry run says the remote database is up to date.
+- Live site: `https://thegrandstrategist.com/leaderboard` returns 200 with the "No Verdicts yet" empty state and no error markers. The latest production deploy (`7a439cd`, READY) had Sprint 5 code live before the migration, so the judging pages were erroring until now.
+- Not checked: whether any hosted Campaign is closed (the first tick would queue scoring jobs and peer-voting emails), and whether the Vault secrets exist (reads of hosted data were denied earlier).
+- Mistake: a `grep` let through the CLI's echo of the hosted connection string, so the database password appeared once in session output. Rotate it (see open list). Anthropic key is in Vercel Production per the owner; that item is removed from the open list.
+- `gold-set-ratified` is pushed but not on `main`; the "ratify the 30 DRAFT labels" item stays here until that PR merges.
 
 ### 2026-11-12 — Log PR merged
 
