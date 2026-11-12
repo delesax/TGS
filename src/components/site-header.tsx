@@ -7,6 +7,11 @@ import { NavLink } from "@/components/nav-link";
 /**
  * Persistent header on every page (UX lesson: a signed-in user must always be
  * able to get back to Home, Campaigns, Dossier and their account).
+ *
+ * From the lg breakpoint (1024px) the header is wider than the 4xl page
+ * content, because an admin's seven links plus the logo need about 950px and
+ * "Sign out" used to wrap onto a second row and push the search box down.
+ * Below lg nothing changes.
  */
 export async function SiteHeader() {
   const viewer = await getViewer();
@@ -19,8 +24,8 @@ export async function SiteHeader() {
       >
         Skip to main content
       </a>
-      <div className="mx-auto flex max-w-4xl flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-        <Link href="/" className="flex min-h-12 items-center font-serif text-xl font-bold text-primary no-underline">
+      <div className="mx-auto flex max-w-4xl flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between lg:max-w-6xl">
+        <Link href="/" className="flex min-h-12 shrink-0 items-center font-serif text-xl font-bold text-primary no-underline lg:whitespace-nowrap">
           The Grand Strategist
         </Link>
         <nav aria-label="Main">
@@ -66,8 +71,8 @@ export async function SiteHeader() {
           </ul>
         </nav>
       </div>
-      <div className="mx-auto max-w-4xl px-4 pb-3">
-        <form role="search" action="/search" className="flex gap-2">
+      <div className="mx-auto max-w-4xl px-4 pb-3 lg:max-w-6xl">
+        <form role="search" action="/search" className="flex gap-2 lg:max-w-4xl">
           <label htmlFor="site-search" className="sr-only">
             Search Campaigns, Dispatches and Strategists
           </label>

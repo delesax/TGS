@@ -30,6 +30,12 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 
 ## Entries
 
+### 2026-11-12 — Header "Sign out" wrap (branch `header-signout-wrap`)
+
+- Reproduced first: as an admin at 1280, 1440 and 1920px "Sign out" sat on a second row (the header was capped at 896px). Fixed in `src/components/site-header.tsx` by widening the header to `max-w-6xl` from 1024px and keeping the logo on one line; below 1024px nothing changed (375px header measured the same before and after: 330px tall).
+- New `tests/e2e/header.spec.ts` (5 tests, 1080/1280/1440/1920 plus 375). Typecheck, lint, 372 unit and 30 Playwright pass. Pushed as a branch, PR for the owner to open; not merged. No migrations, nothing applied to hosted.
+- Known: at exactly 1024px an admin's header still wraps (needs about 1,040px). The header is now wider than the page content from 1024px.
+
 ### 2026-11-12 — Owner admin account created on hosted
 
 - The owner ran `npm run invite:create` from `TGS/` against hosted (target printed as hosted): one single-use invite, 7-day expiry, note "Founder account". The first attempt failed only because it was run from the parent folder (no `package.json`). The script's printed sign-up link used localhost because `NEXT_PUBLIC_SITE_URL` in `.env.local` is local; the live link is `https://thegrandstrategist.com/signup?code=...`.
