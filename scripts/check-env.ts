@@ -17,7 +17,8 @@ const VARIABLES: { name: string; requiredNow: boolean; where: string }[] = [
   { name: "RESEND_API_KEY", requiredNow: false, where: "resend.com > API Keys (emails wait in the queue until set)" },
   { name: "EMAIL_FROM", requiredNow: false, where: "Sender on your verified Resend domain (owner decision)" },
   { name: "EMAIL_PROCESSOR_SECRET", requiredNow: false, where: "Any long random string; the same value goes in Supabase Vault (see DEMO.md)" },
-  { name: "ANTHROPIC_API_KEY", requiredNow: false, where: "Not needed until Sprint 4" },
+  { name: "ANTHROPIC_API_KEY", requiredNow: false, where: "console.anthropic.com > API Keys (AI features use the fallback until set)" },
+  { name: "JUDGING_PROCESSOR_SECRET", requiredNow: false, where: "Any long random string; the same value goes in Supabase Vault as judging_processor_secret" },
 ];
 
 let missing = 0;

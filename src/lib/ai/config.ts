@@ -9,6 +9,8 @@ export const DEFAULT_MODELS = {
   screening: "claude-haiku-5-5",
   nudge: "claude-haiku-5-5",
   coach: "claude-sonnet-5-5",
+  // Sprint 5: the AI rubric and the optional rationale wording.
+  judging: "claude-sonnet-5-5",
 } as const;
 
 export type ModelRole = keyof typeof DEFAULT_MODELS;
@@ -31,7 +33,9 @@ export function estimateCostUsd(model: string, inputTokens: number, outputTokens
 type Env = Record<string, string | undefined>;
 
 export function resolveModel(role: ModelRole, settings: Pick<AiSettings, "ai_model_screening" | "ai_model_nudge" | "ai_model_coach">, env: Env = process.env): string {
-  const fromSettings = role === "screening" ? settings.ai_model_screening : role === "nudge" ? settings.ai_model_nudge : settings.ai_model_coach;
+  // Judging has no settings column (yet): AI_MODEL_JUDGING or the default.
+  const fromSettings =
+    role === "screening" ? settings.ai_model_screening : role === "nudge" ? settings.ai_model_nudge : role === "coach" ? settings.ai_model_coach : null;
   const fromEnv = env[`AI_MODEL_${role.toUpperCase()}`];
   return fromSettings || fromEnv || DEFAULT_MODELS[role];
 }
@@ -52,4 +56,4 @@ export function chooseProvider(env: Env = process.env): ProviderName | null {
 }
 
 /** Hard time limits per call (one retry follows a failure). */
-export const TIMEOUT_MS = { screening: 4_000, nudge: 4_000, coach: 20_000 } as const;
+export const TIMEOUT_MS = { screening: 4_000, nudge: 4_000, coach: 20_000, judging: 45_000 } as const;

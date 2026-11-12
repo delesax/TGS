@@ -45,4 +45,5 @@ Typecheck and lint clean; tests pass; works at 375px width; empty, loading and e
 - Vercel free is for non-commercial use and its cron is limited: do scheduling with pg_cron and Inngest, not Vercel cron.
 - AI calls are stubbed behind src/lib/ai until Sprint 4. No Anthropic key is needed before then.
 - Read docs/PLAN.md and docs/UX_LESSONS.md at the start of every sprint.
+- Read docs/CLAUDE_LOG.md at the start of every session, and at the end of every session add an entry and update its "Current state" and "Open for the owner" sections.
 - Claude Code permissions are on manual: ask before git push, deletes, database commands and anything touching env files.

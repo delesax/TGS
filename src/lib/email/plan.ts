@@ -30,7 +30,18 @@ export type DeliveryPlan = {
 };
 
 // Most time-sensitive first, so the cap never holds back a closing reminder.
-const PRIORITY: EmailKind[] = ["moderation_outcome", "campaign_closing_soon", "campaign_opened", "campaign_round_changed", "campaign_closed", "reply"];
+const PRIORITY: EmailKind[] = [
+  "moderation_outcome",
+  "verdict_appeal_outcome",
+  "judge_assigned",
+  "campaign_closing_soon",
+  "peer_voting_open",
+  "verdict_published",
+  "campaign_opened",
+  "campaign_round_changed",
+  "campaign_closed",
+  "reply",
+];
 
 export function planDelivery(
   rows: OutboxRow[],

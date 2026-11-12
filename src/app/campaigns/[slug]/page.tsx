@@ -9,6 +9,7 @@ import { getViewer } from "@/lib/auth";
 import { getCampaign, getMyPosition, getServerNow } from "@/lib/campaign-data";
 import { POSITION_LABELS, currentRound, formatUkDateTime, statusAt } from "@/lib/campaigns";
 import { DispatchSection } from "./dispatch-section";
+import { JudgingLinks } from "./judging-links";
 import { PositionForm } from "./position-form";
 
 export const dynamic = "force-dynamic";
@@ -82,7 +83,8 @@ export default async function CampaignPage({ params }: PageProps<"/campaigns/[sl
         ) : status === "closed" ? (
           <div className="flex flex-col gap-2">
             <p className="text-2xl font-bold">This Campaign has closed.</p>
-            <p className="text-lg">Closed {formatUkDateTime(campaign.ends_at)}. The Verdict will be published here.</p>
+            <p className="text-lg">Closed {formatUkDateTime(campaign.ends_at)}.</p>
+            <JudgingLinks slug={campaign.slug} campaignId={campaign.id} />
           </div>
         ) : (
           <p className="text-lg">
@@ -138,6 +140,16 @@ export default async function CampaignPage({ params }: PageProps<"/campaigns/[sl
           )}
         </CardContent>
       </Card>
+
+      {status === "open" && viewer?.profile?.handle ? (
+        <p className="text-lg">
+          Did one Dispatch change your mind?{" "}
+          <Link href={`/campaigns/${campaign.slug}/vote`} className="font-semibold text-primary underline">
+            Pick it
+          </Link>
+          . It counts towards the Verdict.
+        </p>
+      ) : null}
 
       {campaign.rounds.length ? (
         <section className="flex flex-col gap-3" aria-labelledby="rounds-heading">
