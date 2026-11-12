@@ -21,15 +21,19 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 - Open and merge the PR for `claude-log-processor-routes` (log-only), then tell Claude "merged" so it can reset local `main` and delete that branch.
 - Sprint 5: edit the three PLACEHOLDER strings in `src/lib/judging/notices.ts`.
 - Sprint 5: add Vault secrets `judging_processor_url`, `judging_processor_secret` and the Vercel variable `JUDGING_PROCESSOR_SECRET` (optional: `AI_MODEL_JUDGING`).
-- PR descriptions for all four branches are in `~/Desktop/pr-descriptions.md` (outside the repo). Apply legal-hardening migrations and deploy its code within minutes of each other: migrations first breaks sign-up and positions on live main; code first breaks export, privacy contact and positions.
-- Open PRs (owner): `launch-email-confirm-template` (https://github.com/delesax/TGS/compare/main...launch-email-confirm-template) (`sprint-5-judging` is already merged as PR #6).
-- Hosted migrations: apply in timestamp order (audit-handle, then legal-hardening, then Sprint 5) to avoid `--include-all`.
+- PR descriptions for `legal-hardening` and `sprint-4-audit-handle` are in `~/Desktop/pr-descriptions.md` (outside the repo; its apply-order notes pre-date Sprint 5 going live, see the next line). Apply the legal-hardening migrations and deploy its code within minutes of each other: migrations first breaks sign-up and positions on live main; code first breaks export, privacy contact and positions.
+- Hosted migrations still to apply: audit-handle (`20261104000500`) and legal-hardening (`20261107000100` to `000600`). Sprint 5's `20261111…` pair is already on hosted, so these are older than the newest applied migration and the CLI will need `--include-all`. Dry-run with `--include-all` first and check it lists exactly those seven files.
 - Sprint 5 on hosted: judging only does anything once a Campaign closes. Add the Vault secrets above so the AI scoring kick can run (without them the work waits).
-- Confirm the old hosted database password is revoked: it was printed once into a Claude session's output on 12 Nov (a filter let the CLI's echo of the connection string through). `DATABASE_URL` in `TGS/.env.local` was updated afterwards and the dry run connects, so a new password is in use; this is not checked beyond that.
 - Sprint 5 and legal-hardening both add `docs/CLAUDE_LOG.md`: expect an add/add conflict (and in `CHANGELOG.md` and `tests/rls/every-table-has-rls.test.ts`) when the second one merges; keep both sides.
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-12 — Open list tidied
+
+- Removed from "Open for the owner": the database-password item (owner says rotated 12 Nov), the open-PR line for the already merged `launch-email-confirm-template`, and the merged-PR wording in the PR-descriptions line. The Anthropic key item was already gone.
+- Corrected one stale line: Sprint 5's migrations are already on hosted, so audit-handle and legal-hardening now need `supabase db push --include-all` (the old advice to apply in timestamp order no longer avoids it). `~/Desktop/pr-descriptions.md` still has the old apply order; the log is right.
+- Re-answered the processor routes table (unchanged; recorded in the entry below).
 
 ### 2026-11-12 — Wrap-up branch, hosted connection check, processor routes
 
