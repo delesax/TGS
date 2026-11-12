@@ -41,6 +41,19 @@ You will need: access to the domain's DNS settings (wherever `thegrandstrategist
 
     **Why this matters:** Supabase's built-in template sends the person through Supabase first and then hands the app a one-time code that only works in the same browser they signed up in. Open the email on a phone's mail app or a different browser and the app says "That confirmation link did not work", even though Supabase has already confirmed the address and used up the invite place. This template sends the app a link that works on any device. The app already understands it (`/auth/confirm` reads `token_hash` and `type`). It builds the link from the **Site URL** in step 12, so do step 12 first; with the wrong Site URL the link points at the wrong website.
 
+12b. Still in **Authentication → Emails → Templates**, open **Reset password**. Set the subject to `Reset your password for The Grand Strategist`. Replace the whole message body with the text below, exactly as written, then press **Save**:
+
+    ```html
+    <h2>Reset your password</h2>
+    <p>Someone asked to reset the password for your Grand Strategist account. Press the link below to choose a new one. The link works once and expires after a short time.</p>
+    <p><a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password">Choose a new password</a></p>
+    <p>If you did not ask for this, you can ignore this email. Your password has not been changed.</p>
+    ```
+
+    **Why:** like the Confirm sign up template, this link works when the email is opened on a different device or browser from the one the person asked from. It builds the link from the **Site URL** in step 12. The reset link lasts as long as **Email OTP Expiration** allows (Supabase's default is one hour; see **Authentication → Providers → Email**).
+
+    **Redirect URL for password reset.** The app's "Forgot your password?" page asks Supabase to send people back to `https://thegrandstrategist.com/auth/confirm?next=/reset-password`. This address must be allowed in **Authentication → URL Configuration → Redirect URLs**. If step 12 is done (`https://thegrandstrategist.com/**` is in the list), it is already covered and you need to add nothing. If you only list exact addresses, add `https://thegrandstrategist.com/auth/confirm?next=/reset-password`. (With the template above the link uses the Site URL instead, but the default Supabase template uses this address, so keep it allowed.)
+
 ## Part 3. Vercel: the app's email settings
 
 13. Open the Vercel dashboard, then the TGS project, then **Settings → Environment Variables**.
@@ -84,6 +97,7 @@ Tick each one. If one fails, the email waits in the queue; nothing is lost.
 - [ ] Sign up with a new invite on the live site: the confirmation email arrives within a minute, from `notifications@updates.thegrandstrategist.com`, and is not in spam.
 - [ ] The link in that email opens the live site (not localhost) and lets you choose a handle.
 - [ ] Open that link on a different device or browser from the one you signed up in (for example sign up on a computer, open the email on a phone). It still lets you choose a handle, with no "did not work" message. This is the check for step 12a.
+- [ ] Password reset: on the live **Sign in** page press **Forgot your password?**, enter a test account's address, and press the link in the email (the subject starts "Reset your password"). It opens **Choose a new password**; after saving you land on **Sign in** with a success message, and the new password works. Press the same link again: it says the link has expired and offers a new one. Try an address with no account: the page shows exactly the same message and no email arrives.
 - [ ] Follow a test Campaign, then have a second test account reply to one of your Dispatches. Within about 15 minutes (the reply digest waits 10), a "replied to your Dispatch" email arrives.
 - [ ] The email's **Stop these emails** link opens a confirmation page on the live site, and pressing the button turns that email type off under **Account → Email settings**.
 - [ ] In Resend, **Logs** shows the emails as delivered.

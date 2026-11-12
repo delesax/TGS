@@ -45,6 +45,19 @@ export const signInSchema = z.object({
   password: z.string().min(1, "Enter your password."),
 });
 
+export const forgotPasswordSchema = z.object({ email: emailSchema });
+
+/** The new password follows the same rules as sign-up (passwordSchema), typed twice. */
+export const resetPasswordSchema = z
+  .object({
+    password: passwordSchema,
+    confirmPassword: z.string().min(1, "Type your new password again."),
+  })
+  .refine((v) => v.password === v.confirmPassword, {
+    message: "The two passwords do not match.",
+    path: ["confirmPassword"],
+  });
+
 export const profileSchema = z.object({
   displayName: z.string().trim().max(60, "Keep your name to 60 characters or fewer."),
   expertiseTag: z.string().trim().max(40, "Keep your area of expertise to 40 characters or fewer."),
