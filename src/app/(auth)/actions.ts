@@ -1,11 +1,13 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { FormState } from "@/components/form";
 import { publicEnv } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { fieldErrors, safeNextPath, signInSchema, signUpSchema } from "@/lib/validation";
+import { RECOVERY_COOKIE } from "@/lib/recovery";
+import { fieldErrors, forgotPasswordSchema, resetPasswordSchema, safeNextPath, signInSchema, signUpSchema } from "@/lib/validation";
 
 const INVITE_PROBLEM =
   "We could not accept that invite code. It may be mistyped, used up or expired. Check the code in your invitation email, or ask the person who invited you for a new one.";
@@ -113,4 +115,68 @@ export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/");
+}
+
+/**
+ * Sends the reset email. The person always lands on the same page whether or
+ * not the address has an account, and every failure from Supabase (including its
+ * own rate limit, which could otherwise hint that an account exists) is logged
+ * and answered the same way, so nobody can test which emails are registered.
+ */
+export async function requestPasswordReset(_prev: FormState, formData: FormData): Promise<FormState> {
+  const parsed = forgotPasswordSchema.safeParse({ email: formData.get("email") });
+  if (!parsed.success) {
+    return { formError: "Please check the highlighted answers.", fieldErrors: fieldErrors(parsed.error) };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+    redirectTo: `${publicEnv().NEXT_PUBLIC_SITE_URL}/auth/confirm?next=/reset-password`,
+  });
+  if (error) console.error("resetPasswordForEmail failed", error.code, error.status);
+
+  redirect("/forgot-password/sent");
+}
+
+/**
+ * Sets the new password. Only works in the recovery session that /auth/confirm
+ * opens from the email link (a signed-in session plus the short-lived recovery
+ * cookie), so an ordinary signed-in session cannot change a password this way.
+ * Afterwards every session is ended and the person signs in with the new password.
+ */
+export async function resetPassword(_prev: FormState, formData: FormData): Promise<FormState> {
+  const parsed = resetPasswordSchema.safeParse({
+    password: formData.get("password"),
+    confirmPassword: formData.get("confirmPassword"),
+  });
+  if (!parsed.success) {
+    return { formError: "Please check the highlighted answers.", fieldErrors: fieldErrors(parsed.error) };
+  }
+
+  const jar = await cookies();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user || !jar.get(RECOVERY_COOKIE)) redirect("/forgot-password?error=expired");
+
+  const { error } = await supabase.auth.updateUser({ password: parsed.data.password });
+  if (error) {
+    if (error.code === "weak_password") {
+      return {
+        formError: "Please choose a stronger password.",
+        fieldErrors: { password: "Use at least 10 characters. A short phrase of three or four words works well." },
+      };
+    }
+    if (error.code === "same_password") {
+      return { formError: "Please choose a different password.", formHint: "Your new password must not be the same as your current one." };
+    }
+    if (error.status === 401 || error.status === 403 || error.code === "session_not_found") redirect("/forgot-password?error=expired");
+    console.error("resetPassword failed", error.code, error.status);
+    return { formError: "We could not change your password.", formHint: "Please try again in a few minutes, or ask for a new link." };
+  }
+
+  jar.delete(RECOVERY_COOKIE);
+  await supabase.auth.signOut({ scope: "global" });
+  redirect("/login?reset=success");
 }

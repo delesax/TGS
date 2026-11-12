@@ -18,6 +18,7 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 
 ## Open for the owner
 
+- Password reset (branch `forgot-password`, PR to open): in Supabase paste the "Reset password" template from `docs/LAUNCH_EMAIL_SETUP.md` step 12b, and check Redirect URLs allow `https://thegrandstrategist.com/auth/confirm?next=/reset-password` (covered if `https://thegrandstrategist.com/**` is listed).
 - Admin access: the owner has no admin account on the live site. Create an invite (SQL in the Supabase SQL Editor) or use the QA invite in `docs/SESSION_LOG_INVITE_QA.md` if still valid, sign up and confirm email, then grant the role by SQL (`auth.users.raw_app_meta_data` role `admin`), then sign out and in. The app has no invites page; invites come from `npm run invite:create` or SQL. The exact statements were given in chat on 12 Nov, not stored here.
 - Before legal-hardening goes live: fill `privacyEmail` and `contactEmail` in `src/lib/legal.ts` (empty now, so pages show "[to be added]" and privacy-request alert emails are skipped).
 - Sprint 5: edit the three PLACEHOLDER strings in `src/lib/judging/notices.ts`.
@@ -29,6 +30,15 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-12 — Password recovery flow (branch `forgot-password`)
+
+- Built from `main`: "Forgot your password?" link on `/login`, `/forgot-password` (calls `resetPasswordForEmail`, redirect `NEXT_PUBLIC_SITE_URL` + `/auth/confirm?next=/reset-password`), the same `/forgot-password/sent` page for every outcome (no enumeration; Supabase errors incl. its rate limit are logged, not shown), `/reset-password` (sign-up password rules, typed twice, signs out everywhere, then `/login?reset=success`), and a clear message for expired or reused links.
+- `/auth/confirm` now handles recovery links (token link and code link) and sets a 15-minute httpOnly cookie; `/reset-password` needs both that cookie and a session, so an ordinary signed-in session cannot use it.
+- No migrations, no new dependency, nothing applied to hosted. The app has no rate limiter of its own; it relies on Supabase's.
+- Tests: typecheck and lint clean; 372 unit tests pass (5 new); full Playwright suite 25 passed (6 new in `tests/e2e/password-reset.spec.ts`).
+- Docs: `docs/LAUNCH_EMAIL_SETUP.md` gains step 12b (Reset password template, redirect URL note) and a checklist item. CHANGELOG entry added.
+- Mistake: a status command printed the local Supabase's public demo keys (local only, not hosted).
 
 ### 2026-11-12 — Legal-hardening review, privacy contact, admin and invites (read-only)
 

@@ -1,5 +1,15 @@
 # Changelog
 
+## Password recovery (12 November 2026). Awaiting review
+
+Branch `forgot-password`, cut from `main`. **No migrations, nothing applied to hosted, no new dependency.** The owner must also add the "Reset password" email template and check the redirect URL in Supabase (steps 12 and 12b of `docs/LAUNCH_EMAIL_SETUP.md`).
+
+- **"Forgot your password?"** link on `/login`; `/forgot-password` takes an email address and calls `resetPasswordForEmail` with a redirect built from `NEXT_PUBLIC_SITE_URL` (`/auth/confirm?next=/reset-password`).
+- **No account enumeration.** Every outcome (known address, unknown address, Supabase error including its own rate limit) lands on the same `/forgot-password/sent` page. The sign-up form's distinct rate-limit message is deliberately not used here, because it could reveal that an account exists; failures are logged by code only. The app has no rate limiter of its own (it relies on Supabase's, as sign-up does).
+- **`/reset-password`** is reached from the email link through `/auth/confirm`, which now also handles recovery links (token link and code link). It needs the signed-in recovery session **and** a 15-minute httpOnly cookie that only a verified recovery link sets, so an ordinary signed-in session cannot change a password this way. The new password follows the sign-up rules (10 to 72 characters) and is typed twice. On success every session is signed out and the person goes to `/login` with a success message.
+- **Expired or reused links** (and a direct visit to `/reset-password`) show a clear message with a link back to `/forgot-password`.
+- **Tests**: 5 unit tests (`src/lib/recovery.test.ts`); 6 Playwright tests (`tests/e2e/password-reset.spec.ts`: same message for known and unknown addresses, bad address, emailed link end to end with the password rules and mismatch, old password stops working, link reuse, token link, garbled link, signed-in session cannot use the page; checked at 375px).
+
 ## Sprint 5: Judging and Verdict (11 November 2026). Awaiting review
 
 Branch `sprint-5-judging`, cut from `main` at `eec5c7c`. **Not applied to hosted**: two new migrations, tested on local Supabase only. **No real AI call was made**: every test, the seed and the evaluation ran on the fake provider. Full details, decisions and the owner checklist: `docs/SESSION_LOG_SPRINT_5.md`; click-through: `docs/DEMO_SPRINT_5.md`.
