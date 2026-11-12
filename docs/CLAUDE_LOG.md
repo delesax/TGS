@@ -19,7 +19,6 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 ## Open for the owner
 
 - Password reset (merged as PR #13, not usable on the live site until you do this): in Supabase paste the "Reset password" template from `docs/LAUNCH_EMAIL_SETUP.md` step 12b, and check Redirect URLs allow `https://thegrandstrategist.com/auth/confirm?next=/reset-password` (covered if `https://thegrandstrategist.com/**` is listed).
-- Admin access: the owner has no admin account on the live site. Create an invite (SQL in the Supabase SQL Editor) or use the QA invite in `docs/SESSION_LOG_INVITE_QA.md` if still valid, sign up and confirm email, then grant the role by SQL (`auth.users.raw_app_meta_data` role `admin`), then sign out and in. The app has no invites page; invites come from `npm run invite:create` or SQL. The exact statements were given in chat on 12 Nov, not stored here.
 - Before legal-hardening goes live: fill `privacyEmail` and `contactEmail` in `src/lib/legal.ts` (empty now, so pages show "[to be added]" and privacy-request alert emails are skipped).
 - Sprint 5: edit the three PLACEHOLDER strings in `src/lib/judging/notices.ts`.
 - Sprint 5: add Vault secrets `judging_processor_url`, `judging_processor_secret` and the Vercel variable `JUDGING_PROCESSOR_SECRET` (optional: `AI_MODEL_JUDGING`).
@@ -30,6 +29,13 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-12 — Owner admin account created on hosted
+
+- The owner ran `npm run invite:create` from `TGS/` against hosted (target printed as hosted): one single-use invite, 7-day expiry, note "Founder account". The first attempt failed only because it was run from the parent folder (no `package.json`). The script's printed sign-up link used localhost because `NEXT_PUBLIC_SITE_URL` in `.env.local` is local; the live link is `https://thegrandstrategist.com/signup?code=...`.
+- The owner signed up, confirmed email and was granted the admin role by SQL in the Supabase SQL Editor; a screenshot shows the Admin link in the header on the admin console. The invite is used up. Claude ran no hosted commands for this.
+- Cosmetic: at desktop width "Sign out" wraps to a second header row and pushes the search box down. Not fixed; offered.
+- Open items unchanged: Vault secrets and `JUDGING_PROCESSOR_SECRET` for judging, the three PLACEHOLDER strings in `src/lib/judging/notices.ts`, the Reset password template and redirect URL, the unmerged audit-handle and legal-hardening PRs (legal-hardening now has the contact address set).
 
 ### 2026-11-12 — Log branch status
 
