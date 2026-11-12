@@ -18,7 +18,6 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 
 ## Open for the owner
 
-- Open and merge the PR for `claude-log-processor-routes` (log-only), then tell Claude "merged" so it can reset local `main` and delete that branch.
 - Sprint 5: edit the three PLACEHOLDER strings in `src/lib/judging/notices.ts`.
 - Sprint 5: add Vault secrets `judging_processor_url`, `judging_processor_secret` and the Vercel variable `JUDGING_PROCESSOR_SECRET` (optional: `AI_MODEL_JUDGING`).
 - PR descriptions for `legal-hardening` and `sprint-4-audit-handle` are in `~/Desktop/pr-descriptions.md` (outside the repo; its apply-order notes pre-date Sprint 5 going live, see the next line). Apply the legal-hardening migrations and deploy its code within minutes of each other: migrations first breaks sign-up and positions on live main; code first breaks export, privacy contact and positions.
@@ -28,6 +27,11 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-12 — Log branch cleanup
+
+- PR #11 (`claude-log-processor-routes`) was merged. Fast-forwarded local `main` to `origin/main`, deleted that branch locally and on origin, and removed its stale line from "Open for the owner".
+- State: `main` has everything through PR #11; nothing is pending except the owner items in the open list. Hosted: Sprint 5 migrations applied; audit-handle and legal-hardening migrations not applied (need `--include-all`).
 
 ### 2026-11-12 — Open list tidied
 
