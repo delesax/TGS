@@ -63,4 +63,4 @@ Seeded users all share the local password `judging-test-password`: Strategists `
 npm run eval:judging
 ```
 
-Runs the 30-item DRAFT gold set through the fake provider and writes `evals/out/judging-fake-<date>.md`. It exercises the whole harness; the numbers say nothing about the real model. With `ANTHROPIC_API_KEY` set, `npm run eval:judging -- --real` runs Sonnet (worst case about £1, capped at £5).
+Runs the 30-item DRAFT gold set through the fake provider and writes `evals/out/judging-fake-<date>.md`. It exercises the whole harness; the numbers say nothing about the real model. With `ANTHROPIC_API_KEY` set, `npm run eval:judging -- --real` runs Sonnet (worst-case estimate about £2.15 ($2.58), capped at £5; it stops at once if the key is rejected and exits with an error if any item is not scored).

@@ -37,6 +37,7 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 - `npm run eval:judging -- --real` refuses with no key ("--real needs ANTHROPIC_API_KEY. Nothing was sent.", exit 1). Not run with the key yet: waiting for the owner's go.
 - Gold-set review sheet written to the owner's Desktop (outside the repo); `gold-set.json` unchanged.
 - Owner said run the real eval: all 30 calls failed with 401 `invalid x-api-key`, nothing scored, spend £0. Cause: the `ANTHROPIC_API_KEY` in `TGS/.env.local` is not a Console API key (its type label is `usr`, 124 characters, ends in `=`; real keys start `sk-ant-api03-`, about 108 characters). Owner to replace it, then re-run. Also found: the eval exits 0 when every call fails, and its £ cap compares a USD figure (stops at about $5).
+- Fixed in `scripts/eval-judging.ts` (owner's go): stops at once on a rejected key (401/403) and names the error with any key masked; exits 1 and reports INCOMPLETE if any item is unscored (report still written); costs shown as £ and $, converted at 1.2 USD per GBP (below market, so the £ figure errs high), cap still £5. Worst-case estimate is about £2.15 ($2.58), not £1 as first stated. Earlier 1:1 treatment was deliberate and documented, not a bug. Tested: fake (exit 0), no key (exit 1), rejected key (1 call, exit 1). Typecheck, lint, unit 176 pass. `eval-coach.ts` and `eval-moderation.ts` on `main` still use the 1:1 treatment and exit 0 on failures; not changed.
 
 ### 2026-11-12 — Pushes and integration trial
 

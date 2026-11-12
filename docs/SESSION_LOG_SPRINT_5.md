@@ -117,7 +117,7 @@ None added.
 1. Ratify or correct the 30 labels in `evals/judging/gold-set.json` (it is marked DRAFT).
 2. Review the defaults: peer window 72 h, draft at 96 h, 5 votes, 3x voter cap, steelman +2.5 per Dispatch (max 5) needing 2 confirmations, 7-day appeals, AI wording off.
 3. Edit the three PLACEHOLDER strings in `src/lib/judging/notices.ts` (or hand them to the legal-hardening work).
-4. When ready: add `ANTHROPIC_API_KEY` to Vercel, then run `npm run eval:judging -- --real` locally with the key (worst case about £1, capped at £5). Pass bar per criterion: ≥ 80% within ±1 and Spearman ≥ 0.7.
+4. When ready: add `ANTHROPIC_API_KEY` to Vercel, then run `npm run eval:judging -- --real` locally with the key (worst-case estimate about £2.15 ($2.58), capped at £5; it stops at once if the key is rejected and exits with an error if any item is not scored). Pass bar per criterion: ≥ 80% within ±1 and Spearman ≥ 0.7.
 5. Before applying to hosted: `supabase db push --dry-run` should list exactly the two Sprint 5 migrations (after whatever is merged first). Then add the Vault secrets `judging_processor_url` and `judging_processor_secret`, and `JUDGING_PROCESSOR_SECRET` in Vercel.
 6. Decide whether deleted accounts' private votes, steelman confirmations and picks should be removed by `anonymise_profile()` (legal-hardening owns that function).
 7. Review and open the PR for `sprint-5-judging` when you are ready (not opened).
