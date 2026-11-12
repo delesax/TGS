@@ -9,6 +9,7 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 | Branch | State | Latest commit | Hosted |
 | --- | --- | --- | --- |
 | `main` | Sprints 1–4 and **Sprint 5 merged (PR #6, 12 Nov)**, launch email docs | `dacaa0f` | Sprint 4 migrations applied; Sprint 5 migrations **not** applied |
+| `gold-set-ratified` | Ratified gold set (v2026-11-12-ratified-1), real eval re-run: PASS. Pushed, no PR yet | see `git log origin/gold-set-ratified` | — |
 | `sprint-5-judging` | **Merged to `main` (PR #6).** Branch holds only later log commits (not on origin) | see `git log` | Nothing applied |
 | `legal-hardening` | Built and **pushed 12 Nov** (local is 1 log commit ahead of origin), no PR yet (owns legal pages, account deletion, DEMO.md); six migrations written, not applied | see `git log origin/legal-hardening` | Nothing applied |
 | `sprint-4-audit-handle` | On origin, no PR; one migration `20261104000500_audit_no_handle.sql` (stops new handle writes in `decide_held_handle`; old rows untouched; main's onboarding still writes the handle, fixed only by legal-hardening) | `bc88132` | Nothing applied |
@@ -18,10 +19,10 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 
 ## Open for the owner
 
-- Sprint 5: ratify the 30 DRAFT labels in `evals/judging/gold-set.json`.
 - Sprint 5: edit the three PLACEHOLDER strings in `src/lib/judging/notices.ts`.
 - Sprint 5: add Vault secrets `judging_processor_url`, `judging_processor_secret` and the Vercel variable `JUDGING_PROCESSOR_SECRET` (optional: `AI_MODEL_JUDGING`).
-- Sprint 5: ratify the gold-set labels (the real eval passed on the draft labels, 12 Nov); add `ANTHROPIC_API_KEY` to Vercel when ready.
+- Sprint 5: add `ANTHROPIC_API_KEY` to Vercel when ready.
+- Open the PR for `gold-set-ratified` (compare URL: https://github.com/delesax/TGS/compare/main...gold-set-ratified).
 - PR descriptions for all four branches are in `~/Desktop/pr-descriptions.md` (outside the repo). Apply legal-hardening migrations and deploy its code within minutes of each other: migrations first breaks sign-up and positions on live main; code first breaks export, privacy contact and positions.
 - Open PRs (owner): `launch-email-confirm-template` (https://github.com/delesax/TGS/compare/main...launch-email-confirm-template) (`sprint-5-judging` is already merged as PR #6).
 - Hosted migrations: apply in timestamp order (audit-handle, then legal-hardening, then Sprint 5) to avoid `--include-all`.
@@ -30,6 +31,16 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-12 — Gold set ratified, real eval re-run
+
+- Applied the owner's eight accepted changes to `evals/judging/gold-set.json` and nothing else (list in `evals/judging/CHANGES.md`): fs-02 steelman off; responsiveness 2 to 1 on six items; ed-02 evidence 4 and its year removed; hs-02, ed-04, en-06, te-05 one point down on the named criteria. Status ratified, `ratified_by` owner, `ratified_on` 2026-11-12, version `2026-11-12-ratified-1`. Note added that all items are synthetic and statistics are illustrative. Reasons reworded to match; no new facts.
+- Only code change: the eval report no longer says "labels not yet ratified" once the status is `ratified`.
+- Typecheck and lint clean; judging unit tests 35 pass. Fake eval fails as expected (keyword stand-in).
+- Real eval, once, 30 of 30 scored, about £0.14 ($0.16): **PASS**. logic 0.57 MAE / 100% within ±1 / ρ 0.88; evidence 0.60 / 90% / 0.95; originality 0.50 / 100% / 0.94; responsiveness 0.53 / 97% / 0.92; pooled 0.55 / 97% / 0.93. Injection item hs-06 all 1s.
+- Steelman: all 4 labelled found; **1 false positive: fs-02** (the owner removed its steelman label; the AI still marks it as one).
+- Gaps of 2 or more (AI below label): fs-05, en-05, hs-02 evidence (3 vs 5); ed-05 responsiveness (3 vs 5).
+- No label, threshold or prompt was changed to reach the result.
 
 ### 2026-11-12 — Sprint 5 merged
 

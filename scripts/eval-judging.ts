@@ -125,7 +125,7 @@ async function main() {
   const lines = [
     `# Judging evaluation, ${new Date().toISOString().slice(0, 16).replace("T", " ")} UTC`,
     "",
-    `Provider: ${real ? `real, ${model}` : "fake (keyword-driven stand-in, NOT the real model)"}. Prompt: ${promptVersion("judge_rubric")}. Gold set: ${gold.status} ${gold.version} (labels not yet ratified by the owner). Estimated spend: ${money(spent)}.`,
+    `Provider: ${real ? `real, ${model}` : "fake (keyword-driven stand-in, NOT the real model)"}. Prompt: ${promptVersion("judge_rubric")}. Gold set: ${gold.status} ${gold.version}${gold.status === "ratified" ? "" : " (labels not yet ratified by the owner)"}. Estimated spend: ${money(spent)}.`,
     "",
     `Scored ${scored.length} of ${gold.items.length}${rows.length - scored.length ? ` (unavailable: ${rows.filter((r) => !r.got).map((r) => `${r.item.id} ${r.why}`).join(", ")})` : ""}${rows.length < gold.items.length ? `; ${gold.items.length - rows.length} not attempted` : ""}.`,
     ...(errors.length ? ["", `First provider error: ${errors[0].status ?? "no status"} ${errors[0].message}`] : []),
