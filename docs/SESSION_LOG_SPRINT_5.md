@@ -4,6 +4,8 @@ Date: 11 November 2026. Branch `sprint-5-judging`, cut from `main` at `eec5c7c` 
 
 **Not pushed, no PR, not merged. Nothing applied to hosted Supabase. No real AI call was made.**
 
+**Re-checked 12 November:** still local only (`origin/sprint-5-judging` does not exist), no PR, `main` unchanged at `eec5c7c` (this branch is 3 commits ahead, 0 behind). No test or hosted command was re-run for this update, so the results below are from 11 November and the hosted state is not re-verified (nothing of Sprint 5 was ever applied by me).
+
 ## What was built
 
 ### Data model and row-level security (two migrations)
@@ -79,7 +81,7 @@ Both apply cleanly from scratch after all earlier migrations (`npx supabase db r
 - Already known, still missing: `ANTHROPIC_API_KEY`. Until it is set, AI jobs wait (an hour at a time) and drafts flag "AI scoring pending"; an admin can still compute a draft and publish with an AI weight of 0 and a reason.
 
 ## Files that overlap other branches
-With `legal-hardening`: `CHANGELOG.md` (new entry at the top), `package.json` (three scripts), `src/app/admin/admin-nav.tsx` (one label), `src/app/campaigns/[slug]/page.tsx` (closed card links; "Pick it" moved away from the position-form lines legal changes), `src/app/campaigns/[slug]/dispatch-section.tsx` (one sentence), `src/lib/email/templates.ts` (kinds, preferences, `render` exported), `tests/rls/every-table-has-rls.test.ts` (table list). A trial merge result is at the end of this log.
+With `legal-hardening` (now pushed to `origin`, no PR yet): `CHANGELOG.md` (new entry at the top), `package.json` (three scripts), `src/app/admin/admin-nav.tsx` (one label), `src/app/campaigns/[slug]/page.tsx` (closed card links; "Pick it" moved away from the position-form lines legal changes), `src/app/campaigns/[slug]/dispatch-section.tsx` (one sentence), `src/lib/email/templates.ts` (kinds, preferences, `render` exported), `tests/rls/every-table-has-rls.test.ts` (table list), and since 12 November `docs/CLAUDE_LOG.md` (both branches add that file). A trial merge result is at the end of this log.
 With `sprint-4-audit-handle`: `CHANGELOG.md` only.
 After legal-hardening merges, someone should also decide whether `anonymise_profile()` should remove a deleted account's peer votes, steelman confirmations and mind-change picks (they currently stay, linked to the tombstone id; they are private).
 
@@ -120,10 +122,11 @@ None added.
 6. Decide whether deleted accounts' private votes, steelman confirmations and picks should be removed by `anonymise_profile()` (legal-hardening owns that function).
 7. Review and open the PR for `sprint-5-judging` when you are ready (not opened).
 
-## Commit and merge check
-- Work commit: `2aef6ad` "Sprint 5: judging and the Verdict" on `sprint-5-judging` (local only; not pushed). This log was then updated in a second commit.
-- Trial merges (`git merge-tree`, nothing changed on any branch):
-  - with `legal-hardening` (`ccb2822`): two small conflicts, both "keep both sides": `CHANGELOG.md` (each branch adds an entry at the top) and `tests/rls/every-table-has-rls.test.ts` (each branch appends tables to the same list). `package.json`, `admin-nav.tsx`, the Campaign page, `dispatch-section.tsx` and `templates.ts` merge automatically.
-  - with `sprint-4-audit-handle` (`bc88132`): one conflict in `CHANGELOG.md` (keep both entries).
+## Commit and merge check (updated 12 November)
+- Work commit: `2aef6ad` "Sprint 5: judging and the Verdict" on `sprint-5-judging`. Two later commits change only logs (`31d057d` this log, then the running `docs/CLAUDE_LOG.md`), and this update adds one more log-only commit. All local; **nothing is pushed**. Run `git log origin/main..HEAD` for the exact head: it is not quoted here because each log update would make it stale.
+- Trial merges (`git merge-tree`, nothing changed on any branch), redone on 12 November against the current `origin` heads:
+  - with `origin/legal-hardening` (pushed, 19 commits ahead of `main`; code and docs complete at `ccb2822`, later commits log-only): **three** conflicts, all "keep both sides": `CHANGELOG.md` (each branch adds an entry at the top), `tests/rls/every-table-has-rls.test.ts` (each appends tables to the same list) and, new since 11 November, `docs/CLAUDE_LOG.md` (both branches add that file; merge the two "Current state" tables and keep every entry). `package.json`, `admin-nav.tsx`, the Campaign page, `dispatch-section.tsx` and `templates.ts` still merge automatically.
+  - with `origin/sprint-4-audit-handle` (`bc88132`, still not merged into `main`): one conflict in `CHANGELOG.md` (keep both entries).
+- Migration order if all merge: `20261104000500` (audit handle) < `20261107000100` to `20261107000600` (legal-hardening, six migrations) < `20261111000100` and `20261111000200` (Sprint 5). Sprint 5's two sort last, so they apply cleanly after the others. The hosted dry run should list exactly the migrations that have not been applied yet; check it again after whatever merges first.
 - After merging legal-hardening, re-run `npm run test:rls` and the seed: legal adds positions consent (the seed already sets `positions_consent_at` when the column exists) and drops the position requirement for posting.
 - Local database: the local Supabase (shared by all worktrees) was reset with these migrations and holds the seeded test Campaign. `npx supabase db reset` from any branch rebuilds it for that branch.

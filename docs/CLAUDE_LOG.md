@@ -9,10 +9,10 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 | Branch | State | Latest commit | Hosted |
 | --- | --- | --- | --- |
 | `main` | Sprints 1–4 merged, launch email docs | `eec5c7c` | Sprint 4 migrations applied |
-| `sprint-5-judging` | Built and committed locally, not pushed, no PR | see `git log` | Nothing applied |
-| `legal-hardening` | Separate work (owns legal pages, account deletion, DEMO.md) | — | — |
+| `sprint-5-judging` | Built and committed locally, not pushed, no PR; session log refreshed 12 Nov (trial merges redone) | see `git log` | Nothing applied |
+| `legal-hardening` | Built and **pushed 12 Nov**, no PR yet (owns legal pages, account deletion, DEMO.md); six migrations written, not applied | see `git log origin/legal-hardening` | Nothing applied |
 | `sprint-4-audit-handle` | Separate work | — | — |
-| `launch-email-confirm-template` | Checked out in `TGS/` with uncommitted docs | — | — |
+| `launch-email-confirm-template` | Step 12a already merged into `main`; `TGS/` still holds uncommitted doc edits (Resend `updates` subdomain) | `9dffdd0` | — |
 
 Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-sprint5/` (sprint-5-judging). They share one local Supabase database.
 
@@ -23,6 +23,7 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 - Sprint 5: add Vault secrets `judging_processor_url`, `judging_processor_secret` and the Vercel variable `JUDGING_PROCESSOR_SECRET` (optional: `AI_MODEL_JUDGING`).
 - Sprint 5: once `ANTHROPIC_API_KEY` exists, run `npm run eval:judging -- --real`.
 - Sprint 5: approve push and PR; apply `20261111000100_judging_schema.sql` and `20261111000200_judging_functions.sql` to hosted only after the dry run lists exactly those two.
+- Sprint 5 and legal-hardening both add `docs/CLAUDE_LOG.md`: expect an add/add conflict (and in `CHANGELOG.md` and `tests/rls/every-table-has-rls.test.ts`) when the second one merges; keep both sides.
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
