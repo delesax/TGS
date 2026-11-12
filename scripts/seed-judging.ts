@@ -72,7 +72,7 @@ async function ensureUsers(admin: SupabaseClient): Promise<Map<string, string>> 
         email: email(handle),
         password: PASSWORD,
         email_confirm: true,
-        user_metadata: { invite_code: INVITE, age_confirmed: true, terms_accepted: true },
+        user_metadata: { invite_code: INVITE, age_confirmed: true, terms_accepted: true, public_acknowledged: true },
       });
       if (error) throw error;
       id = data.user.id;

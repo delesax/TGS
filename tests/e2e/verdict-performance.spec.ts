@@ -29,7 +29,7 @@ test.beforeAll(async () => {
   for (let i = 0; i < 12; i++) {
     const code = `TGS-VP-${randomUUID().slice(0, 8).toUpperCase()}`;
     await service.from("invites").insert({ code, max_uses: 1 });
-    const { data } = await service.auth.admin.createUser({ email: `vp-${randomUUID()}@example.test`, password: "a long pilot password", email_confirm: true, user_metadata: { invite_code: code, age_confirmed: true, terms_accepted: true } });
+    const { data } = await service.auth.admin.createUser({ email: `vp-${randomUUID()}@example.test`, password: "a long pilot password", email_confirm: true, user_metadata: { invite_code: code, age_confirmed: true, terms_accepted: true, public_acknowledged: true } });
     const id = data.user!.id;
     userIds.push(id);
     await service.from("profiles").update({ handle: `VP_${randomUUID().replace(/-/g, "").slice(0, 10)}` }).eq("id", id);
