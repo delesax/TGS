@@ -18,6 +18,7 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 
 ## Open for the owner
 
+- Open and merge the PR for `claude-log-processor-routes` (log-only), then tell Claude "merged" so it can reset local `main` and delete that branch.
 - Sprint 5: edit the three PLACEHOLDER strings in `src/lib/judging/notices.ts`.
 - Sprint 5: add Vault secrets `judging_processor_url`, `judging_processor_secret` and the Vercel variable `JUDGING_PROCESSOR_SECRET` (optional: `AI_MODEL_JUDGING`).
 - PR descriptions for all four branches are in `~/Desktop/pr-descriptions.md` (outside the repo). Apply legal-hardening migrations and deploy its code within minutes of each other: migrations first breaks sign-up and positions on live main; code first breaks export, privacy contact and positions.
@@ -35,7 +36,7 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 - Pushed local `main`'s four extra commits as `origin/sprint5-wrapup` (same SHA as local `main`; diff against `origin/main` is exactly 5 files: both logs, `gold-set.json`, `CHANGES.md`, `scripts/eval-judging.ts`). `origin/main` untouched. Local `main` was not reset because `gold-set-ratified` was not merged on GitHub and one commit existed only locally.
 - Hosted dry runs: three failed to parse `DATABASE_URL` (unencoded reserved characters in its password, found with yes/no checks only); after the owner updated `.env.local` it connected and said the remote database is up to date. Nothing pending. The password is read only from `TGS/.env.local` (the Sprint 5 worktree's `.env.local` is a symlink to it).
 - Processor routes (all POST, `Authorization: Bearer <secret>`, constant-time compare; wrong or missing header 401, env var unset 503, failure 500): `/api/email/process` (`EMAIL_PROCESSOR_SECRET`; Vault `email_processor_url`/`email_processor_secret`; `email_kick()`), `/api/moderation/sweep` (`MODERATION_PROCESSOR_SECRET`; Vault `moderation_processor_url`/`moderation_processor_secret`; `moderation_kick()`), `/api/judging/process` (`JUDGING_PROCESSOR_SECRET`; Vault `judging_processor_url`/`judging_processor_secret`; `judging_kick()`). Each Vault secret must equal the matching Vercel variable.
-- Owner merged PR #10 (`sprint5-wrapup`). Cleanup done: confirmed all four commits are in `origin/main`, `git diff origin/main main` was empty, reset local `main` to `origin/main` (`4084d4a`), and deleted `gold-set-ratified`, `claude-log-hosted-sprint5` and `sprint5-wrapup` on origin (and the two local ones; there was no local `sprint5-wrapup`). Left `claude-log-processor-routes` (this log update), unpushed.
+- Owner merged PR #10 (`sprint5-wrapup`). Cleanup done: confirmed all four commits are in `origin/main`, `git diff origin/main main` was empty, reset local `main` to `origin/main` (`4084d4a`), and deleted `gold-set-ratified`, `claude-log-hosted-sprint5` and `sprint5-wrapup` on origin (and the two local ones; there was no local `sprint5-wrapup`). Pushed `claude-log-processor-routes` (this log update) as a branch for the owner to PR: https://github.com/delesax/TGS/compare/main...claude-log-processor-routes . Not pushed to `main`.
 
 ### 2026-11-12 — Log branches merged into main
 
