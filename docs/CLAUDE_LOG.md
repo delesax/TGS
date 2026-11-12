@@ -8,8 +8,8 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 
 | Branch | State | Latest commit | Hosted |
 | --- | --- | --- | --- |
-| `main` | Sprints 1–4 merged, launch email docs | `eec5c7c` | Sprint 4 migrations applied |
-| `sprint-5-judging` | **Pushed 12 Nov** (origin matches local), no PR. Includes the `public_acknowledged` fix and the eval:judging fixes; real eval passed on DRAFT labels (12 Nov) | see `git log origin/sprint-5-judging` | Nothing applied |
+| `main` | Sprints 1–4 and **Sprint 5 merged (PR #6, 12 Nov)**, launch email docs | `dacaa0f` | Sprint 4 migrations applied; Sprint 5 migrations **not** applied |
+| `sprint-5-judging` | **Merged to `main` (PR #6).** Branch holds only later log commits (not on origin) | see `git log` | Nothing applied |
 | `legal-hardening` | Built and **pushed 12 Nov** (local is 1 log commit ahead of origin), no PR yet (owns legal pages, account deletion, DEMO.md); six migrations written, not applied | see `git log origin/legal-hardening` | Nothing applied |
 | `sprint-4-audit-handle` | On origin, no PR; one migration `20261104000500_audit_no_handle.sql` (stops new handle writes in `decide_held_handle`; old rows untouched; main's onboarding still writes the handle, fixed only by legal-hardening) | `bc88132` | Nothing applied |
 | `launch-email-confirm-template` | Doc edits (Resend `updates` subdomain, 20i, DMARC optional) committed and **pushed 12 Nov**; owner to open PR | `968fdaf` | — |
@@ -23,13 +23,19 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 - Sprint 5: add Vault secrets `judging_processor_url`, `judging_processor_secret` and the Vercel variable `JUDGING_PROCESSOR_SECRET` (optional: `AI_MODEL_JUDGING`).
 - Sprint 5: ratify the gold-set labels (the real eval passed on the draft labels, 12 Nov); add `ANTHROPIC_API_KEY` to Vercel when ready.
 - PR descriptions for all four branches are in `~/Desktop/pr-descriptions.md` (outside the repo). Apply legal-hardening migrations and deploy its code within minutes of each other: migrations first breaks sign-up and positions on live main; code first breaks export, privacy contact and positions.
-- Open PRs (owner): `launch-email-confirm-template` (https://github.com/delesax/TGS/compare/main...launch-email-confirm-template) and, when ready, `sprint-5-judging`.
+- Open PRs (owner): `launch-email-confirm-template` (https://github.com/delesax/TGS/compare/main...launch-email-confirm-template) (`sprint-5-judging` is already merged as PR #6).
 - Hosted migrations: apply in timestamp order (audit-handle, then legal-hardening, then Sprint 5) to avoid `--include-all`.
-- Sprint 5: apply `20261111000100_judging_schema.sql` and `20261111000200_judging_functions.sql` to hosted only after the dry run lists exactly those two.
+- Sprint 5 code is on `main` but its migrations are not on hosted: the new judging pages will error on the live site until you apply `20261111000100_judging_schema.sql` and `20261111000200_judging_functions.sql` to hosted only after the dry run lists exactly those two.
 - Sprint 5 and legal-hardening both add `docs/CLAUDE_LOG.md`: expect an add/add conflict (and in `CHANGELOG.md` and `tests/rls/every-table-has-rls.test.ts`) when the second one merges; keep both sides.
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-12 — Sprint 5 merged
+
+- Owner merged PR #6 (`sprint-5-judging`) into `main` (`dacaa0f`). Merged `origin/main` into the local branch; no conflicts. Nothing applied to hosted.
+- Hosted gap: Sprint 5 code is now live-deployable while its two migrations are not applied. Per the deploy-order review, only the new judging pages (`/judging`, `/leaderboard`, vote, Verdict, admin judging) break; existing pages keep working. Apply audit-handle and legal-hardening migrations first if those are being applied, then the two Sprint 5 files, after a dry run.
+- Still unmerged: `launch-email-confirm-template`, `sprint-4-audit-handle`, `legal-hardening`. Expect CLAUDE_LOG/CHANGELOG/RLS-list conflicts when legal-hardening merges (keep both).
 
 ### 2026-11-12 — Rubric questions, deploy-order review, PR descriptions
 
