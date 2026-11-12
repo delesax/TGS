@@ -18,7 +18,7 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 
 ## Open for the owner
 
-- Password reset (branch `forgot-password`, PR to open): in Supabase paste the "Reset password" template from `docs/LAUNCH_EMAIL_SETUP.md` step 12b, and check Redirect URLs allow `https://thegrandstrategist.com/auth/confirm?next=/reset-password` (covered if `https://thegrandstrategist.com/**` is listed).
+- Password reset (merged as PR #13, not usable on the live site until you do this): in Supabase paste the "Reset password" template from `docs/LAUNCH_EMAIL_SETUP.md` step 12b, and check Redirect URLs allow `https://thegrandstrategist.com/auth/confirm?next=/reset-password` (covered if `https://thegrandstrategist.com/**` is listed).
 - Admin access: the owner has no admin account on the live site. Create an invite (SQL in the Supabase SQL Editor) or use the QA invite in `docs/SESSION_LOG_INVITE_QA.md` if still valid, sign up and confirm email, then grant the role by SQL (`auth.users.raw_app_meta_data` role `admin`), then sign out and in. The app has no invites page; invites come from `npm run invite:create` or SQL. The exact statements were given in chat on 12 Nov, not stored here.
 - Before legal-hardening goes live: fill `privacyEmail` and `contactEmail` in `src/lib/legal.ts` (empty now, so pages show "[to be added]" and privacy-request alert emails are skipped).
 - Sprint 5: edit the three PLACEHOLDER strings in `src/lib/judging/notices.ts`.
@@ -30,6 +30,15 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-12 — Log branch status
+
+- No branches remain except `claude-log-pr13` (this log update, PR for the owner to open and merge). `main` is `c0c1da9` and in sync.
+- Mistake to remember: an earlier command mixed a remote branch delete into a larger chain and was blocked; deletes are now done only when the owner asks, as a single command after checking the branch is contained in `origin/main`.
+
+### 2026-11-12 — Password recovery merged
+
+- Owner merged PR #13 (`forgot-password`). Fast-forwarded local `main`. The `forgot-password` branch was deleted locally and on origin on the owner's instruction after a check that it was contained in `origin/main`. The live site only gets a working reset email once the owner pastes the Reset password template and checks the redirect URL (open list).
 
 ### 2026-11-12 — Password recovery flow (branch `forgot-password`)
 
