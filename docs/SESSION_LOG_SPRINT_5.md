@@ -2,7 +2,14 @@
 
 Date: 11 November 2026. Branch `sprint-5-judging`, cut from `main` at `eec5c7c` (main was fast-forwarded to `origin/main` first; it was 2 commits behind and clean). Built in a separate worktree (`../TGS-sprint5`) so the `TGS` checkout, which is on `launch-email-confirm-template` with uncommitted doc changes, was not touched. `legal-hardening` and `sprint-4-audit-handle` were not touched.
 
-**Not pushed, no PR, not merged. Nothing applied to hosted Supabase. No real AI call was made.**
+**Status update (12 November, later; supersedes the status lines below, which describe 11-12 November early):**
+- Merged to `main` as PRs #6 (code) and #7 and #8 (logs). Production (Vercel) is running it.
+- **Migrations applied to hosted on 12 November**: `20261111000100` and `20261111000200`, after a dry run that listed exactly those two. Verified read-only: 11 new tables with RLS on, cron jobs `judging-tick` and `judging-kick` (two jobs, both every minute), and `/leaderboard` returns 200 with "No Verdicts yet".
+- **Real eval run** (Sonnet 5.5, 12 November, about £0.14): 30 of 30 scored, PASS on the draft labels. The owner then **ratified the gold set** with eight changes (`evals/judging/CHANGES.md`, version `2026-11-12-ratified-1`) and the real eval was re-run: PASS (logic 0.57 MAE, 100% within ±1, ρ 0.88; evidence 0.60, 90%, 0.95; originality 0.50, 100%, 0.94; responsiveness 0.53, 97%, 0.92; pooled 0.55, 97%, 0.93). Steelman: 4 of 4 found, 1 false positive (fs-02). Largest gaps: the AI scores evidence 2 points below the label on fs-05, en-05 and hs-02, and responsiveness on ed-05.
+- `ANTHROPIC_API_KEY` is in Vercel Production (owner). Still open: Vault secrets `judging_processor_url` and `judging_processor_secret`, `JUDGING_PROCESSOR_SECRET` in Vercel, and the three PLACEHOLDER strings in `src/lib/judging/notices.ts`.
+- The running log is `docs/CLAUDE_LOG.md`; it is the more current record.
+
+**Original status when written (11 November): not pushed, no PR, not merged, nothing applied to hosted Supabase, no real AI call made.**
 
 **Re-checked 12 November:** still local only (`origin/sprint-5-judging` does not exist), no PR, `main` unchanged at `eec5c7c` (this branch is 3 commits ahead, 0 behind). No test or hosted command was re-run for this update, so the results below are from 11 November and the hosted state is not re-verified (nothing of Sprint 5 was ever applied by me).
 
@@ -69,11 +76,11 @@ Close → AI scoring queued, "voting open" emails → peer window (72 h) → dra
 13. **No CHANGELOG/DEMO conflicts**: the demo is `docs/DEMO_SPRINT_5.md`, not `DEMO.md` (which legal-hardening rewrites).
 14. `npm run eval:judge` is an alias of `eval:judging`, because CLAUDE.md rule 10 names `eval:judge`.
 
-## Migrations written (not applied to hosted)
+## Migrations (written 11 November; applied to hosted 12 November)
 - `supabase/migrations/20261111000100_judging_schema.sql`
 - `supabase/migrations/20261111000200_judging_functions.sql`
 
-Both apply cleanly from scratch after all earlier migrations (`npx supabase db reset`, local). They sort after `legal-hardening`'s `20261107…` and `sprint-4-audit-handle`'s `20261104000500`. Three pg_cron jobs are added: `judging-tick` and `judging-kick` (every minute). **No deletion or retention job** is added or switched on (the only delete is `refresh_reputation()` rebuilding its own derived table).
+Both apply cleanly from scratch after all earlier migrations (`npx supabase db reset`, local). They sort after `legal-hardening`'s `20261107…` and `sprint-4-audit-handle`'s `20261104000500`. Two pg_cron jobs are added: `judging-tick` and `judging-kick` (every minute). **No deletion or retention job** is added or switched on (the only delete is `refresh_reputation()` rebuilding its own derived table).
 
 ## New secrets and settings (names only)
 - **Vault** (hosted, owner action): `judging_processor_url` (e.g. `https://<site>/api/judging/process`) and `judging_processor_secret`.
@@ -105,8 +112,8 @@ After legal-hardening merges, someone should also decide whether `anonymise_prof
 Overall FAIL, as expected for a keyword stand-in; steelman 4 of 5 found, 0 false positives. These numbers say nothing about Sonnet. `--real` was **not** run (no key).
 
 ## What I could not do
-- Run the real-model evaluation (`--real`): no `ANTHROPIC_API_KEY`. The gold-set labels are DRAFT and need your ratification first anyway.
-- Apply the migrations to hosted, or set the Vault secrets and Vercel env var (your actions; I was told not to).
+- (11 November, since done) Run the real-model evaluation: it was run on 12 November once a key existed, and the gold set has since been ratified.
+- (11 November) Apply the migrations to hosted: applied on 12 November on the owner's go. Setting the Vault secrets and `JUDGING_PROCESSOR_SECRET` is still the owner's action.
 - Inngest: the brief asked for the existing pg_cron + pg_net processor pattern, so no Inngest workflow was added.
 - Legal-sensitive wording: the AI notice on Verdicts, the AI-assisted rationale note and the appeal notice are PLACEHOLDER constants in `src/lib/judging/notices.ts`.
 
