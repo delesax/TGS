@@ -9,7 +9,7 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 | Branch | State | Latest commit | Hosted |
 | --- | --- | --- | --- |
 | `main` | Sprints 1–4 merged, launch email docs | `eec5c7c` | Sprint 4 migrations applied |
-| `sprint-5-judging` | **Pushed 12 Nov**, no PR. `public_acknowledged` fix for legal-hardening's sign-up trigger is in | see `git log origin/sprint-5-judging` | Nothing applied |
+| `sprint-5-judging` | **Pushed 12 Nov** (origin matches local), no PR. Includes the `public_acknowledged` fix and the eval:judging fixes; real eval not yet scored | see `git log origin/sprint-5-judging` | Nothing applied |
 | `legal-hardening` | Built and **pushed 12 Nov**, no PR yet (owns legal pages, account deletion, DEMO.md); six migrations written, not applied | see `git log origin/legal-hardening` | Nothing applied |
 | `sprint-4-audit-handle` | On origin, no PR; one migration `20261104000500_audit_no_handle.sql` (stops new handle writes in `decide_held_handle`; old rows untouched) | `bc88132` | Nothing applied |
 | `launch-email-confirm-template` | Doc edits (Resend `updates` subdomain, 20i, DMARC optional) committed and **pushed 12 Nov**; owner to open PR | `968fdaf` | — |
@@ -21,7 +21,7 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 - Sprint 5: ratify the 30 DRAFT labels in `evals/judging/gold-set.json`.
 - Sprint 5: edit the three PLACEHOLDER strings in `src/lib/judging/notices.ts`.
 - Sprint 5: add Vault secrets `judging_processor_url`, `judging_processor_secret` and the Vercel variable `JUDGING_PROCESSOR_SECRET` (optional: `AI_MODEL_JUDGING`).
-- Sprint 5: once `ANTHROPIC_API_KEY` exists, run `npm run eval:judging -- --real`.
+- Sprint 5: replace `ANTHROPIC_API_KEY` in `TGS/.env.local` with a Console API key (starts `sk-ant-api03-`; the current one is rejected with 401), then tell Claude to re-run `npm run eval:judging -- --real` (worst-case estimate about £2.15, capped at £5).
 - Open PRs (owner): `launch-email-confirm-template` (https://github.com/delesax/TGS/compare/main...launch-email-confirm-template) and, when ready, `sprint-5-judging`.
 - Hosted migrations: apply in timestamp order (audit-handle, then legal-hardening, then Sprint 5) to avoid `--include-all`.
 - Sprint 5: apply `20261111000100_judging_schema.sql` and `20261111000200_judging_functions.sql` to hosted only after the dry run lists exactly those two.
@@ -29,6 +29,12 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-12 — Pushed eval fixes, model switched
+
+- Pushed `sprint-5-judging` to `c4e4e5d` (key check log, real-eval log, eval fixes). Origin matches local. No PR, no merges, nothing applied to hosted.
+- The session model was switched to Sonnet 5.5 by the owner (`/model`). Commit trailers now say Sonnet 5.5.
+- Still open: a valid Console API key, then the real eval run. Everything else is in the entry below and the Open list.
 
 ### 2026-11-12 — Key check and gold-set review sheet
 
