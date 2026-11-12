@@ -33,7 +33,7 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 
 ### 2026-11-12 — Log branches merged into main
 
-- Merged `claude-log-hosted-sprint5` (fast-forward) and `gold-set-ratified` into local `main`. The latter is not log-only: it also brings the ratified `evals/judging/gold-set.json`, `evals/judging/CHANGES.md` and the small `scripts/eval-judging.ts` wording fix. Resolved the `docs/CLAUDE_LOG.md` conflict by keeping both sides. Not pushed until the owner says so.
+- Merged `claude-log-hosted-sprint5` (fast-forward) and `gold-set-ratified` into local `main`. The latter is not log-only: it also brings the ratified `evals/judging/gold-set.json`, `evals/judging/CHANGES.md` and the small `scripts/eval-judging.ts` wording fix. Resolved the `docs/CLAUDE_LOG.md` conflict by keeping both sides. Not pushed until the owner says so. Also refreshed the stale status lines in `docs/SESSION_LOG_SPRINT_5.md` (it still said not pushed, not merged, nothing applied to hosted).
 
 ### 2026-11-12 — Sprint 5 migrations applied to hosted
 
