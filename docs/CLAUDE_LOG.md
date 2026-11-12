@@ -9,6 +9,7 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 | Branch | State | Latest commit | Hosted |
 | --- | --- | --- | --- |
 | `main` | Sprints 1–4 and **Sprint 5 merged (PRs #6 and #7, 12 Nov)**, launch email docs | see `git log origin/main` | Sprint 4 migrations applied; **Sprint 5 migrations applied 12 Nov** (`20261111000100`, `20261111000200`) |
+| `gold-set-ratified` | **Merged to `main`.** Ratified gold set (v2026-11-12-ratified-1); real eval re-run passed | see `git log origin/main` | — |
 | `sprint-5-judging` | **Fully merged to `main` (PR #6 code, PR #7 log).** Nothing left on the branch | see `git log` | Migrations applied to hosted (see `main`) |
 | `legal-hardening` | Built and **pushed 12 Nov** (local is 1 log commit ahead of origin), no PR yet (owns legal pages, account deletion, DEMO.md); six migrations written, not applied | see `git log origin/legal-hardening` | Nothing applied |
 | `sprint-4-audit-handle` | On origin, no PR; one migration `20261104000500_audit_no_handle.sql` (stops new handle writes in `decide_held_handle`; old rows untouched; main's onboarding still writes the handle, fixed only by legal-hardening) | `bc88132` | Nothing applied |
@@ -18,7 +19,6 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 
 ## Open for the owner
 
-- Sprint 5: ratify the 30 DRAFT labels in `evals/judging/gold-set.json`.
 - Sprint 5: edit the three PLACEHOLDER strings in `src/lib/judging/notices.ts`.
 - Sprint 5: add Vault secrets `judging_processor_url`, `judging_processor_secret` and the Vercel variable `JUDGING_PROCESSOR_SECRET` (optional: `AI_MODEL_JUDGING`).
 - PR descriptions for all four branches are in `~/Desktop/pr-descriptions.md` (outside the repo). Apply legal-hardening migrations and deploy its code within minutes of each other: migrations first breaks sign-up and positions on live main; code first breaks export, privacy contact and positions.
@@ -31,6 +31,10 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 
 ## Entries
 
+### 2026-11-12 — Log branches merged into main
+
+- Merged `claude-log-hosted-sprint5` (fast-forward) and `gold-set-ratified` into local `main`. The latter is not log-only: it also brings the ratified `evals/judging/gold-set.json`, `evals/judging/CHANGES.md` and the small `scripts/eval-judging.ts` wording fix. Resolved the `docs/CLAUDE_LOG.md` conflict by keeping both sides. Not pushed until the owner says so.
+
 ### 2026-11-12 — Sprint 5 migrations applied to hosted
 
 - On the owner's "go", ran `supabase db push` from `TGS/` on `main` (`7a439cd`) against hosted. The dry run beforehand listed exactly `20261111000100_judging_schema.sql` and `20261111000200_judging_functions.sql`; both applied.
@@ -38,12 +42,22 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 - Live site: `https://thegrandstrategist.com/leaderboard` returns 200 with the "No Verdicts yet" empty state and no error markers. The latest production deploy (`7a439cd`, READY) had Sprint 5 code live before the migration, so the judging pages were erroring until now.
 - Not checked: whether any hosted Campaign is closed (the first tick would queue scoring jobs and peer-voting emails), and whether the Vault secrets exist (reads of hosted data were denied earlier).
 - Mistake: a `grep` let through the CLI's echo of the hosted connection string, so the database password appeared once in session output. Rotate it (see open list). Anthropic key is in Vercel Production per the owner; that item is removed from the open list.
-- `gold-set-ratified` is pushed but not on `main`; the "ratify the 30 DRAFT labels" item stays here until that PR merges.
+- `gold-set-ratified` was pushed but not yet on `main` at this point; it is merged afterwards (entry above).
+
+### 2026-11-12 — Gold set ratified, real eval re-run
+
+- Applied the owner's eight accepted changes to `evals/judging/gold-set.json` and nothing else (list in `evals/judging/CHANGES.md`): fs-02 steelman off; responsiveness 2 to 1 on six items; ed-02 evidence 4 and its year removed; hs-02, ed-04, en-06, te-05 one point down on the named criteria. Status ratified, `ratified_by` owner, `ratified_on` 2026-11-12, version `2026-11-12-ratified-1`. Note added that all items are synthetic and statistics are illustrative. Reasons reworded to match; no new facts.
+- Only code change: the eval report no longer says "labels not yet ratified" once the status is `ratified`.
+- Typecheck and lint clean; judging unit tests 35 pass. Fake eval fails as expected (keyword stand-in).
+- Real eval, once, 30 of 30 scored, about £0.14 ($0.16): **PASS**. logic 0.57 MAE / 100% within ±1 / ρ 0.88; evidence 0.60 / 90% / 0.95; originality 0.50 / 100% / 0.94; responsiveness 0.53 / 97% / 0.92; pooled 0.55 / 97% / 0.93. Injection item hs-06 all 1s.
+- Steelman: all 4 labelled found; **1 false positive: fs-02** (the owner removed its steelman label; the AI still marks it as one).
+- Gaps of 2 or more (AI below label): fs-05, en-05, hs-02 evidence (3 vs 5); ed-05 responsiveness (3 vs 5).
+- No label, threshold or prompt was changed to reach the result.
 
 ### 2026-11-12 — Log PR merged
 
 - Owner merged PR #7 (log-only commits from `sprint-5-judging`). `main` now matches the branch. Replaced the stale `main` hash in "Current state" with a pointer to `git log`.
-- Unchanged: Sprint 5 migrations not applied to hosted; `launch-email-confirm-template`, `sprint-4-audit-handle`, `legal-hardening` unmerged; gold-set labels not ratified.
+- Unchanged then: Sprint 5 migrations not applied to hosted; `launch-email-confirm-template`, `sprint-4-audit-handle`, `legal-hardening` unmerged; gold-set labels not ratified.
 
 ### 2026-11-12 — Sprint 5 merged
 
