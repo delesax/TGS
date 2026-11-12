@@ -8,8 +8,8 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 
 | Branch | State | Latest commit | Hosted |
 | --- | --- | --- | --- |
-| `main` | Sprints 1–4 and **Sprint 5 merged (PR #6, 12 Nov)**, launch email docs | `dacaa0f` | Sprint 4 migrations applied; Sprint 5 migrations **not** applied |
-| `sprint-5-judging` | **Merged to `main` (PR #6).** Branch holds only later log commits (not on origin) | see `git log` | Nothing applied |
+| `main` | Sprints 1–4 and **Sprint 5 merged (PRs #6 and #7, 12 Nov)**, launch email docs | see `git log origin/main` | Sprint 4 migrations applied; Sprint 5 migrations **not** applied |
+| `sprint-5-judging` | **Fully merged to `main` (PR #6 code, PR #7 log).** Nothing left on the branch | see `git log` | Nothing applied |
 | `legal-hardening` | Built and **pushed 12 Nov** (local is 1 log commit ahead of origin), no PR yet (owns legal pages, account deletion, DEMO.md); six migrations written, not applied | see `git log origin/legal-hardening` | Nothing applied |
 | `sprint-4-audit-handle` | On origin, no PR; one migration `20261104000500_audit_no_handle.sql` (stops new handle writes in `decide_held_handle`; old rows untouched; main's onboarding still writes the handle, fixed only by legal-hardening) | `bc88132` | Nothing applied |
 | `launch-email-confirm-template` | Doc edits (Resend `updates` subdomain, 20i, DMARC optional) committed and **pushed 12 Nov**; owner to open PR | `968fdaf` | — |
@@ -30,6 +30,11 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-12 — Log PR merged
+
+- Owner merged PR #7 (log-only commits from `sprint-5-judging`). `main` now matches the branch. Replaced the stale `main` hash in "Current state" with a pointer to `git log`.
+- Unchanged: Sprint 5 migrations not applied to hosted; `launch-email-confirm-template`, `sprint-4-audit-handle`, `legal-hardening` unmerged; gold-set labels not ratified.
 
 ### 2026-11-12 — Sprint 5 merged
 
