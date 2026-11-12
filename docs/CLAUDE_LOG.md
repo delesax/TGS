@@ -10,7 +10,7 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 | --- | --- | --- | --- |
 | `main` | Sprints 1–4 merged, launch email docs | `eec5c7c` | Sprint 4 migrations applied |
 | `sprint-5-judging` | Built and committed locally, not pushed, no PR | see `git log` | Nothing applied |
-| `legal-hardening` | Built, committed and **pushed 12 Nov** (16 commits on `origin/main`); no PR yet | `ccb2822` | Nothing applied (6 migrations `20261107000100`–`000600` written, dry run in the session log) |
+| `legal-hardening` | Built, committed and **pushed 12 Nov** (17 commits ahead of `origin/main`); no PR yet | `eb66c6b` | Nothing applied (6 migrations `20261107000100`–`000600` written, dry run in the session log) |
 | `sprint-4-audit-handle` | Separate work | — | — |
 | `launch-email-confirm-template` | Checked out in `TGS/` with uncommitted docs | — | — |
 
@@ -26,13 +26,14 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 - Legal hardening: open the PR (owner, on GitHub), then fill the bracketed facts listed in `docs/SESSION_LOG_LEGAL_HARDENING.md`, and apply the six migrations to hosted only after review and a dry run. `LEGAL.reviewed` stays false until the solicitor signs off. Account deletion stays OFF.
+- Housekeeping: update both logs at the end of every session without being asked (owner, 12 Nov: "I should not remind you again").
 - This file was created on `legal-hardening` from the `sprint-5-judging` copy: expect an add/add conflict in `docs/CLAUDE_LOG.md` when both merge (keep both entries).
 
 ## Entries
 
 ### 2026-11-12 — Legal hardening pushed
 
-- **Branch:** `legal-hardening` from `origin/main`, worktree `TGS-legal/`, head `ccb2822`, pushed to `origin/legal-hardening`. No PR opened, nothing merged.
+- **Branch:** `legal-hardening` from `origin/main`, worktree `TGS-legal/`, head `eb66c6b` (the commit that adds this log), pushed to `origin/legal-hardening`. No PR opened, nothing merged. `sprint-4-audit-handle` is on `origin` but still unmerged; `sprint-5-judging` is not on `origin`.
 - **Built** (by a separate session, per the owner's brief in `docs/LEGAL_HARDENING_BRIEF.md`): central `LEGAL` facts and DRAFT gate, three sign-up consents, explicit consent for private positions, rewritten privacy, terms, AI-use and deletion pages, accessibility statement, email footers, privacy-request form, record and admin queue, `account:delete` script, retention jobs, fuller data export, legal records and runbooks in `docs/legal/`, launch decisions (AI cap 1,000, topic changes, `--concurrent`).
 - **Results (reported by that session, not re-run here):** typecheck and lint clean; unit 174, RLS 238, Playwright 29 pass.
 - **Hosted:** nothing applied. Migrations written: `20261107000100_signup_consents`, `…0200_positions_consent`, `…0300_anonymise_text_copies`, `…0400_privacy_requests`, `…0500_retention_jobs`, `…0600_launch_decisions`. The one-off draft-Campaign update script was not run with `--confirm`.
