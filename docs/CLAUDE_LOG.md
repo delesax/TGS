@@ -21,7 +21,7 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 - Sprint 5: ratify the 30 DRAFT labels in `evals/judging/gold-set.json`.
 - Sprint 5: edit the three PLACEHOLDER strings in `src/lib/judging/notices.ts`.
 - Sprint 5: add Vault secrets `judging_processor_url`, `judging_processor_secret` and the Vercel variable `JUDGING_PROCESSOR_SECRET` (optional: `AI_MODEL_JUDGING`).
-- Sprint 5: replace `ANTHROPIC_API_KEY` in `TGS/.env.local` with a Console API key (starts `sk-ant-api03-`; the current one is rejected with 401), then tell Claude to re-run `npm run eval:judging -- --real` (worst-case estimate about £2.15, capped at £5).
+- Sprint 5: ratify the gold-set labels (the real eval passed on the draft labels, 12 Nov); add `ANTHROPIC_API_KEY` to Vercel when ready.
 - Open PRs (owner): `launch-email-confirm-template` (https://github.com/delesax/TGS/compare/main...launch-email-confirm-template) and, when ready, `sprint-5-judging`.
 - Hosted migrations: apply in timestamp order (audit-handle, then legal-hardening, then Sprint 5) to avoid `--include-all`.
 - Sprint 5: apply `20261111000100_judging_schema.sql` and `20261111000200_judging_functions.sql` to hosted only after the dry run lists exactly those two.
@@ -29,6 +29,13 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-12 — Real judging eval run (Sonnet 5.5)
+
+- Owner replaced the key; ran `npm run eval:judging -- --real` once from `TGS-sprint5/`: 30 of 30 scored, no rejected calls, estimated spend £0.14 ($0.16).
+- **PASS** on every criterion against the DRAFT gold set (not yet ratified): logic 0.63 MAE / 97% within ±1 / ρ 0.85; evidence 0.63 / 87% / 0.95; originality 0.60 / 93% / 0.90; responsiveness 0.57 / 97% / 0.92; pooled 0.61 / 93% / 0.93. Steelman 4 of 5 found, 0 false positives; injection item hs-06 scored all 1s.
+- Pattern: the AI scores a little lower than the labels, most on evidence-kind Dispatches and strong rebuttals (largest gaps fs-05, en-05, hs-02, ed-02, ed-05). Missed steelman: fs-02.
+- Report is `evals/out/judging-real-2026-11-12.md` (gitignored). The result only counts once the owner ratifies the labels.
 
 ### 2026-11-12 — Pushed eval fixes, model switched
 
