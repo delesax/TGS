@@ -31,9 +31,14 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 
 ## Entries
 
+### 2026-11-12 — Log branch status
+
+- No branches remain except `claude-log-pr13` (this log update, PR for the owner to open and merge). `main` is `c0c1da9` and in sync.
+- Mistake to remember: an earlier command mixed a remote branch delete into a larger chain and was blocked; deletes are now done only when the owner asks, as a single command after checking the branch is contained in `origin/main`.
+
 ### 2026-11-12 — Password recovery merged
 
-- Owner merged PR #13 (`forgot-password`). Fast-forwarded local `main`. The `forgot-password` branch still exists locally and on origin (deleting it was not approved). The live site only gets a working reset email once the owner pastes the Reset password template and checks the redirect URL (open list).
+- Owner merged PR #13 (`forgot-password`). Fast-forwarded local `main`. The `forgot-password` branch was deleted locally and on origin on the owner's instruction after a check that it was contained in `origin/main`. The live site only gets a working reset email once the owner pastes the Reset password template and checks the redirect URL (open list).
 
 ### 2026-11-12 — Password recovery flow (branch `forgot-password`)
 
