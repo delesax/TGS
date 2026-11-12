@@ -8,8 +8,7 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 
 | Branch | State | Latest commit | Hosted |
 | --- | --- | --- | --- |
-| `main` | Sprints 1–4 and **Sprint 5 merged (PRs #6 and #7, 12 Nov)**, launch email docs | see `git log origin/main` | Sprint 4 migrations applied; **Sprint 5 migrations applied 12 Nov** (`20261111000100`, `20261111000200`) |
-| `gold-set-ratified` | **Merged to `main`.** Ratified gold set (v2026-11-12-ratified-1); real eval re-run passed | see `git log origin/main` | — |
+| `main` | Sprints 1–4 and **Sprint 5 merged (PRs #6 to #8, 12 Nov), ratified gold set and logs merged (PR #10)**, launch email docs | see `git log origin/main` | Sprint 4 migrations applied; **Sprint 5 migrations applied 12 Nov** (`20261111000100`, `20261111000200`) |
 | `sprint-5-judging` | **Fully merged to `main` (PR #6 code, PR #7 log).** Nothing left on the branch | see `git log` | Migrations applied to hosted (see `main`) |
 | `legal-hardening` | Built and **pushed 12 Nov** (local is 1 log commit ahead of origin), no PR yet (owns legal pages, account deletion, DEMO.md); six migrations written, not applied | see `git log origin/legal-hardening` | Nothing applied |
 | `sprint-4-audit-handle` | On origin, no PR; one migration `20261104000500_audit_no_handle.sql` (stops new handle writes in `decide_held_handle`; old rows untouched; main's onboarding still writes the handle, fixed only by legal-hardening) | `bc88132` | Nothing applied |
@@ -19,17 +18,29 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 
 ## Open for the owner
 
+- Open and merge the PR for `claude-log-processor-routes` (log-only), then tell Claude "merged" so it can reset local `main` and delete that branch.
 - Sprint 5: edit the three PLACEHOLDER strings in `src/lib/judging/notices.ts`.
 - Sprint 5: add Vault secrets `judging_processor_url`, `judging_processor_secret` and the Vercel variable `JUDGING_PROCESSOR_SECRET` (optional: `AI_MODEL_JUDGING`).
-- PR descriptions for all four branches are in `~/Desktop/pr-descriptions.md` (outside the repo). Apply legal-hardening migrations and deploy its code within minutes of each other: migrations first breaks sign-up and positions on live main; code first breaks export, privacy contact and positions.
-- Open PRs (owner): `launch-email-confirm-template` (https://github.com/delesax/TGS/compare/main...launch-email-confirm-template) (`sprint-5-judging` is already merged as PR #6).
-- Hosted migrations: apply in timestamp order (audit-handle, then legal-hardening, then Sprint 5) to avoid `--include-all`.
+- PR descriptions for `legal-hardening` and `sprint-4-audit-handle` are in `~/Desktop/pr-descriptions.md` (outside the repo; its apply-order notes pre-date Sprint 5 going live, see the next line). Apply the legal-hardening migrations and deploy its code within minutes of each other: migrations first breaks sign-up and positions on live main; code first breaks export, privacy contact and positions.
+- Hosted migrations still to apply: audit-handle (`20261104000500`) and legal-hardening (`20261107000100` to `000600`). Sprint 5's `20261111…` pair is already on hosted, so these are older than the newest applied migration and the CLI will need `--include-all`. Dry-run with `--include-all` first and check it lists exactly those seven files.
 - Sprint 5 on hosted: judging only does anything once a Campaign closes. Add the Vault secrets above so the AI scoring kick can run (without them the work waits).
-- Rotate the hosted database password: it was printed once into a Claude session's output on 12 Nov (a filter let the CLI's echo of the connection string through).
 - Sprint 5 and legal-hardening both add `docs/CLAUDE_LOG.md`: expect an add/add conflict (and in `CHANGELOG.md` and `tests/rls/every-table-has-rls.test.ts`) when the second one merges; keep both sides.
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-12 — Open list tidied
+
+- Removed from "Open for the owner": the database-password item (owner says rotated 12 Nov), the open-PR line for the already merged `launch-email-confirm-template`, and the merged-PR wording in the PR-descriptions line. The Anthropic key item was already gone.
+- Corrected one stale line: Sprint 5's migrations are already on hosted, so audit-handle and legal-hardening now need `supabase db push --include-all` (the old advice to apply in timestamp order no longer avoids it). `~/Desktop/pr-descriptions.md` still has the old apply order; the log is right.
+- Re-answered the processor routes table (unchanged; recorded in the entry below).
+
+### 2026-11-12 — Wrap-up branch, hosted connection check, processor routes
+
+- Pushed local `main`'s four extra commits as `origin/sprint5-wrapup` (same SHA as local `main`; diff against `origin/main` is exactly 5 files: both logs, `gold-set.json`, `CHANGES.md`, `scripts/eval-judging.ts`). `origin/main` untouched. Local `main` was not reset because `gold-set-ratified` was not merged on GitHub and one commit existed only locally.
+- Hosted dry runs: three failed to parse `DATABASE_URL` (unencoded reserved characters in its password, found with yes/no checks only); after the owner updated `.env.local` it connected and said the remote database is up to date. Nothing pending. The password is read only from `TGS/.env.local` (the Sprint 5 worktree's `.env.local` is a symlink to it).
+- Processor routes (all POST, `Authorization: Bearer <secret>`, constant-time compare; wrong or missing header 401, env var unset 503, failure 500): `/api/email/process` (`EMAIL_PROCESSOR_SECRET`; Vault `email_processor_url`/`email_processor_secret`; `email_kick()`), `/api/moderation/sweep` (`MODERATION_PROCESSOR_SECRET`; Vault `moderation_processor_url`/`moderation_processor_secret`; `moderation_kick()`), `/api/judging/process` (`JUDGING_PROCESSOR_SECRET`; Vault `judging_processor_url`/`judging_processor_secret`; `judging_kick()`). Each Vault secret must equal the matching Vercel variable.
+- Owner merged PR #10 (`sprint5-wrapup`). Cleanup done: confirmed all four commits are in `origin/main`, `git diff origin/main main` was empty, reset local `main` to `origin/main` (`4084d4a`), and deleted `gold-set-ratified`, `claude-log-hosted-sprint5` and `sprint5-wrapup` on origin (and the two local ones; there was no local `sprint5-wrapup`). Pushed `claude-log-processor-routes` (this log update) as a branch for the owner to PR: https://github.com/delesax/TGS/compare/main...claude-log-processor-routes . Not pushed to `main`.
 
 ### 2026-11-12 — Log branches merged into main
 
