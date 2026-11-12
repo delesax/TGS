@@ -39,7 +39,7 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 
 ### 2026-11-12 — Legal hardening pushed
 
-- **Branch:** `legal-hardening` from `origin/main`, worktree `TGS-legal/`, head `1051a70`-plus-this-commit (log updates; `eb66c6b` added this log), pushed to `origin/legal-hardening`. No PR opened, nothing merged. `sprint-4-audit-handle` is on `origin` but still unmerged; `sprint-5-judging` is not on `origin`.
+- **Branch:** `legal-hardening` from `origin/main`, worktree `TGS-legal/`, code and docs complete at `ccb2822`; later commits are log-only (see `git log origin/legal-hardening`), pushed to `origin/legal-hardening`. No PR opened, nothing merged. `sprint-4-audit-handle` is on `origin` but still unmerged; `sprint-5-judging` is not on `origin`.
 - **Built** (by a separate session, per the owner's brief in `docs/LEGAL_HARDENING_BRIEF.md`): central `LEGAL` facts and DRAFT gate, three sign-up consents, explicit consent for private positions, rewritten privacy, terms, AI-use and deletion pages, accessibility statement, email footers, privacy-request form, record and admin queue, `account:delete` script, retention jobs, fuller data export, legal records and runbooks in `docs/legal/`, launch decisions (AI cap 1,000, topic changes, `--concurrent`).
 - **Results (reported by that session, not re-run here):** typecheck and lint clean; unit 174, RLS 238, Playwright 29 pass.
 - **Hosted:** nothing applied. Migrations written: `20261107000100_signup_consents`, `…0200_positions_consent`, `…0300_anonymise_text_copies`, `…0400_privacy_requests`, `…0500_retention_jobs`, `…0600_launch_decisions`. The one-off draft-Campaign update script was not run with `--confirm`.

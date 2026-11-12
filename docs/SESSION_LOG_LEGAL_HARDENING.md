@@ -136,7 +136,7 @@ Typecheck and lint clean. Unit 174, RLS 238, Playwright 29 pass on a freshly res
 
 ## Where it stands (checked 12 November)
 
-- **Pushed.** `origin/legal-hardening` is at `7d059b4`, 18 commits ahead of `origin/main` (`eec5c7c`). `eb66c6b` added `docs/CLAUDE_LOG.md`; `7d059b4` updated the logs.
+- **Pushed.** `origin/legal-hardening` is pushed and is 19 commits ahead of `origin/main` (`eec5c7c`) as of 12 November. The code and docs were complete at `ccb2822`; every later commit changes only `docs/CLAUDE_LOG.md` and the session logs. Run `git log origin/main..origin/legal-hardening` for the exact head: it is deliberately not written here, because each log update would make it stale.
 - **No pull request yet** (the owner opens it on GitHub; CI runs only once it exists). Nothing is merged.
 - **Hosted:** nothing applied. The six migrations (`20261107000100` to `20261107000600`) wait for review, a hosted dry run that lists exactly those six, and the owner's OK. The draft-Campaign script was never run with `--confirm`.
 - `sprint-4-audit-handle` is on `origin` and still not merged into `main`; `sprint-5-judging` is not on `origin` yet.
