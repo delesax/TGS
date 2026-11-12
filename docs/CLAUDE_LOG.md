@@ -31,6 +31,12 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 
 ## Entries
 
+### 2026-11-12 — Contact addresses set
+
+- Set `privacyEmail` and `contactEmail` in `src/lib/legal.ts` to the owner's contact address (owner's instruction). Pages and the footer now show the address as a mailto link instead of "[to be added]", and the privacy-request alert email will be sent to it. Every other legal fact is still empty and `LEGAL.reviewed` is still false.
+- Typecheck and lint clean; unit tests in `src/lib` pass (174). The Playwright suite was not run for this change.
+- Pushed to `origin/legal-hardening` only. No PR, no merge, nothing applied to hosted.
+
 ### 2026-11-07 to 12 — Hosted invites, admin role, launch email docs (operations)
 
 - Hosted: two QA invites were created (the first was held by an unconfirmed sign-up; the second allows 5 uses, 1 used). The owner's own account was given the admin role on hosted (audit row written). No migrations applied by me. Codes and addresses are deliberately not recorded here.
