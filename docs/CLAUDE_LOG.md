@@ -18,6 +18,8 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 
 ## Open for the owner
 
+- Admin access: the owner has no admin account on the live site. Create an invite (SQL in the Supabase SQL Editor) or use the QA invite in `docs/SESSION_LOG_INVITE_QA.md` if still valid, sign up and confirm email, then grant the role by SQL (`auth.users.raw_app_meta_data` role `admin`), then sign out and in. The app has no invites page; invites come from `npm run invite:create` or SQL. The exact statements were given in chat on 12 Nov, not stored here.
+- Before legal-hardening goes live: fill `privacyEmail` and `contactEmail` in `src/lib/legal.ts` (empty now, so pages show "[to be added]" and privacy-request alert emails are skipped).
 - Sprint 5: edit the three PLACEHOLDER strings in `src/lib/judging/notices.ts`.
 - Sprint 5: add Vault secrets `judging_processor_url`, `judging_processor_secret` and the Vercel variable `JUDGING_PROCESSOR_SECRET` (optional: `AI_MODEL_JUDGING`).
 - PR descriptions for `legal-hardening` and `sprint-4-audit-handle` are in `~/Desktop/pr-descriptions.md` (outside the repo; its apply-order notes pre-date Sprint 5 going live, see the next line). Apply the legal-hardening migrations and deploy its code within minutes of each other: migrations first breaks sign-up and positions on live main; code first breaks export, privacy contact and positions.
@@ -27,6 +29,16 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-12 — Legal-hardening review, privacy contact, admin and invites (read-only)
+
+- Printed the six legal-hardening migrations and `20261104000500` in order with summaries to `~/Desktop/legal-hardening-migrations-review.md` (outside the repo, 1,092 lines). Nothing applied or queried on hosted.
+- Eight retention cron jobs (03:17 to 03:31 UTC daily): unconfirmed sign-ups 30 days (`auth.users`), `ai_decisions` 12 months, resolved reports and flags 12 months, coach feedback 90 days, emails 30 days, passkey challenges 1 day after expiry, privacy requests 6 years after closing, audit log 6 years. All skip rows tied to open flags, appeals or privacy requests, except passkey challenges.
+- First-run deletes (estimate from project age, hosted not queried): only expired passkey challenges. On apply: `20261107000600` updates the existing settings row (AI cap to 1,000, with an audit entry); existing members get null consents, so Sprint 5's `judging_positions()` (reads `consented_positions`) counts none of their positions until they consent.
+- Against a database with Sprint 5 tables: no object collisions found statically, but applying legal-hardening after Sprint 5 has never been run (the trial did it the other way round); `--include-all` needed. `anonymise_profile` still leaves Sprint 5 private rows.
+- Privacy contact: `LEGAL.privacyEmail` and `contactEmail` in `src/lib/legal.ts` (legal-hardening branch only), default empty string.
+- Admin and invites: admin = `app_metadata.role = 'admin'` (only that value); the invites table has `code`, `max_uses` (default 1), expiry, revoke and no email column; only admins and the service role can insert; no in-app invite UI; unconfirmed sign-ups hold a place for 24 hours.
+- This log change is on `claude-log-cleanup` (PR not yet merged).
 
 ### 2026-11-12 — Log branch cleanup
 
