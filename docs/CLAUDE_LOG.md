@@ -9,13 +9,14 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 | Branch | State | Latest commit | Hosted |
 | --- | --- | --- | --- |
 | `main` | Sprints 1–4 and **Sprint 5 merged (PRs #6 to #8, 12 Nov), ratified gold set and logs merged (PR #10)**, launch email docs | see `git log origin/main` | Sprint 4 migrations applied; **Sprint 5 migrations applied 12 Nov** (`20261111000100`, `20261111000200`) |
-| `legal-hardening` | Built and **pushed** (origin matches local; privacy and contact email set in `src/lib/legal.ts`), no PR yet (owns legal pages, account deletion, DEMO.md); six migrations written, not applied | see `git log origin/legal-hardening` | Nothing applied |
+| `legal-hardening` | **Merged into a branch, `merge-legal-hardening`, for the owner to PR** (conflicts in the changelog, this log and the RLS table list resolved by keeping both sides). Six migrations written, **not applied to hosted** | see `git log origin/merge-legal-hardening` | Nothing applied |
 | `sprint-4-audit-handle` | On origin, no PR; one migration `20261104000500_audit_no_handle.sql` (stops new handle writes in `decide_held_handle`; old rows untouched; main's onboarding still writes the handle, fixed only by legal-hardening) | `bc88132` | Nothing applied |
 
 Worktrees: `TGS/` (main checkout) and `TGS-legal/` (legal-hardening). `TGS-sprint5/` was removed on 13 Nov. They share one local Supabase database.
 
 ## Open for the owner
 
+- Legal hardening: after the merge PR, fill the bracketed facts listed in `docs/SESSION_LOG_LEGAL_HARDENING.md`; `LEGAL.reviewed` stays false until the solicitor signs off and account deletion stays OFF. Apply the six migrations to hosted only after review and a dry run (see the migration items below; apply them and deploy the code within minutes of each other).
 - Password reset (merged as PR #13, not usable on the live site until you do this): in Supabase paste the "Reset password" template from `docs/LAUNCH_EMAIL_SETUP.md` step 12b, and check Redirect URLs allow `https://thegrandstrategist.com/auth/confirm?next=/reset-password` (covered if `https://thegrandstrategist.com/**` is listed).
 - Before legal-hardening goes live: fill `privacyEmail` and `contactEmail` in `src/lib/legal.ts` (empty now, so pages show "[to be added]" and privacy-request alert emails are skipped).
 - Sprint 5: edit the three PLACEHOLDER strings in `src/lib/judging/notices.ts`.
@@ -27,6 +28,13 @@ Worktrees: `TGS/` (main checkout) and `TGS-legal/` (legal-hardening). `TGS-sprin
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-13 — legal-hardening merged into a branch (not main)
+
+- On the owner's "merge legal-hardening": merged `origin/legal-hardening` into a new branch `merge-legal-hardening` cut from current `main`, for the owner to merge by PR. Nothing was pushed to `main`; nothing applied to hosted.
+- Conflicts (as predicted): `CHANGELOG.md` and `tests/rls/every-table-has-rls.test.ts` (kept both; the RLS list is the union of both sets of table names, including `privacy_requests` and the judging tables) and this log (kept `main`'s version, and added legal-hardening's three entries; its older table and open list were dropped as stale).
+- Warning for the owner: merging to `main` deploys the code on Vercel, but the six legal-hardening migrations are not on hosted. Until they are applied, the new pages that read them (positions consent, Download my data, privacy contact, admin privacy queue) will error; sign-up keeps working. Applying the migrations first instead breaks sign-up and positions on the old code. Do both within minutes.
+- Local database and Playwright were not run on the merged tree (the local database would need a reset with the merged migrations).
 
 ### 2026-11-13 — Log housekeeping
 
@@ -189,6 +197,27 @@ Worktrees: `TGS/` (main checkout) and `TGS-legal/` (legal-hardening). `TGS-sprin
 - Local Supabase now holds the merged schema and the seeded judging Campaign; run `npx supabase db reset` in a worktree before using it.
 - Nothing applied to hosted. No merges.
 - Follow-up the same day: added `public_acknowledged: true` to the seed and both Sprint 5 Playwright specs; seed and the two specs (3 tests) pass against the merged schema and on this branch alone; local DB reset back to this branch with the seed. Pushed.
+
+### 2026-11-12 — Contact addresses set
+
+- Set `privacyEmail` and `contactEmail` in `src/lib/legal.ts` to the owner's contact address (owner's instruction). Pages and the footer now show the address as a mailto link instead of "[to be added]", and the privacy-request alert email will be sent to it. Every other legal fact is still empty and `LEGAL.reviewed` is still false.
+- Typecheck and lint clean; unit tests in `src/lib` pass (174). The Playwright suite was not run for this change.
+- Pushed to `origin/legal-hardening` only. No PR, no merge, nothing applied to hosted.
+
+### 2026-11-07 to 12 — Hosted invites, admin role, launch email docs (operations)
+
+- Hosted: two QA invites were created (the first was held by an unconfirmed sign-up; the second allows 5 uses, 1 used). The owner's own account was given the admin role on hosted (audit row written). No migrations applied by me. Codes and addresses are deliberately not recorded here.
+- Finding: Supabase confirmed an email even though `/auth/confirm` redirected to `confirm_failed`; likely the default `code` link opened on another device. Fix is the Confirm sign up template (step 12a, now on `main`); the hosted dashboard setting is still the owner's.
+- Detail and the owner's to-do list: `docs/SESSION_LOG_INVITE_QA.md` (untracked, in the `TGS/` checkout).
+
+### 2026-11-12 — Legal hardening pushed
+
+- **Branch:** `legal-hardening` from `origin/main`, worktree `TGS-legal/`, code and docs complete at `ccb2822`; later commits are log-only (see `git log origin/legal-hardening`), pushed to `origin/legal-hardening`. No PR opened, nothing merged. `sprint-4-audit-handle` is on `origin` but still unmerged; `sprint-5-judging` is not on `origin`.
+- **Built** (by a separate session, per the owner's brief in `docs/LEGAL_HARDENING_BRIEF.md`): central `LEGAL` facts and DRAFT gate, three sign-up consents, explicit consent for private positions, rewritten privacy, terms, AI-use and deletion pages, accessibility statement, email footers, privacy-request form, record and admin queue, `account:delete` script, retention jobs, fuller data export, legal records and runbooks in `docs/legal/`, launch decisions (AI cap 1,000, topic changes, `--concurrent`).
+- **Results (reported by that session, not re-run here):** typecheck and lint clean; unit 174, RLS 238, Playwright 29 pass.
+- **Hosted:** nothing applied. Migrations written: `20261107000100_signup_consents`, `…0200_positions_consent`, `…0300_anonymise_text_copies`, `…0400_privacy_requests`, `…0500_retention_jobs`, `…0600_launch_decisions`. The one-off draft-Campaign update script was not run with `--confirm`.
+- **Note:** `sprint-4-audit-handle` is still not merged into `main`, which matters for one sentence on the deletion page.
+- **Detail:** `docs/SESSION_LOG_LEGAL_HARDENING.md`, `CHANGELOG.md`, `DEMO.md`.
 
 ### 2026-11-11 — Sprint 5: judging and the Verdict
 

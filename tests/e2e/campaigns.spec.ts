@@ -19,7 +19,7 @@ async function makeUser(prefix: string, admin = false) {
     email,
     password,
     email_confirm: true,
-    user_metadata: { invite_code: code, age_confirmed: true, terms_accepted: true },
+    user_metadata: { invite_code: code, age_confirmed: true, terms_accepted: true, public_acknowledged: true, terms_version: "test", privacy_version: "test" },
     app_metadata: admin ? { role: "admin" } : {},
   });
   if (error) throw error;
@@ -116,6 +116,8 @@ test("an admin creates a Campaign; a Strategist sees it, records a before positi
   await page.getByRole("button", { name: "Record my position" }).click();
   await expect(page.getByText("Choose For, Against or Undecided.").first()).toBeVisible();
   await page.getByLabel("Against").check();
+  // Recording a position is optional and needs consent the first time.
+  await page.getByLabel("I agree to you recording my position on Campaigns.").check();
   await page.getByRole("button", { name: "Record my position" }).click();
   await expect(page.getByText("Your starting position has been recorded.")).toBeVisible();
   await page.reload();

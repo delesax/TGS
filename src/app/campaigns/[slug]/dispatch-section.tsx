@@ -4,7 +4,7 @@ import { ComposeForm } from "@/components/dispatch/compose-form";
 import { DispatchThreads } from "@/components/dispatch/dispatch-threads";
 import { Button } from "@/components/ui/button";
 import type { Viewer } from "@/lib/auth";
-import type { Campaign, MyPosition } from "@/lib/campaign-data";
+import type { Campaign } from "@/lib/campaign-data";
 import { getAiHelp, getComposeContext, getDispatchLimits, getMyReactions, getReactionTypes, getThreadPage } from "@/lib/dispatch-data";
 import { DISPATCH_KINDS, formatUkDateTime, type CampaignRound, type DispatchKind, type Status } from "@/lib/campaigns";
 import { KIND_LABELS, cooldownSecondsLeft } from "@/lib/dispatches";
@@ -26,14 +26,12 @@ export async function DispatchSection({
   status,
   round,
   now,
-  position,
 }: {
   campaign: Campaign;
   viewer: Viewer | null;
   status: Status;
   round: CampaignRound | null;
   now: number;
-  position: MyPosition | null;
 }) {
   const signedIn = Boolean(viewer?.profile?.handle);
   const roundPosition = round?.position ?? null;
@@ -51,7 +49,6 @@ export async function DispatchSection({
   const allowed: DispatchKind[] = round?.allowed_kinds?.length ? round.allowed_kinds : [...DISPATCH_KINDS];
   const topLevelKinds = allowed.filter((k) => k !== "rebuttal");
   const repliesAllowed = open && (!hasRounds || (round !== null && allowed.includes("rebuttal")));
-  const currentPosition = position?.after_position ?? position?.before_position ?? null;
   const next = encodeURIComponent(`/campaigns/${campaign.slug}`);
   const nextRound = campaign.rounds.find((r) => Date.parse(r.starts_at) > now);
 
@@ -65,7 +62,7 @@ export async function DispatchSection({
   } else if (status !== "open") {
     composer = (
       <ComposeNotice title="Dispatches open when the Campaign opens">
-        Opens {formatUkDateTime(campaign.starts_at)}. Record your before position above in the meantime.
+        Opens {formatUkDateTime(campaign.starts_at)}. You can record an optional before position above in the meantime.
       </ComposeNotice>
     );
   } else if (!viewer) {
@@ -84,18 +81,6 @@ export async function DispatchSection({
     composer = (
       <ComposeNotice title="No round is running at the moment">
         {nextRound ? `Round ${nextRound.position}, ${nextRound.title}, opens ${formatUkDateTime(nextRound.starts_at)}.` : "Check the round deadlines above."}
-      </ComposeNotice>
-    );
-  } else if (!currentPosition) {
-    composer = (
-      <ComposeNotice title="Record your position to post" action={<Button asChild variant="secondary"><a href="#your-position">Go to Your position</a></Button>}>
-        Each Dispatch shows the side you are arguing. Say where you stand first.
-      </ComposeNotice>
-    );
-  } else if (campaign.format === "oxford" && currentPosition === "undecided") {
-    composer = (
-      <ComposeNotice title="Choose For or Against to post" action={<Button asChild variant="secondary"><a href="#your-position">Change your position</a></Button>}>
-        This is an Oxford-style Campaign: each Dispatch argues one side. You are recorded as Undecided.
       </ComposeNotice>
     );
   } else if (compose?.muted) {
@@ -132,6 +117,7 @@ export async function DispatchSection({
           limits={limits}
           kinds={topLevelKinds}
           opinionNotAdvice={campaign.opinion_not_advice}
+          askSide={campaign.format === "oxford"}
           initialWait={cooldownSecondsLeft(compose?.lastPostedAt ?? null, now, limits)}
           aiHelp={aiHelp}
         />
@@ -152,6 +138,7 @@ export async function DispatchSection({
         open,
         repliesAllowed,
         opinionNotAdvice: campaign.opinion_not_advice,
+        askSide: campaign.format === "oxford",
         viewerId: viewer?.userId ?? null,
         canInteract: signedIn,
         limits,

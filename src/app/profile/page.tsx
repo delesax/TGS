@@ -5,8 +5,10 @@ import { Page } from "@/components/page";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireStrategist } from "@/lib/auth";
+import { hasPositionsConsent } from "@/lib/positions-consent";
 import { createClient } from "@/lib/supabase/server";
 import { PasskeyManager, type PasskeySummary } from "./passkey-manager";
+import { StopPositionsForm } from "./positions-card";
 import { ProfileForm } from "./profile-form";
 
 export const metadata: Metadata = { title: "Your account" };
@@ -14,6 +16,7 @@ export const metadata: Metadata = { title: "Your account" };
 export default async function ProfilePage() {
   const viewer = await requireStrategist("/profile");
   const supabase = await createClient();
+  const consented = await hasPositionsConsent(viewer.userId);
   const { data: passkeys, error: passkeyError } = await supabase
     .from("passkeys")
     .select("id, nickname, created_at, last_used_at")
@@ -81,10 +84,24 @@ export default async function ProfilePage() {
 
       <Card>
         <CardHeader>
+          <CardTitle>Your Campaign positions</CardTitle>
+          <CardDescription>
+            Recording a position is optional and private. If you stop, we delete your positions on open Campaigns and keep the numbers from closed
+            Campaigns with no link to you.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <StopPositionsForm consented={consented} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>Your data</CardTitle>
           <CardDescription>
-            Download everything we hold about your activity: your profile, Dispatches and their edit history, positions, reactions, follows, reports and
-            email settings. The file is in JSON, a standard format other programs can read.
+            Download what we hold about you: your account and consents, profile, Dispatches and their edit history, positions, reactions, follows,
+            reports, appeals, decisions about your Dispatches, coach ratings, email settings, passkey names and privacy requests. The file is in JSON, a
+            standard format other programs can read.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
@@ -93,11 +110,12 @@ export default async function ProfilePage() {
               <Download aria-hidden /> Download my data
             </a>
           </Button>
+          <Button asChild variant="outline" className="self-start">
+            <Link href="/privacy/contact">Contact us about your data</Link>
+          </Button>
           <div className="flex flex-col gap-2 rounded-lg border-2 border-dashed border-border p-4">
             <h3 className="text-xl font-semibold">Deleting your account</h3>
-            <p className="text-lg">
-              See what is removed and what is kept, and delete your account if this is switched on.
-            </p>
+            <p className="text-lg">See exactly what is removed and what stays, then decide.</p>
             <Button asChild variant="outline" className="self-start">
               <Link href="/profile/delete">Delete my account</Link>
             </Button>

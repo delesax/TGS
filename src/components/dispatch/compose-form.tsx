@@ -51,6 +51,8 @@ type Props = {
   /** Seconds of cooldown left when the page loaded. */
   initialWait?: number;
   opinionNotAdvice?: boolean;
+  /** Oxford-style Campaign: ask which side this Dispatch argues (shown publicly). */
+  askSide?: boolean;
   /** Tone check and coach, when the AI is switched on. */
   aiHelp?: AiHelpSettings;
   onDone?: () => void;
@@ -100,7 +102,7 @@ function useDraft(key: string, initial: string) {
   return [edited ?? (initial || stored), update] as const;
 }
 
-export function ComposeForm({ campaignId, slug, limits, kinds, replyTo, editing, initialWait = 0, opinionNotAdvice, aiHelp, onDone, onCancel }: Props) {
+export function ComposeForm({ campaignId, slug, limits, kinds, replyTo, editing, initialWait = 0, opinionNotAdvice, askSide, aiHelp, onDone, onCancel }: Props) {
   const [state, action, pending] = useActionState(editing ? editDispatch : postDispatch, {} as DispatchFormState);
   const online = useOnline();
   const idBase = editing ? `edit-${editing.id}` : replyTo ? `reply-${replyTo.id}` : "compose";
@@ -178,6 +180,29 @@ export function ComposeForm({ campaignId, slug, limits, kinds, replyTo, editing,
                   <span className="block text-lg font-semibold">{KIND_LABELS[k].label}</span>
                   <span className="block text-base text-muted-foreground">{KIND_LABELS[k].explain}</span>
                 </span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      ) : null}
+
+      {askSide && !editing ? (
+        <fieldset className="flex flex-col gap-2" aria-describedby={errors.side ? `${idBase}-side-error` : undefined}>
+          <legend className="mb-1 text-lg font-semibold">Which side does your Dispatch argue?</legend>
+          <p className="text-base text-muted-foreground">Shown publicly on your Dispatch. This is not your private position.</p>
+          {errors.side ? (
+            <p id={`${idBase}-side-error`} className="text-base font-semibold text-destructive">
+              {errors.side}
+            </p>
+          ) : null}
+          <div className="grid gap-2 sm:grid-cols-2">
+            {(["for", "against"] as const).map((side) => (
+              <label
+                key={side}
+                className="flex min-h-14 cursor-pointer items-center gap-3 rounded-lg border-2 border-border px-4 text-lg font-semibold has-[:checked]:border-primary has-[:checked]:bg-muted has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-ring"
+              >
+                <input type="radio" name="side" value={side} className="size-6 shrink-0 accent-primary" />
+                {side === "for" ? "For" : "Against"}
               </label>
             ))}
           </div>

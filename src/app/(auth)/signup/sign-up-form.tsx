@@ -35,6 +35,12 @@ export function SignUpForm({ initialCode }: { initialCode: string }) {
       />
       <CheckboxField name="ageConfirmed" label="I am 18 or over." error={errors.ageConfirmed} required />
       <CheckboxField
+        name="publicAcknowledged"
+        label="I understand that my Dispatches are public, and that if I delete my account they stay in the debate record without my name."
+        error={errors.publicAcknowledged}
+        required
+      />
+      <CheckboxField
         name="termsAccepted"
         error={errors.termsAccepted}
         required

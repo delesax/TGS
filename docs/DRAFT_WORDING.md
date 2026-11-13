@@ -1,3 +1,5 @@
+> **Superseded on 7 November 2026 by [LEGAL_WORDING.md](LEGAL_WORDING.md).** This file records the Sprint 4 placeholder wording as it stood on 6 November and is no longer what the site shows.
+
 # DRAFT wording awaiting owner approval
 
 Every piece of Sprint 4 copy that is marked DRAFT or awaits your approval, copied **verbatim** from the code on 6 November 2026. Nothing here has been edited or improved: this is what Strategists would read today. Text in `{braces}` is filled in by the page (a name or a number).

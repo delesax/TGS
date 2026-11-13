@@ -24,7 +24,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await service.from("community_settings").update({ ai_daily_cap_global: 3000, ai_daily_cap_per_strategist: 40, ai_enabled: true, cooldown_seconds: 30 }).eq("id", true);
+  await service.from("community_settings").update({ ai_daily_cap_global: 1000, ai_daily_cap_per_strategist: 40, ai_enabled: true, cooldown_seconds: 30 }).eq("id", true);
   await deleteUsers([strategist, admin, ...extraUsers]);
   if (campaignIds.length) await service.from("campaigns").delete().in("id", campaignIds);
 });
@@ -149,7 +149,7 @@ describe("4. nudges and coaching stop at 80% of the daily cap", () => {
     expect((await service.rpc("ai_reserve_call", { p_feature: "screen_dispatch", p_user_id: null })).data).toBe("global_cap");
 
     await service.from("ai_usage").delete().eq("day", today as string);
-    await service.from("community_settings").update({ ai_daily_cap_global: 3000 }).eq("id", true);
+    await service.from("community_settings").update({ ai_daily_cap_global: 1000 }).eq("id", true);
   });
 
   it("uses exact whole-number arithmetic at the boundary", async () => {
@@ -163,7 +163,7 @@ describe("4. nudges and coaching stop at 80% of the daily cap", () => {
     expect((await service.rpc("ai_reserve_call", { p_feature: "coach", p_user_id: strategist.id })).data).toBe("global_cap");
     expect((await service.rpc("ai_reserve_call", { p_feature: "screen_dispatch", p_user_id: null })).data).toBe("ok");
     await service.from("ai_usage").delete().eq("day", today as string);
-    await service.from("community_settings").update({ ai_daily_cap_global: 3000 }).eq("id", true);
+    await service.from("community_settings").update({ ai_daily_cap_global: 1000 }).eq("id", true);
   });
 
   it("is still service-role only", async () => {

@@ -27,6 +27,8 @@ export type ThreadsContext = {
   /** The current round accepts rebuttals. */
   repliesAllowed: boolean;
   opinionNotAdvice: boolean;
+  /** Oxford-style: a Dispatch argues For or Against, chosen when posting. */
+  askSide: boolean;
   viewerId: string | null;
   /** Signed in with a handle. */
   canInteract: boolean;
@@ -340,6 +342,7 @@ function DispatchCard({ node }: { node: ThreadNode }) {
             kinds={["rebuttal"]}
             replyTo={{ id: node.id, handle: handle ?? null }}
             opinionNotAdvice={ctx.opinionNotAdvice}
+            askSide={ctx.askSide}
             aiHelp={ctx.aiHelp}
             onDone={() => setPanel("none")}
             onCancel={() => setPanel("none")}

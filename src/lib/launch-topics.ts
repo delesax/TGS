@@ -5,6 +5,9 @@ import { CATEGORIES, FORMATS, SLUG_PATTERN, fromUkInputValue } from "./campaigns
 // The fifteen launch topics in supabase/data/launch-topics.json, loaded as DRAFT
 // Campaigns by `npm run topics:load`. Limits mirror the campaigns table.
 
+/** Days that all wave 1 Campaigns share when loaded with --concurrent. */
+export const CONCURRENT_DAYS = 7;
+
 export const SENSITIVE_NOTE_PLACEHOLDER = "DRAFT: content note to be written by the owner";
 export const SUMMARY_PLACEHOLDER =
   "DRAFT: background to be refreshed by the owner before this Campaign opens. The facts in the topic bank were checked around 1 November 2026.";
@@ -22,7 +25,12 @@ const topicSchema = z.object({
   sources: z.array(z.url()).max(20).default([]),
   is_sensitive: z.boolean(),
   opinion_not_advice: z.boolean(),
-  content_note: z.string().max(500).optional(),
+  /** The owner's real content note for a sensitive topic. Without it, a placeholder is loaded. */
+  content_note: z.string().max(1000).optional(),
+  /** Public summary to load instead of the generic "to be refreshed" placeholder (for example a fill-in-the-blanks template). */
+  public_summary: z.string().max(2000).optional(),
+  /** Admin-only working notes, added to the generated notes. */
+  admin_notes: z.string().max(1500).optional(),
   needs_owner_decision: z.string().max(1000).optional(),
 });
 
@@ -50,21 +58,31 @@ function addDays(date: string, days: number): string {
  * Turns the file into campaigns rows. Topics run one after another in wave
  * order (file order within a wave), each for default_duration_days, starting at
  * midnight UK time on `start`. Always drafts; nothing is scheduled.
+ *
+ * With `concurrent`, every wave 1 topic shares ONE start (`start`) and ONE end
+ * (CONCURRENT_DAYS later); the remaining topics then run back to back after
+ * that window, exactly as before. Without it, behaviour is unchanged.
  */
-export function buildTopicRows(file: TopicFile, start: string) {
+export function buildTopicRows(file: TopicFile, start: string, options: { concurrent?: boolean } = {}) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(start) || Number.isNaN(Date.parse(start))) {
     throw new Error("--start must be a date in the form YYYY-MM-DD");
   }
   const days = file.default_duration_days;
   const ordered = file.topics.map((t, i) => ({ t, i })).sort((a, b) => a.t.wave - b.t.wave || a.i - b.i);
 
-  return ordered.map(({ t }, n) => {
-    const startsAt = fromUkInputValue(`${addDays(start, n * days)}T00:00`)!;
-    const endsAt = fromUkInputValue(`${addDays(start, (n + 1) * days)}T00:00`)!;
+  let later = 0; // position among the topics that run one after another
+  return ordered.map(({ t }) => {
+    const shared = options.concurrent && t.wave === 1;
+    const first = shared ? start : addDays(start, (options.concurrent ? CONCURRENT_DAYS : 0) + later * days);
+    const last = shared ? addDays(start, CONCURRENT_DAYS) : addDays(first, days);
+    if (!shared) later += 1;
+    const startsAt = fromUkInputValue(`${first}T00:00`)!;
+    const endsAt = fromUkInputValue(`${last}T00:00`)!;
     const closedModerated = /^closed, moderated/i.test(t.suggested_format ?? "");
     const notes = [
       t.suggested_format ? `Intended setting: ${t.suggested_format}` : null,
       closedModerated ? "\"Closed, moderated debate\" is not a format yet: loaded as Open arena. Stricter moderation arrives in Sprint 4." : null,
+      t.admin_notes ?? null,
     ]
       .filter(Boolean)
       .join("\n");
@@ -74,7 +92,7 @@ export function buildTopicRows(file: TopicFile, start: string) {
       title: t.title,
       // The topic bank's facts go stale, so they are kept in `brief` (not shown)
       // until the owner refreshes the summary.
-      summary: SUMMARY_PLACEHOLDER,
+      summary: t.public_summary ?? SUMMARY_PLACEHOLDER,
       rules: null,
       category: t.category,
       format: t.format,
@@ -82,8 +100,8 @@ export function buildTopicRows(file: TopicFile, start: string) {
       starts_at: startsAt,
       ends_at: endsAt,
       is_sensitive: t.is_sensitive,
-      // Never write the real note for a sensitive topic: the owner does (CLAUDE.md rule 15).
-      content_note: t.is_sensitive ? SENSITIVE_NOTE_PLACEHOLDER : null,
+      // The real note is the owner's (CLAUDE.md rule 15): used only when the topics file carries it.
+      content_note: t.is_sensitive ? (t.content_note ?? SENSITIVE_NOTE_PLACEHOLDER) : null,
       opinion_not_advice: t.opinion_not_advice,
       wave: t.wave,
       needs_owner_decision: t.needs_owner_decision ?? null,
