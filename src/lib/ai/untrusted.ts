@@ -8,7 +8,10 @@ const TAG = "untrusted_text";
 
 /** Breaks any <untrusted_text> or </untrusted_text> look-alike inside the text. */
 export function defuse(text: string): string {
-  return text.replace(/<\s*\/?\s*untrusted[_\s-]*text[^>]*>/gi, (m) => m.replace(/</g, "‹").replace(/>/g, "›"));
+  return text
+    .replace(/<\s*\/?\s*untrusted[_\s-]*text[^>]*>/gi, (m) => m.replace(/</g, "‹").replace(/>/g, "›"))
+    // A writer cannot pass off their own line as our trusted context header.
+    .replace(/\(\s*from\s+TGS\s*,\s*trusted\s*\)/gi, "(from the writer, not trusted)");
 }
 
 /** One labelled block of untrusted text. `label` is ours, never the writer's. */
