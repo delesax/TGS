@@ -30,15 +30,22 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 
 ## Entries
 
+### 2026-11-13 — Merged branches deleted
+
+- On the owner's instruction deleted `claude-log-admin-account`, `header-signout-wrap` and `claude-log-pr17`, locally and on origin, each after checking it was contained in `origin/main`. Earlier entries that said they were waiting for deletion are marked superseded.
+- Only `legal-hardening` and `sprint-4-audit-handle` remain as branches on origin besides `main`. `main` is `4eeee3d`, clean and in sync. Hosted unchanged: Sprint 5 migrations applied, nothing else.
+- Correction: after the deletion I told the owner the log needed no update, which was wrong because two entries still described those branches as undeleted.
+- This log branch (`claude-log-branches-deleted`) is pushed together with this entry for the owner to PR.
+
 ### 2026-11-13 — Header fix merged
 
 - Owner merged PR #17 (`header-signout-wrap`): the admin header now keeps "Sign out" on one row from 1080px up; 375px unchanged. Fast-forwarded local `main`; removed the header branch row from "Current state".
-- Branches still on origin and not deleted (waiting for the owner's say-so): `header-signout-wrap` and `claude-log-admin-account` (both fully merged). Open work: `legal-hardening` and `sprint-4-audit-handle`. Hosted unchanged: Sprint 5 migrations applied; the other two sets not applied.
+- (Superseded: those branches were deleted the same day, see the newest entry.) Open work: `legal-hardening` and `sprint-4-audit-handle`. Hosted unchanged: Sprint 5 migrations applied; the other two sets not applied.
 - This log branch (`claude-log-pr17`) is pushed together with this entry for the owner to PR.
 
 ### 2026-11-12 — Branch housekeeping
 
-- `claude-log-admin-account` (PR #16) is merged but still exists on origin and locally; delete it when the owner says so. `header-signout-wrap` is the only open work branch besides `legal-hardening` and `sprint-4-audit-handle`.
+- (Superseded: `claude-log-admin-account` was deleted later, see the newest entry.) Open work branches besides `legal-hardening` and `sprint-4-audit-handle`.
 - State: `main` is `62bb48b`, clean and in sync. Hosted: Sprint 5 migrations applied; audit-handle and legal-hardening migrations not applied (need `--include-all`).
 
 ### 2026-11-12 — Header "Sign out" wrap (branch `header-signout-wrap`)
