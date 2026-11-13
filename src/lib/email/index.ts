@@ -1,6 +1,7 @@
 import "server-only";
 import { publicEnv } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getSwitches } from "@/lib/switches";
 import { MAX_ATTEMPTS, idempotencyKey, planDelivery, retryDelayMinutes, type OutboxRow, type PlannedMessage, type RecipientInfo } from "./plan";
 import { isJudgingKind, judgingEmail, type JudgingPayload } from "./judging-templates";
 import { campaignEmail, moderationEmail, replyDigest, type CampaignPayload, type ModerationPayload, type ReplyItem } from "./templates";
@@ -26,6 +27,9 @@ export async function processOutbox({ limit = 100, transport = resolveTransport(
     console.error(`Email not sent: ${transport.reason}`);
     return { ...summary, error: `Email is not configured: ${transport.reason}` };
   }
+
+  // Admin kill switch: claim nothing while emails are paused, so they wait in the queue.
+  if ((await getSwitches()).emails_paused) return summary;
 
   const db = createAdminClient();
   const site = publicEnv().NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");

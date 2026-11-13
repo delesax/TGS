@@ -9,6 +9,8 @@ import { getDispatchLimits, getMyReactions, getThreadPage } from "@/lib/dispatch
 import { dispatchInputSchema } from "@/lib/dispatch-schema";
 import { MAX_SOURCES, describeDispatchError, parseSources, type DispatchRow } from "@/lib/dispatches";
 import { screenAndApply, type ModerationStatus } from "@/lib/moderation";
+import { withinLimit } from "@/lib/rate-limit";
+import { TOO_FAST } from "@/lib/rate-limit-config";
 import { createClient } from "@/lib/supabase/server";
 import { fieldErrors } from "@/lib/validation";
 
@@ -186,6 +188,7 @@ export async function toggleReaction(dispatchId: string, reaction: string): Prom
   const viewer = await getViewer();
   if (!viewer?.profile?.handle) return { ok: false, message: "Please sign in to react." };
   if (!z.uuid().safeParse(dispatchId).success || !/^[a-z_]{2,30}$/.test(reaction)) return { ok: false, message: "Something went wrong." };
+  if (!(await withinLimit("react_user", viewer.userId))) return { ok: false, message: TOO_FAST };
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("toggle_reaction", { p_dispatch_id: dispatchId, p_reaction: reaction });
   if (error) return { ok: false, message: describeDispatchError(error).message };
@@ -206,6 +209,7 @@ export async function reportDispatch(_prev: FormState, formData: FormData): Prom
     .safeParse({ dispatchId: formData.get("dispatchId"), reason: formData.get("reason") ?? undefined, details: String(formData.get("details") ?? "") });
   if (!parsed.success) return { formError: "Please check the highlighted answers.", fieldErrors: fieldErrors(parsed.error) };
 
+  if (!(await withinLimit("report_user", viewer.userId))) return { formError: TOO_FAST, formHint: "You can report again in a little while." };
   const supabase = await createClient();
   const { error } = await supabase.rpc("report_dispatch", {
     p_dispatch_id: parsed.data.dispatchId,
@@ -220,6 +224,7 @@ export async function setCampaignFollow(campaignId: string, slug: string, follow
   const viewer = await getViewer();
   if (!viewer?.profile?.handle) return { ok: false, message: "Please sign in to follow Campaigns." };
   if (!z.uuid().safeParse(campaignId).success) return { ok: false, message: "Something went wrong." };
+  if (!(await withinLimit("follow_user", viewer.userId))) return { ok: false, message: TOO_FAST };
   const supabase = await createClient();
   const { error } = follow
     ? await supabase.from("campaign_follows").upsert({ user_id: viewer.userId, campaign_id: campaignId }, { onConflict: "user_id,campaign_id", ignoreDuplicates: true })

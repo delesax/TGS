@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { processOutbox } from "@/lib/email";
+import { logEvent } from "@/lib/events";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(summary, { status: summary.error ? 503 : 200, headers: noStore });
   } catch (e) {
     console.error("Email processor failed", e instanceof Error ? e.message : e);
+    await logEvent("processor_failed", "email");
     return NextResponse.json({ error: "Failed" }, { status: 500, headers: noStore });
   }
 }

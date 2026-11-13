@@ -160,6 +160,24 @@ export async function saveSettings(_prev: FormState, formData: FormData): Promis
   return { success: "Saved. The change is in the audit log." };
 }
 
+/** The kill switches (migration 20261113000100). The database checks the admin role again and writes the audit entry. */
+export async function setSiteSwitches(_prev: FormState, formData: FormData): Promise<FormState> {
+  const denied = await adminOnly();
+  if (denied) return denied;
+  const parsed = z.object({ reason: reasonField }).safeParse({ reason: String(formData.get("reason") ?? "") });
+  if (!parsed.success) return { formError: "Please check the highlighted answers.", formHint: "Nothing has been changed.", fieldErrors: fieldErrors(parsed.error) };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_site_switches", {
+    p_posting: formData.get("posting_paused") === "on",
+    p_signups: formData.get("signups_paused") === "on",
+    p_emails: formData.get("emails_paused") === "on",
+    p_reason: parsed.data.reason,
+  });
+  if (error) return dbProblem(error, "We could not change the switches.");
+  revalidatePath("/", "layout");
+  return { success: "Saved. The change is in the audit log, and the banner updates straight away." };
+}
+
 const reactionSchema = z.object({
   key: z.string().regex(/^[a-z_]{2,30}$/),
   label: z.string().trim().min(1, "Give the reaction a label.").max(30, "Keep the label to 30 characters or fewer."),

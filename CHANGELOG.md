@@ -1,5 +1,20 @@
 # Changelog
 
+## Sprint 7 Phase B, batch 1: launch safety (13 November 2026). Awaiting review
+
+Branch `sprint-7-phase-b`, cut from `main`. Plan: `docs/SPRINT_7_PLAN.md`; click-through: `docs/DEMO_SPRINT_7.md`. **Two new migrations, tested on local Supabase only, not applied to hosted.** Nothing was written to hosted. Legal files and the placeholder strings were not touched.
+
+- **W3, open redirect fixed.** `safeNextPath` now refuses any control character (tab, line break, NUL) or backslash and checks the result stays on our own origin; before, `/\t/evil.com` slipped through (and `new URL()` read it as `https://evil.com/`). Tests added.
+- **W1, kill switches** (`20261113000100_site_switches.sql`). Admins can pause posting, sign-ups and emails from Admin, Settings, with a required reason and an audit entry; no deploy needed. Posting is refused by a database trigger on `dispatches`, sign-ups by a trigger on `auth.users` (so the Auth API cannot get round the form), emails by the processor (they stay queued). A banner shows under the header while posting or sign-ups are paused. The wording is in one file, `src/lib/switches.ts`. The existing AI switch is unchanged.
+- **W2, rate limiter and event log** (`20261113000200_rate_limits_events_health.sql`). Postgres counters (`rate_limits`, subjects are user ids or SHA-256 hashes) wired into sign-in (per IP and per email), sign-up, password-reset request (over the limit it answers exactly as if it had sent), report, follow, reaction and position. Per-IP limits are generous on purpose (a pilot class shares one address); values are in `src/lib/rate-limit-config.ts`. If the limiter itself fails, requests are allowed. Our own `system_events` log (kind, short code, counts only, 30 days) records rate-limit trips and processor failures; a nightly job prunes both tables.
+- **W6, health.** Public `GET /api/health` (200 `{"ok":true}` or 503 naming only the failing check). Admin page `/admin/health`: email, AI scoring and moderation queue sizes and ages, AI calls today against the cap, switches, last run of every scheduled job, and recent events.
+- **W8, injection tests.** One corpus (`evals/injection/corpus.json`, 13 strings) run through all seven AI calls: the text must stay inside the untrusted block, no block can be closed early, answers that obey the injection are discarded. Small hardening found by the test: a writer can no longer fake our "Context (from TGS, trusted)" header inside a block.
+- **W11, HSTS** header (one year, this host only).
+- **W12, patch upgrades:** `next` 16.4.3 to 16.4.6, `react` and `react-dom` 19.3.0 to 19.3.1, `eslint-config-next` 16.4.6, `@supabase/supabase-js` 2.118 to 2.119. `npm audit --omit=dev`: 0 vulnerabilities.
+- **Tests:** typecheck and lint clean; 610 unit and RLS tests pass (new: switches, limiter, events, health, injection, redirect); full Playwright suite 47 passed (4 new in `tests/e2e/switches-health.spec.ts`).
+- **Not in this batch (waiting on owner decisions or later batches):** W4 vote eligibility, W5 integrity signals, W7 judge prompt v2, W9 local load tests, W10 invite binding, W13 backup procedure, W14 runbook and checklists, CSP.
+- **For the owner / legal (parked):** the limiter keeps a SHA-256 hash of an IP address and of sign-in and reset email addresses for up to two days. The privacy policy and retention wording are legal-hardening territory and were not changed; please have them reviewed.
+
 ## Header: "Sign out" no longer wraps at desktop widths (12 November 2026). Awaiting review
 
 Branch `header-signout-wrap`, cut from `main`. **No migrations, nothing applied to hosted, no new dependency.**

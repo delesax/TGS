@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getViewer } from "@/lib/auth";
+import { withinLimit } from "@/lib/rate-limit";
+import { TOO_FAST } from "@/lib/rate-limit-config";
 import { createClient } from "@/lib/supabase/server";
 
 export type FollowResult = { ok: true } | { ok: false; message: string };
@@ -12,6 +14,7 @@ export async function setStrategistFollow(followedId: string, handle: string, fo
   if (!viewer?.profile?.handle) return { ok: false, message: "Please sign in to follow Strategists." };
   if (!z.uuid().safeParse(followedId).success) return { ok: false, message: "Something went wrong." };
   if (followedId === viewer.userId) return { ok: false, message: "You cannot follow yourself." };
+  if (!(await withinLimit("follow_user", viewer.userId))) return { ok: false, message: TOO_FAST };
   const supabase = await createClient();
   const { error } = follow
     ? await supabase

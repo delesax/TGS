@@ -57,7 +57,27 @@ describe("safeNextPath", () => {
     ["//evil.example", "/dossier"],
     ["/\\evil.example", "/dossier"],
     [null, "/dossier"],
-  ])("%s -> %s", (input, expected) => {
+    // Control characters are stripped by browsers and URL parsers, which would turn these into "//evil.example".
+    ["/\t/evil.example", "/dossier"],
+    ["/\n/evil.example", "/dossier"],
+    ["/\r/evil.example", "/dossier"],
+    ["/\u0000/evil.example", "/dossier"],
+    ["/ok\tpath", "/dossier"],
+    ["/a/\\evil.example", "/dossier"],
+    ["", "/dossier"],
+    // Ordinary paths, queries and encoded characters still work.
+    ["/campaigns/some-slug?tab=votes#top", "/campaigns/some-slug?tab=votes#top"],
+    ["/%2F%2Fevil.example", "/%2F%2Fevil.example"],
+    ["/%09/evil.example", "/%09/evil.example"],
+  ])("%j -> %j", (input, expected) => {
     expect(safeNextPath(input)).toBe(expected);
+  });
+
+  it("never lets a new URL() leave our origin, whatever the input", () => {
+    const attempts = ["/\t/evil.example", "/\n/evil.example", "/ /evil.example", "/\u00a0/evil.example", "/\u200b/evil.example"];
+    for (const a of attempts) {
+      const out = safeNextPath(a);
+      expect(new URL(out, "https://thegrandstrategist.com").origin).toBe("https://thegrandstrategist.com");
+    }
   });
 });

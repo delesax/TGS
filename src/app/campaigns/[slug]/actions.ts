@@ -7,6 +7,8 @@ import { getViewer } from "@/lib/auth";
 import { POSITIONS } from "@/lib/campaigns";
 import { LEGAL } from "@/lib/legal";
 import { hasPositionsConsent } from "@/lib/positions-consent";
+import { withinLimit } from "@/lib/rate-limit";
+import { TOO_FAST } from "@/lib/rate-limit-config";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -33,6 +35,7 @@ export async function recordPosition(_prev: FormState, formData: FormData): Prom
     return { formError: "Please choose a position.", fieldErrors: { position: "Choose For, Against or Undecided." } };
   }
   const { campaignId, slug, stage, position } = parsed.data;
+  if (!(await withinLimit("position_user", viewer.userId))) return { formError: TOO_FAST, formHint: "Your choice has not been saved yet. Try again in a little while." };
 
   // Recording a position is optional and needs explicit consent first (it can
   // reveal political opinion, which is special category data). The first time,

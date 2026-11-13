@@ -8,6 +8,7 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 
 | Branch | State | Latest commit | Hosted |
 | --- | --- | --- | --- |
+| `sprint-7-phase-b` | **Pushed, no PR**: Sprint 7 Phase B batch 1 (W1 kill switches, W2 rate limiter and event log, W3 open redirect, W6 health, W8 injection tests, W11 HSTS, W12 patch upgrades). Two new migrations `20261113000100` and `20261113000200`, **not applied to hosted** | see `git log origin/sprint-7-phase-b` | Not applied |
 | `main` | Sprints 1–4 and **Sprint 5 merged (PRs #6 to #8, 12 Nov), ratified gold set and logs merged (PR #10)**, launch email docs | see `git log origin/main` | All migrations applied to hosted (Sprint 4, Sprint 5, legal-hardening and audit-handle, last on 13 Nov) |
 | `main` also has legal-hardening | **Merged to `main` as PR #22 (13 Nov); its six migrations were applied to hosted on 13 Nov** (`20261107000100` to `000600`). The `legal-hardening` and `merge-legal-hardening` branches were deleted | see `git log origin/main` | Applied |
 
@@ -15,6 +16,8 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 
 ## Open for the owner
 
+- Sprint 7 Phase B batch 1: review the PR when opened; applying its two migrations to hosted needs a dry run (`--include-all`) and your "go". After applying, set the kill-switch wording you want in `src/lib/switches.ts` (D6).
+- Legal (parked): the new rate limiter keeps a SHA-256 hash of IP and email addresses for up to two days; the privacy and retention wording needs a review.
 - Sprint 7: answer D1 to D8 in `docs/SPRINT_7_PLAN.md` (Vercel Hobby terms, email volume, minimum account age and invite binding, collusion policy, judge prompt v2, kill-switch wording, backups, Anthropic cap) before Phase B starts.
 - Legal hardening (applied to hosted 13 Nov): fill the bracketed facts listed in `docs/SESSION_LOG_LEGAL_HARDENING.md` (the pages still show "[to be added]" for company number, registered office, ICO number and effective date); `LEGAL.reviewed` stays false until the solicitor signs off; account deletion stays OFF. Existing members have no positions consent until they give it.
 - Password reset (merged as PR #13, not usable on the live site until you do this): in Supabase paste the "Reset password" template from `docs/LAUNCH_EMAIL_SETUP.md` step 12b, and check Redirect URLs allow `https://thegrandstrategist.com/auth/confirm?next=/reset-password` (covered if `https://thegrandstrategist.com/**` is listed).
@@ -28,6 +31,15 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-13 — Sprint 7 Phase B, batch 1 (branch `sprint-7-phase-b`)
+
+- Built the decision-free items from `docs/SPRINT_7_PLAN.md`: W3 `safeNextPath` open redirect fixed; W1 kill switches (posting, sign-ups, emails) with admin form, banner, audit entry and database triggers (`20261113000100_site_switches.sql`); W2 Postgres rate limiter wired into sign-in, sign-up, reset request, report, follow, reaction and position, plus a `system_events` log and nightly prune (`20261113000200_rate_limits_events_health.sql`); W6 `/api/health` and `/admin/health`; W8 injection corpus tested through all seven AI calls (also hardened `defuse` so a writer cannot fake the trusted-context header); W11 HSTS; W12 patch upgrades (`next` 16.4.6, `react` 19.3.1, `@supabase/supabase-js` 2.119).
+- Not built (waiting on owner decisions or later batches): W4 (D3), W5 (D4), W7 (D5), W9, W10 (D3b), W13 (D7), W14, CSP.
+- Local only: reset the local Supabase database (`db reset`) to get all migrations in order; nothing applied to hosted, nothing written to hosted. Legal files and placeholders untouched.
+- Results: typecheck and lint clean; 610 unit and RLS tests pass; full Playwright 47 passed; `npm audit --omit=dev` 0 vulnerabilities.
+- Found on the way: Supabase blocks an UPDATE with no WHERE clause (fixed in the switches function); per-IP limits had to be generous because a pilot class shares one address, and the Playwright suite signs in many times from one IP (limits are in `src/lib/rate-limit-config.ts`).
+- Pushed as a branch for the owner to PR; nothing merged.
 
 ### 2026-11-13 — audit-handle migration applied to hosted
 
