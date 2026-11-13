@@ -7,7 +7,35 @@ Parked, not touched here: `legal-hardening` work, `src/lib/legal.ts`, the PLACEH
 ## Phase B progress (updated 13 November)
 
 Batch 1 is built on branch `sprint-7-phase-b`: **W1** kill switches, **W2** rate limiter and event log, **W3** open redirect, **W6** health route and page, **W8** injection corpus, **W11** HSTS (CSP left for later), **W12** patch upgrades. Two migrations (`20261113000100`, `20261113000200`), local only, not applied to hosted. One change from the plan: per-IP limits are generous (sign-in 100 per 10 minutes, sign-up 60 per hour, reset 30 per hour) because a pilot class shares one address; the sharp limits are per email and per user.
-**Still to do:** W4 (needs D3), W5 (D4), W7 (D5), W9, W10 (D3b), W13 (D7), W14, CSP report-only. D1, D2, D6 and D8 are still open.
+**Still to do:** W7 (judge prompt v2, batch 2b), W9, W13, W14, CSP report-only. W4, W5, W10 and W15 are built in batch 2a (see "Decided 13 Nov").
+
+## Decided 13 Nov (owner)
+
+- **D1** Launch on Vercel Hobby. No sponsors or payments until the project moves to the company account.
+- **D2** Cut app email to essentials and keep headroom for Supabase's own sign-up and reset emails. Pilot about 100 members; invites in waves of 10 to 20. (Built as W15: `email_essentials_only` on by default and a global daily cap of 60.)
+- **D3** Minimum account age 48 hours (an admin setting, `judging_settings.min_voter_account_age_hours`). **D3b** Individual invites may be bound to an email address, optional per invite (`invites.invited_email`).
+- **D4** Collusion signals flag humans only: no automatic weight changes.
+- **D5** Judge prompt v2 approved (batch 2b).
+- **D6** Wording set in `src/lib/switches.ts`: paused posting reads "Posting is paused for a short while. You can still read everything. Please check back soon."; paused sign-ups reads "Sign-ups are paused for a short while. Please try again later."; paused emails needs no member-facing text.
+- **D7** Manual database dumps by the owner; no database URL stored anywhere new.
+- **D8** Keep the $30 Anthropic cap; the coach limit stays 10.
+
+### Batch 2a (built on branch `sprint-7-batch-2a`, not applied to hosted)
+
+W4 voter eligibility (`20261113000300`), W5 integrity signals and the `/admin/signals` page (`20261113000400`), W10 invite binding (`20261113000500`), W15 email essentials (`20261113000600`). Panel judges are exempt from the account-age rule (an admin chose them); everyone, judges included, is held to the steelman confirmation cap. Email audit (W15), app-queued kinds:
+
+| Kind | Queued by | Recommendation |
+| --- | --- | --- |
+| `moderation_outcome` | admin or AI decision on your Dispatch | **Keep**: it affects your own content or account |
+| `verdict_published` | Verdict published, to participants | **Keep**: the main moment of a Campaign |
+| `verdict_appeal_outcome` | appeal decided | **Keep**: security and fairness |
+| `judge_assigned` | admin assigns a judge | **Keep**: operational, rare |
+| `reply` | someone replies to your Dispatch (digest) | **Cut**: highest volume |
+| `campaign_opened`, `campaign_round_changed`, `campaign_closed` | Campaign events, to followers | **Cut**: visible on the site |
+| `campaign_closing_soon` | 24 hours before the close | **Cut** |
+| `peer_voting_open` | voting opens, to participants | **Cut** (borderline: it prompts voting; flip with one SQL update of `email_essential_kinds` if you want it back) |
+
+Sign-up confirmation and password reset are sent by Supabase, not queued by the app, and are not affected.
 
 ## How this was checked, and what was not
 

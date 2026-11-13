@@ -8,6 +8,7 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 
 | Branch | State | Latest commit | Hosted |
 | --- | --- | --- | --- |
+| `sprint-7-batch-2a` | **Pushed, no PR**: Sprint 7 Phase B batch 2a (W4 voter eligibility, W5 integrity signals and `/admin/signals`, W10 invite binding, W15 email essentials). Four new migrations `20261113000300` to `000600`, **not applied to hosted**; safe order is migrations first, then merge | see `git log origin/sprint-7-batch-2a` | Not applied |
 | `main` | Sprints 1–4 and **Sprint 5 merged (PRs #6 to #8, 12 Nov), ratified gold set and logs merged (PR #10)**, launch email docs | see `git log origin/main` | All migrations applied to hosted (Sprint 4, Sprint 5, legal-hardening and audit-handle, last on 13 Nov) |
 | `main` also has legal-hardening | **Merged to `main` as PR #22 (13 Nov); its six migrations were applied to hosted on 13 Nov** (`20261107000100` to `000600`). The `legal-hardening` and `merge-legal-hardening` branches were deleted | see `git log origin/main` | Applied |
 
@@ -15,6 +16,7 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 
 ## Open for the owner
 
+- Sprint 7 batch 2a: review the four migrations (SQL printed in the 13 Nov hand-over and in `supabase/migrations/20261113000300` to `000600`) before anything goes near hosted. Apply order: migrations first (dry run with `--include-all`, then your "go"), then merge the PR. Behaviour that starts at apply, and is intended: accounts under 48 hours old cannot vote, confirm or pick; non-essential app email stops being queued; judging settings can finally be saved from Admin (Sprint 5 bug fixed).
 - Sprint 7 Phase B batch 1 is live (merged as PR #27, migrations applied 13 Nov). Set the kill-switch wording you want in `src/lib/switches.ts` (D6). Still waiting on your answers to D1 to D8 for the rest of Phase B (W4, W5, W7, W10, W13 need D3, D4, D5, D3b, D7).
 - Legal (parked): the new rate limiter keeps a SHA-256 hash of IP and email addresses for up to two days; the privacy and retention wording needs a review.
 - Sprint 7: answer D1 to D8 in `docs/SPRINT_7_PLAN.md` (Vercel Hobby terms, email volume, minimum account age and invite binding, collusion policy, judge prompt v2, kill-switch wording, backups, Anthropic cap) before Phase B starts.
@@ -30,6 +32,15 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-13 — Sprint 7 Phase B, batch 2a (branch `sprint-7-batch-2a`)
+
+- Recorded the owner's decisions D1 to D8 in `docs/SPRINT_7_PLAN.md` ("Decided 13 Nov"). Built W4 (`20261113000300_voter_eligibility.sql`: 48-hour account age as a setting, panel judges exempt, steelman cap 3, mind-change picks weighted like votes and needing a 24-hour position span), W5 (`20261113000400_integrity_signals.sql` and `/admin/signals`: seven read-only signals, flags only, also shown on the draft Verdict as non-blocking "For review"), W10 (`20261113000500_invite_email_binding.sql`: optional `invites.invited_email`; `invite:create --email`, 14-day default expiry) and W15 (`20261113000600_email_essentials.sql`: essential emails only on by default, global daily cap 60, admin form with audit entry). D6 wording set in `src/lib/switches.ts`.
+- Compatibility proof: current `main` (`936ac95`) run against the new schema: unit and RLS 604 of 610 pass, Playwright 45 of 47 pass. The failures are exactly the two intended behaviour changes: fixtures that vote with brand-new accounts (the 48-hour rule) and fixtures that expect non-essential emails to be queued. Everything else, including the batch 1 tests, passes against the new schema.
+- Results on the branch: typecheck and lint clean; 670 unit and RLS tests pass; 51 Playwright pass. New RLS suites: eligibility, integrity signals, invite binding, email essentials, and a grants test (anon can execute only the read-only `site_switches`; every SECURITY DEFINER function sets `search_path`).
+- Found and fixed on the way: Sprint 5's `save_judging_settings` had an UPDATE with no WHERE clause, which Supabase's API refuses, so saving judging settings from Admin could not have worked; two admin forms shared the element id `reason` on one page (an accessibility bug). Two test fixtures updated for the new rules (test users made three days old; email-queue tests switch essentials off).
+- Nothing applied to hosted, nothing written to hosted, legal files and placeholders untouched. Local Supabase was reset (`db reset`) to run the tests. A temporary worktree of `main` used for the proof was removed.
+- Pushed as a branch for the owner to PR; nothing merged.
 
 ### 2026-11-13 — Sprint 7 batch 1 applied to hosted
 
