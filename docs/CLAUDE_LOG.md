@@ -33,6 +33,12 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 
 ## Entries
 
+### 2026-11-13 — GO_NO_GO and Auth limits merged (PRs #41 and #42)
+
+- Docs only. PR #41 (`go-no-go-owner-done`) updated `docs/GO_NO_GO.md` rows 4, 6, 8 and 22 with the owner's reports (Vault secrets, Auth limits, first encrypted dump, member post test). PR #42 (`auth-limits-recorded`) recorded the Auth rate limit values from the owner's dashboard screenshot (sign-ups and sign-ins 150, token verifications 100, token refreshes 150 per 5 minutes; emails 30 an hour). `main` is at `2865f83`. All of this is owner-reported or from a screenshot, not checked by Claude.
+- Still open for the owner, unchanged: reload Authentication, Rate Limits to confirm the values saved; decide whether 30 emails an hour is enough for the first invite wave; confirm the TEST Campaign is back to draft; run the three processor 401 curls (`docs/LAUNCH_RUNBOOK.md`); where the encrypted dump is stored off the laptop and a hosted restore test; Campaign 1 publish and schedule; the 14 other Campaigns' summaries and rules; the three flagged Campaigns; the PLACEHOLDER strings; the AI cap and judge prompt decisions; the legal items.
+- No hosted command run, nothing else changed.
+
 ### 2026-11-13 — Auth rate limit values recorded (branch `auth-limits-recorded`)
 
 - Docs only. The owner sent a screenshot of Authentication, Rate Limits: token refreshes 150, token verifications 100 and sign-ups and sign-ins 150 per 5 minutes per IP (the targets); emails 30 an hour, SMS 30 an hour, anonymous 30 an hour, Web3 30 per 5 minutes, minimum interval per user 60 seconds. This is the form as displayed: it does not prove the values were saved, so the owner should reload the page to confirm. `docs/GO_NO_GO.md` row 6 and the Current state row updated.
