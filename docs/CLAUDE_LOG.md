@@ -9,12 +9,10 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 | Branch | State | Latest commit | Hosted |
 | --- | --- | --- | --- |
 | `main` | Sprints 1–4 and **Sprint 5 merged (PRs #6 to #8, 12 Nov), ratified gold set and logs merged (PR #10)**, launch email docs | see `git log origin/main` | Sprint 4 migrations applied; **Sprint 5 migrations applied 12 Nov** (`20261111000100`, `20261111000200`) |
-| `sprint-5-judging` | **Fully merged to `main` (PR #6 code, PR #7 log).** Nothing left on the branch | see `git log` | Migrations applied to hosted (see `main`) |
-| `legal-hardening` | Built and **pushed 12 Nov** (local is 1 log commit ahead of origin), no PR yet (owns legal pages, account deletion, DEMO.md); six migrations written, not applied | see `git log origin/legal-hardening` | Nothing applied |
+| `legal-hardening` | Built and **pushed** (origin matches local; privacy and contact email set in `src/lib/legal.ts`), no PR yet (owns legal pages, account deletion, DEMO.md); six migrations written, not applied | see `git log origin/legal-hardening` | Nothing applied |
 | `sprint-4-audit-handle` | On origin, no PR; one migration `20261104000500_audit_no_handle.sql` (stops new handle writes in `decide_held_handle`; old rows untouched; main's onboarding still writes the handle, fixed only by legal-hardening) | `bc88132` | Nothing applied |
-| `launch-email-confirm-template` | Doc edits (Resend `updates` subdomain, 20i, DMARC optional) committed and **pushed 12 Nov**; owner to open PR | `968fdaf` | — |
 
-Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-sprint5/` (sprint-5-judging). They share one local Supabase database.
+Worktrees: `TGS/` (main checkout) and `TGS-legal/` (legal-hardening). `TGS-sprint5/` was removed on 13 Nov. They share one local Supabase database.
 
 ## Open for the owner
 
@@ -29,6 +27,13 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-13 — Old sprint branches deleted, sprint5 checkout removed
+
+- On the owner's instruction deleted on origin `launch-email-confirm-template`, `sprint-1`, `sprint-2`, `sprint-3`, `sprint-4`, `sprint-4-hardening` and `sprint-5-judging`, each after checking it was contained in `origin/main`; the local copies too. Origin now has only `main`, `legal-hardening` and `sprint-4-audit-handle`.
+- Removed the `TGS-sprint5/` checkout (it had no tracked changes and nothing unmerged; only ignored files, including `node_modules`, `.env.test.local` and the local eval reports in `evals/out/`, were lost; its `.env.local` was a symlink so `TGS/.env.local` is untouched). The real eval results are in this log and in `docs/SESSION_LOG_SPRINT_5.md`; the reports can be regenerated with `npm run eval:judging -- --real` (about £0.14).
+- Removed the stale "Current state" rows for the two deleted branches and fixed the worktrees line and the `legal-hardening` row (origin matches local).
+- This log branch (`claude-log-cleanup-sprint5`) is pushed together with this entry for the owner to PR.
 
 ### 2026-11-13 — Merged branches deleted
 
