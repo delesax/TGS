@@ -28,7 +28,7 @@ export type TestUser = { id: string; email: string; client: SupabaseClient };
 const PASSWORD = "rls-test-password-123";
 
 /** Creates a confirmed user through the real sign-up trigger, signed in on its own client. */
-export async function createUser(opts: { admin?: boolean; handle?: string | null; positionsConsent?: boolean } = {}): Promise<TestUser> {
+export async function createUser(opts: { admin?: boolean; handle?: string | null; positionsConsent?: boolean; newAccount?: boolean } = {}): Promise<TestUser> {
   const invite = await createInvite();
   const email = `rls-${randomUUID()}@example.test`;
   const { data, error } = await service.auth.admin.createUser({
@@ -48,6 +48,13 @@ export async function createUser(opts: { admin?: boolean; handle?: string | null
       .update({ positions_consent_at: new Date().toISOString(), positions_consent_version: "test" })
       .eq("id", id);
     if (consentError) throw consentError;
+  }
+
+  // Since Sprint 7 an account must be 48 hours old before its votes, steelman confirmations and
+  // mind-change picks count. Test users are made three days old unless a test asks for a new account.
+  if (!opts.newAccount) {
+    const { error: ageError } = await service.from("profiles").update({ created_at: new Date(Date.now() - 3 * 86_400_000).toISOString() }).eq("id", id);
+    if (ageError) throw ageError;
   }
 
   const handle = opts.handle === undefined ? `T${id.replace(/-/g, "").slice(0, 12)}` : opts.handle;

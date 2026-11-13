@@ -56,12 +56,12 @@ test.describe("Sprint 7: kill switches, health and rate limits", () => {
     // A reason is required.
     await page.getByRole("button", { name: "Save switches" }).click();
     await expect(page.getByText("Give a reason. It is kept in the audit log.")).toBeVisible();
-    await page.getByLabel("Reason").fill("playwright check");
+    await page.getByRole("form", { name: "Site switches" }).getByLabel("Reason").fill("playwright check");
     await page.getByRole("button", { name: "Save switches" }).click();
     await expect(page.getByText("Saved. The change is in the audit log")).toBeVisible();
 
     await page.goto("/");
-    await expect(page.getByRole("status").filter({ hasText: "New accounts are paused" })).toBeVisible();
+    await expect(page.getByRole("status").filter({ hasText: "Sign-ups are paused" })).toBeVisible();
     await expectNoHorizontalOverflow(page);
 
     // Signed out, the sign-up form refuses with the same wording, even with a valid invite code.
@@ -76,7 +76,7 @@ test.describe("Sprint 7: kill switches, health and rate limits", () => {
     await page.getByLabel(/I understand that my Dispatches are public/).check();
     await page.getByLabel(/I agree to the/).check();
     await page.getByRole("button", { name: "Create account" }).click();
-    await expect(page.getByRole("alert").filter({ hasText: "New accounts are paused for a short while." })).toBeVisible();
+    await expect(page.getByRole("alert").filter({ hasText: "Sign-ups are paused for a short while." })).toBeVisible();
 
     // Switch it off again.
     await page.goto("/login");
@@ -86,11 +86,11 @@ test.describe("Sprint 7: kill switches, health and rate limits", () => {
     await expect(page).not.toHaveURL(/\/login/);
     await page.goto("/admin/settings");
     await page.getByLabel(/Pause sign-ups/).uncheck();
-    await page.getByLabel("Reason").fill("playwright check over");
+    await page.getByRole("form", { name: "Site switches" }).getByLabel("Reason").fill("playwright check over");
     await page.getByRole("button", { name: "Save switches" }).click();
     await expect(page.getByText("Saved. The change is in the audit log")).toBeVisible();
     await page.goto("/");
-    await expect(page.getByRole("status").filter({ hasText: "New accounts are paused" })).toHaveCount(0);
+    await expect(page.getByRole("status").filter({ hasText: "Sign-ups are paused" })).toHaveCount(0);
   });
 
   test("the admin Health page shows queues, jobs and events", async ({ page }) => {
