@@ -176,7 +176,7 @@ Promote the previous production deployment from the Vercel dashboard (Deployment
 | W5 | Integrity signals function and `/admin/signals` page (read-only) | Risk 3 | M | Yes | D4: flag only vs penalty | Before launch |
 | W6 | Health route and admin Health card | Risk 9 | S | No | No | Before launch |
 | W7 | AI judge v2: "unverified claims", pass `sources` to the judge, panel flag; re-run the gold eval | Risk 4 | M | Probably | D5: approve prompt change | Before launch if D5 yes; otherwise ship flag from deterministic counts only |
-| W8 | Injection corpus across all six AI entry points (fake in unit tests, real in the eval scripts) | AG-8 | S | No | No | Before launch |
+| W8 | Injection corpus across all seven AI calls (fake in unit tests, real in the eval scripts) | AG-8 | S | No | No | Before launch |
 | W9 | Local load test scripts and a recorded result | Section 3 | M | No | No | Before launch |
 | W10 | Invite hardening: optional `invites.invited_email`, expiry defaults, email-family signal | AG-1 | S to M | Yes | D3b | Before launch if D3b yes |
 | W11 | HSTS and CSP report-only | SEC-2 | S | No | No | HSTS before launch; **defer CSP enforcement** |
