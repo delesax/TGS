@@ -5,7 +5,29 @@ Written 13 November 2026 for the owner. Free plans only (Vercel Hobby, Supabase 
 ## The plan in one paragraph
 About 100 members, invited in waves of 10 to 20. Each wave only after a clean day. App email is cut to essentials (on by default, global cap 60 a day) so Resend's free quota has headroom for Supabase's own sign-up and reset emails. You take a database dump by hand before every migration and weekly (decision D7). If anything looks wrong you flip a kill switch first and investigate second.
 
-## Owner actions (things only you can do)
+## Owner actions before the first invite wave
+Do these in order. Nothing here has been done by Claude. Tick each one and write the date in `docs/CLAUDE_LOG.md`.
+
+1. **Supabase Auth rate limits** (Authentication, Rate Limits). Raise sign-ups and sign-ins from 30 to **150**, and token verifications from 30 to **100**, per 5 minutes. All Auth calls come from Vercel's shared addresses, so the default per-address limits would count the whole membership as one visitor.
+2. **First manual dump.** `bash scripts/backup-dump.sh` (Docker running, `DATABASE_URL` in `.env.local`). Check the user and profile counts it prints. Store the three files **encrypted** and off the laptop (an encrypted disk image or a password manager's file store). Never commit or email them. See `docs/BACKUP_RESTORE.md`.
+3. **Re-read the free-plan limits** on the Resend, Supabase and Vercel pricing pages (Resend daily and monthly email quota, Supabase database size and pause rules, Vercel Hobby function limits and terms). Write the figures in the log; the numbers in `docs/SPRINT_7_PLAN.md` are from memory.
+4. **Add a second admin** (`npm run admin:set -- <email>`, or as `docs/OWNER_DECISIONS.md` item 7 describes) and sign in with it once.
+5. **Provider accounts.** Move the Vercel, Supabase, Resend and Anthropic accounts into the company before any commercial use. Until then there are no sponsors and no payments (decision D1).
+6. **Campaign 1: `under-16-social-media-ban`** (opens 1 December 2026, 00:00 UTC). Before 1 December: Admin, Campaigns, Edit. Replace the placeholder summary, check the rules, **publish the rubric** ("Publish the rubric", once the rule 7 change is live; it cannot be undone), then set Publish to **"Schedule it"** and save. Nothing is needed at midnight: the scheduler opens it within a minute.
+7. **Decide the three flagged Campaigns** (each has an owner decision flag and cannot be scheduled until you clear it): `bank-of-england-rate-decision-november` (is the topic still timely?), `rosebank-after-jackdaw`, and `assisted-dying-or-fix-care-first` (sensitive: it needs the real content note).
+8. **Edit the three PLACEHOLDER strings** in `src/lib/judging/notices.ts` before the first Campaign can close (8 December 2026 at the earliest). This is a parked legal item and is not touched by Claude.
+9. **Member post test** (needs a second, non-admin account). Account deletion stays OFF and the legal items stay parked.
+   1. In a terminal in the project folder: `npm run invite:create -- --email <mailbox> --note "TEST account"` (one use, bound to that address; it writes to hosted and prints the host first). Use a mailbox that is not a plus-variant of your admin address (Signals would flag it).
+   2. In a private window sign up with the code, confirm the email, choose a handle.
+   3. As admin: Admin, Campaigns, New. Title "TEST: please ignore", address `test-please-ignore`, summary starting "TEST ONLY", open arena, no rounds, not sensitive. Opens: a few minutes ago. **Closes: 31 December 2027.** If the form rejects the far-future close date, **stop and tell the reviewer**. Save as a draft, then (once the rule 7 change is live) Publish the rubric, then set Publish to "Schedule it" and save. Wait a minute: the Campaign reads Open and `/admin/audit` shows `campaign.opened`.
+   4. As the test member, **on a phone**: open the TEST Campaign and post one short argument declared "none". Check it appears after screening (these are the post and the visible-result checks, steps 7 and 8 of the test plan, and must be done on a phone).
+   5. As the test member, open `/admin`: it must be **refused** (not the console).
+   6. As admin, Edit the TEST Campaign, set Publish to "Keep as draft", save. Reload as the test member: the Campaign must no longer be reachable. The test Dispatch and the account stay in the database.
+   7. Afterwards check Admin, Health (queues empty, jobs recent, AI calls up by about one); Admin, Signals (nothing new); `/admin/audit` (`campaign.opened`, your edits, no close or judging rows); the Vercel runtime logs (no 5xx).
+   8. **Message the reviewer within about 30 minutes of finishing** with what you saw.
+   Never leave the TEST Campaign scheduled or open: it is public while live. Never set a near close date: a close queues AI scoring and a peer-voting email.
+
+## Owner actions (setup reference: where each setting lives)
 Nothing below has been done by Claude. Tick them off in order; none needs a code change.
 
 **Before any migration or release**
