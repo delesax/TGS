@@ -57,7 +57,8 @@ async function waitForEmail(to: string, subject: RegExp): Promise<{ Text: string
 
 test.beforeAll(async () => {
   // No cooldown and no digest wait, so the journey runs quickly. Restored afterwards.
-  await service.from("community_settings").update({ cooldown_seconds: 0, reply_digest_minutes: 0 }).eq("id", true);
+  // The journey includes a reply email, which "essential emails only" (Sprint 7, on by default) would not queue.
+  await service.from("community_settings").update({ cooldown_seconds: 0, reply_digest_minutes: 0, email_essentials_only: false }).eq("id", true);
   const now = Date.now();
   const { data, error } = await service
     .from("campaigns")
@@ -79,7 +80,7 @@ test.beforeAll(async () => {
 });
 
 test.afterAll(async () => {
-  await service.from("community_settings").update({ cooldown_seconds: 30, reply_digest_minutes: 10 }).eq("id", true);
+  await service.from("community_settings").update({ cooldown_seconds: 30, reply_digest_minutes: 10, email_essentials_only: true }).eq("id", true);
   // Deleting a user keeps their Dispatches (Sprint 4), so clear the test's own first.
   await service.from("dispatches").delete().eq("campaign_id", campaignId);
   for (const id of userIds) await service.auth.admin.deleteUser(id);

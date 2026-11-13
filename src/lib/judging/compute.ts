@@ -72,7 +72,7 @@ export async function computeDraftVerdict(db: SupabaseClient, campaignId: string
   }
 
   const draft = {
-    needs_attention: result.attention.length > 0 || !result.winner_id,
+    needs_attention: result.attention.some((a) => !a.info) || !result.winner_id,
     attention_reasons: result.attention,
     weights_snapshot: result.weights,
     component_scores: result.strategists,

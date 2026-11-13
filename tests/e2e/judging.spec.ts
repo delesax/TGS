@@ -30,7 +30,8 @@ async function makeStrategist(prefix: string, admin = false) {
   if (error) throw error;
   userIds.push(data.user.id);
   const handle = `${prefix}_${randomUUID().replace(/-/g, "").slice(0, 8)}`;
-  await service.from("profiles").update({ handle }).eq("id", data.user.id);
+  // Votes, steelman confirmations and picks need an account at least 48 hours old (Sprint 7).
+  await service.from("profiles").update({ handle, created_at: new Date(Date.now() - 3 * 86_400_000).toISOString() }).eq("id", data.user.id);
   return { id: data.user.id, email, handle };
 }
 

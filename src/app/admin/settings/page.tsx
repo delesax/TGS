@@ -3,7 +3,7 @@ import { Page } from "@/components/page";
 import { requireAdmin } from "@/lib/auth";
 import { DEFAULT_MODELS } from "@/lib/ai/config";
 import { createClient } from "@/lib/supabase/server";
-import { ReactionTypeForm, SettingsForm, SwitchesForm } from "../admin-forms";
+import { EmailControlsForm, ReactionTypeForm, SettingsForm, SwitchesForm } from "../admin-forms";
 import type { SettingsValues } from "../actions";
 import { AdminNav } from "../admin-nav";
 
@@ -33,6 +33,12 @@ export default async function SettingsPage() {
           posting_paused: Boolean((settings as Record<string, unknown>).posting_paused),
           signups_paused: Boolean((settings as Record<string, unknown>).signups_paused),
           emails_paused: Boolean((settings as Record<string, unknown>).emails_paused),
+        }}
+      />
+      <EmailControlsForm
+        values={{
+          email_essentials_only: Boolean((settings as Record<string, unknown>).email_essentials_only ?? true),
+          email_global_daily_cap: Number((settings as Record<string, unknown>).email_global_daily_cap ?? 60),
         }}
       />
       <SettingsForm values={settings as SettingsValues} defaults={defaults} />

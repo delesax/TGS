@@ -17,11 +17,12 @@ beforeAll(async () => {
   for (const u of [author, replier]) {
     await u.client.from("campaign_positions").insert({ campaign_id: campaignId, user_id: u.id, after_position: "for" });
   }
-  await service.from("community_settings").update({ cooldown_seconds: 0 }).eq("id", true);
+  // These tests are about what gets queued, so they switch off "essential emails only" (Sprint 7, on by default).
+  await service.from("community_settings").update({ cooldown_seconds: 0, email_essentials_only: false }).eq("id", true);
 });
 
 afterAll(async () => {
-  await service.from("community_settings").update({ cooldown_seconds: 30 }).eq("id", true);
+  await service.from("community_settings").update({ cooldown_seconds: 30, email_essentials_only: true }).eq("id", true);
   await deleteUsers([author, replier, follower]);
   await service.from("campaigns").delete().in("id", campaignIds);
 });

@@ -4,6 +4,11 @@
  *   npm run invite:create                         one single-use code
  *   npm run invite:create -- --count 5            five single-use codes
  *   npm run invite:create -- --uses 30 --note "Pilot class" --days 30
+ *   npm run invite:create -- --email person@example.com      bound to that address (one use)
+ *   npm run invite:create -- --no-expiry                       never expires
+ *
+ * An invite expires after 14 days unless --days or --no-expiry says otherwise.
+ * With --email the code only works for that address (always one use, one code).
  *
  * Uses SUPABASE_SERVICE_ROLE_KEY from .env.local, so it writes to whichever
  * project that file points at. The target host is printed before anything is written.
@@ -21,12 +26,18 @@ const { values } = parseArgs({
     uses: { type: "string", default: "1" },
     note: { type: "string" },
     days: { type: "string" },
+    email: { type: "string" },
+    "no-expiry": { type: "boolean", default: false },
   },
 });
 
 const count = Number(values.count);
 const maxUses = Number(values.uses);
-const days = values.days ? Number(values.days) : null;
+const DEFAULT_DAYS = 14;
+const days = values["no-expiry"] ? null : values.days ? Number(values.days) : DEFAULT_DAYS;
+const invitedEmail = values.email ? values.email.trim().toLowerCase() : null;
+if (invitedEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(invitedEmail)) throw new Error("--email must be an email address");
+if (invitedEmail && (count !== 1 || maxUses !== 1)) throw new Error("An invite bound to an email is one code with one use: leave out --count and --uses");
 if (!Number.isInteger(count) || count < 1 || count > 100) throw new Error("--count must be 1 to 100");
 if (!Number.isInteger(maxUses) || maxUses < 1 || maxUses > 500) throw new Error("--uses must be 1 to 500");
 if (days !== null && (!Number.isFinite(days) || days <= 0)) throw new Error("--days must be a positive number");
@@ -40,6 +51,8 @@ async function main() {
     code: generateInviteCode(),
     max_uses: maxUses,
     note: values.note ?? null,
+    // Only sent when set, so the script still works on a database without the invited_email column.
+    ...(invitedEmail ? { invited_email: invitedEmail } : {}),
     expires_at: days ? new Date(Date.now() + days * 86_400_000).toISOString() : null,
   }));
 
@@ -52,7 +65,7 @@ async function main() {
   const site = process.env.NEXT_PUBLIC_SITE_URL;
   for (const invite of data) {
     const expiry = invite.expires_at ? `, expires ${new Date(invite.expires_at).toLocaleDateString("en-GB")}` : "";
-    console.log(`${invite.code}  (${invite.max_uses} use${invite.max_uses === 1 ? "" : "s"}${expiry})`);
+    console.log(`${invite.code}  (${invite.max_uses} use${invite.max_uses === 1 ? "" : "s"}${expiry}${invitedEmail ? ", bound to one email address" : ""})`);
     if (site) console.log(`  Sign-up link: ${site}/signup?code=${invite.code}`);
   }
 }

@@ -9,11 +9,11 @@ export type SiteSwitches = { posting_paused: boolean; signups_paused: boolean; e
 
 export const SWITCH_WORDING = {
   banner: {
-    posting: "Posting is paused for a short while. You can still read, react and vote.",
-    signups: "New accounts are paused for a short while. People who already have an account can sign in as usual.",
+    posting: "Posting is paused for a short while. You can still read everything. Please check back soon.",
+    signups: "Sign-ups are paused for a short while. Please try again later.",
   },
   signUpRefused: {
-    message: "New accounts are paused for a short while.",
+    message: "Sign-ups are paused for a short while.",
     hint: "Please try again later. Your invite code stays valid.",
   },
 } as const;

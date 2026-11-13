@@ -74,6 +74,9 @@ export default async function JudgingPage() {
           <TextField name="judging_window_hours" label="Draft Verdict due (hours after the close)" type="number" inputMode="numeric" min={1} max={1440} defaultValue={settings.judging_window_hours} />
           <TextField name="peer_vote_credits" label="Votes each Strategist can cast per Campaign" type="number" inputMode="numeric" min={1} max={50} defaultValue={settings.peer_vote_credits} />
           <TextField name="appeal_window_days" label="Appeal window (days after publication)" type="number" inputMode="numeric" min={1} max={60} defaultValue={settings.appeal_window_days} />
+          <TextField name="min_voter_account_age_hours" label="Account age before votes, confirmations and picks count (hours)" hint="Panel judges are exempt. 0 switches the rule off." type="number" inputMode="numeric" min={0} max={720} defaultValue={settings.min_voter_account_age_hours} />
+          <TextField name="max_steelman_confirmations" label="Steelman confirmations each person can give per Campaign" type="number" inputMode="numeric" min={1} max={20} defaultValue={settings.max_steelman_confirmations} />
+          <TextField name="min_position_span_hours" label="Hours a position change must span to earn mind-change credit" hint="Between the recorded before and after. 0 switches the rule off." type="number" inputMode="numeric" min={0} max={720} defaultValue={settings.min_position_span_hours} />
           <CheckboxField name="ai_rationale_wording" label="Let the AI improve the wording of draft rationales (marked as AI-assisted; scores never change)" defaultChecked={settings.ai_rationale_wording} />
         </AdminForm>
       </section>
