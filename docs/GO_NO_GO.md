@@ -4,8 +4,8 @@ Every line must be YES on the day, or you decide knowingly to launch without it.
 
 | # | Check | How to verify | Who | Status on 13 Nov |
 | --- | --- | --- | --- | --- |
-| 1 | All Sprint 7 High items are built and merged: kill switches, vote eligibility, rate limiter, integrity signals page, open-redirect fix | Batch 1, 2a, 2b branches merged; `docs/CLAUDE_LOG.md` | O merges | Batch 1 and 2a merged; **batch 2b on its branch, not merged** |
-| 2 | Hosted has every migration, and a dry run lists nothing more | `supabase db push --dry-run --include-all` prints nothing to apply | O | Hosted is through `20261113000600`. **`20261113000700` (judge prompt v2) is not applied.** |
+| 1 | All Sprint 7 High items are built and merged: kill switches, vote eligibility, rate limiter, integrity signals page, open-redirect fix | Batch 1, 2a, 2b branches merged; `docs/CLAUDE_LOG.md` | O merges | **Done:** batches 1, 2a and 2b and rule 7 are all merged to `main` (PRs #27, #29, #31 and the rule 7 commit via #34) |
+| 2 | Hosted has every migration, and a dry run lists nothing more | `supabase db push --dry-run --include-all` prints nothing to apply | O | Hosted is through `20261113000800` (rubric publish), applied by the owner from their own terminal on 13 Nov. The owner reported a fresh dry run said up to date; Claude has not seen it and has no CLI access to hosted. Re-run before the next apply. |
 | 3 | Legal-hardening's six migrations applied and verified | Dry run in step 2 shows none missing | O | Applied (earlier session) |
 | 4 | Vault secrets for email, moderation and judging set; the three processor secrets are fresh, 40 or more characters; each processor route answers 401 without its secret | Supabase SQL: `select name from vault.secrets` (names only); `curl -X POST` each route with no header | O | Not verified by Claude |
 | 5 | Resend domain verified; Confirm sign up and Reset password templates saved; redirect URLs correct; a real sign-up, confirmation and reset tested on the live site | Dashboard; do the journey with a spare address | O | Not verified by Claude |
@@ -24,7 +24,7 @@ Every line must be YES on the day, or you decide knowingly to launch without it.
 | 18 | You know the rollback: the previous Production deployment is noted | Vercel, Deployments | O | Do on release day |
 | 19 | Kill-switch wording seen on screen: posting paused and sign-ups paused messages read well | Flip each on and off once on the live site, with a reason | O | Wording set (D6); not tested on hosted |
 | 20 | CSP is report-only and the report route answers 204 | `curl -i` the home page header; POST a sample to `/api/csp-report` | C, O on live | Built in batch 2b (local tests pass) |
-| 21 | Campaign 1 (`under-16-social-media-ban`) has its real summary, its rules checked, its rubric **published** (rule 7) and is scheduled before 1 December | Admin, Campaigns; the public Campaign page shows "How this Campaign is judged" | O | **Open** (needs the rule 7 change merged and its migration applied) |
+| 21 | Campaign 1 (`under-16-social-media-ban`) has its real summary, its rules checked, its rubric **published** (rule 7) and is scheduled before 1 December | Admin, Campaigns; the public Campaign page shows "How this Campaign is judged" | O | **Open.** Rule 7 is live (merged, migration applied), so "Publish the rubric" exists. Campaign 1 still needs its real summary, its rules checked, its rubric published and scheduling. All 15 Campaigns are drafts (as the owner reported; Claude has not seen it). |
 | 22 | Member post test done on a phone with a second non-admin account; `/admin` refused for that account; TEST Campaign back to draft | `docs/LAUNCH_RUNBOOK.md`, step 9 | O | **Open** |
 
 ## Owner actions before the first invite wave
