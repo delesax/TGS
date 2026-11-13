@@ -9,11 +9,11 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 | Branch | State | Latest commit | Hosted |
 | --- | --- | --- | --- |
 | `main` | Sprints 1–4 and **Sprint 5 merged (PRs #6 to #8, 12 Nov), ratified gold set and logs merged (PR #10)**, launch email docs | see `git log origin/main` | Sprint 4 migrations applied; **Sprint 5 migrations applied 12 Nov** (`20261111000100`, `20261111000200`) |
-| `main` also has legal-hardening | **Merged to `main` as PR #22 (13 Nov); its six migrations were applied to hosted on 13 Nov** (`20261107000100` to `000600`). The `legal-hardening` and `merge-legal-hardening` branches may still exist on origin | see `git log origin/main` | Applied |
+| `main` also has legal-hardening | **Merged to `main` as PR #22 (13 Nov); its six migrations were applied to hosted on 13 Nov** (`20261107000100` to `000600`). The `legal-hardening` and `merge-legal-hardening` branches were deleted | see `git log origin/main` | Applied |
 | `sprint-7-hardening` | **Pushed**, Phase A only: `docs/SPRINT_7_PLAN.md` (audit and plan, no code). No PR | see `git log origin/sprint-7-hardening` | — |
 | `sprint-4-audit-handle` | On origin, no PR; one migration `20261104000500_audit_no_handle.sql` (stops new handle writes in `decide_held_handle`; old rows untouched; main's onboarding still writes the handle, fixed only by legal-hardening) | `bc88132` | Nothing applied |
 
-Worktrees: `TGS/` (main checkout) and `TGS-legal/` (legal-hardening). `TGS-sprint5/` was removed on 13 Nov. They share one local Supabase database.
+Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were removed on 13 Nov). Local Supabase is shared by whatever runs from `TGS/`.
 
 ## Open for the owner
 
@@ -30,6 +30,11 @@ Worktrees: `TGS/` (main checkout) and `TGS-legal/` (legal-hardening). `TGS-sprin
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-13 — Legal branches and checkout removed
+
+- On the owner's instruction deleted `legal-hardening` and `merge-legal-hardening` on origin (both contained in `origin/main`), and locally. Removed the `TGS-legal/` checkout after confirming no tracked changes, no untracked files and no commits missing from `origin/main`; only ignored files (including `node_modules`, `.next`, test results, `evals/out/`, `.env.test.local`) went with it. `TGS/.env.local` is untouched.
+- Origin now has `main`, `sprint-4-audit-handle` and `sprint-7-hardening`. Fixed the stale worktrees line and the legal row in "Current state".
 
 ### 2026-11-13 — legal-hardening migrations applied to hosted
 
