@@ -10,7 +10,6 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 | --- | --- | --- | --- |
 | `main` | Sprints 1–4 and **Sprint 5 merged (PRs #6 to #8, 12 Nov), ratified gold set and logs merged (PR #10)**, launch email docs | see `git log origin/main` | Sprint 4 migrations applied; **Sprint 5 migrations applied 12 Nov** (`20261111000100`, `20261111000200`) |
 | `main` also has legal-hardening | **Merged to `main` as PR #22 (13 Nov); its six migrations were applied to hosted on 13 Nov** (`20261107000100` to `000600`). The `legal-hardening` and `merge-legal-hardening` branches were deleted | see `git log origin/main` | Applied |
-| `sprint-7-hardening` | **Pushed**, Phase A only: `docs/SPRINT_7_PLAN.md` (audit and plan, no code). No PR | see `git log origin/sprint-7-hardening` | — |
 | `sprint-4-audit-handle` | On origin, no PR; one migration `20261104000500_audit_no_handle.sql` (stops new handle writes in `decide_held_handle`; old rows untouched; main's onboarding still writes the handle, fixed only by legal-hardening) | `bc88132` | Nothing applied |
 
 Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were removed on 13 Nov). Local Supabase is shared by whatever runs from `TGS/`.
@@ -30,6 +29,11 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-13 — Sprint 7 Phase A merged
+
+- Owner merged PR #23 (`sprint-7-hardening`): `docs/SPRINT_7_PLAN.md` and its log entries are on `main`. Deleted the branch locally and on origin on the owner's instruction after confirming it was contained in `origin/main`. Removed its "Current state" row.
+- Origin now has only `main` and `sprint-4-audit-handle`. Phase B (the 14 work items) has not started: it waits for the owner's answers to D1 to D8 in the plan. Hosted unchanged: Sprint 5 and legal-hardening migrations applied; audit-handle not applied (needs `--include-all`).
 
 ### 2026-11-13 — Legal branches and checkout removed
 
