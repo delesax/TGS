@@ -19,6 +19,7 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 ## Open for the owner
 
 - **Owner actions before the first invite wave** (batches 1, 2a, 2b and rule 7 are merged and applied): do the list in `docs/LAUNCH_RUNBOOK.md` (Supabase Auth rate limits 150/150/100 per 5 minutes, Vault secrets, Vercel variables, Anthropic and Resend limits, second admin) and work through `docs/GO_NO_GO.md`. Take the first hosted dump with `bash scripts/backup-dump.sh` (needs `DATABASE_URL` in `.env.local`, Docker running). Look at the v2 versus v1 judge numbers (`docs/SPRINT_7_PLAN.md`) before leaving v2 as the default; v1 is one setting away (Admin, Judging).
+- **Campaign 1 brief:** read `docs/campaigns/under-16-social-media-ban.md`, run its four SQL Editor queries, choose the title (or drop the summary's last line), confirm the close date, check the summary's facts on gov.uk, eSafety and the BMJ, then follow its click order.
 - **Campaign 1 and rule 7:** the admin Campaign edit page has "Publish the rubric", and scheduling a draft is refused until it is published. All 15 Campaigns are drafts (as the owner reported from the SQL Editor; not seen by Claude). Campaign 1 still needs its real summary, rules checked, rubric published, then scheduling.
 - **Hosted CLI steps run from your terminal, not Claude's.** Claude's shell has no Supabase access token (`supabase link` fails with `AccessTokenRequiredError`). Run `npx supabase login` and `npx supabase link --project-ref <ref>`, then dry runs and applies with `--linked`, and paste back the output with any connection string removed. Hosted migrations: none pending as far as Claude knows (`20261113000800` applied by the owner on 13 Nov; Claude did not see the dry-run output).
 - **Vault secrets and judging:** add Vault secrets `judging_processor_url`, `judging_processor_secret` and the Vercel variable `JUDGING_PROCESSOR_SECRET` (optional: `AI_MODEL_JUDGING`). Judging only does anything once a Campaign closes, and without these the AI scoring work waits. The check is in `docs/LAUNCH_RUNBOOK.md`.
@@ -30,6 +31,15 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 - **Account deletion stays OFF.** Decide whether it also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-13 — Campaign 1 brief for owner approval (PR #38)
+
+- Docs only: `docs/campaigns/under-16-social-media-ban.md` (merged as PR #38). It holds the owner's proposed summary verbatim, a plain-text rules draft (1,071 characters, only mechanics that exist in the app), a field-by-field checklist for the Admin Campaign edit form, and the click order (save as draft, confirm weights, Publish the rubric, Schedule it, check `/admin/audit`). Nothing was entered, saved, published or scheduled.
+- **Read from the repo only.** Claude had no hosted access (no Supabase token in its shell; `.env.local` not read), so these are NOT verified and the file gives read-only SQL Editor queries for each: whether Campaign 1 has `rubric_published_at` set (the owner's 13 Nov check said all 15 are drafts with it null, not seen by Claude), the latest `judging_weights` version and its weights (version 1 is seeded 40/25/25/10), the live Dispatch limits (code defaults 1,500, 1,000 and 600 characters, 30 seconds between posts, 5 minutes to edit), and the TEST Campaign's rules and summary.
+- **Format:** `rules` is optional plain text up to 10,000 characters, shown under "Rules" with line breaks kept and no Markdown; Campaign 1 is Open arena, Technology, not sensitive; form times are UK time.
+- **Mismatches for the owner:** the loaded title ("...go ahead as planned?") differs from the summary's closing question; no close date was given (the loader's draft closes 8 December 2026, to confirm); the topic bank mentions age assurance and AI companions where the summary mentions livestreaming and stranger contact.
+- **Facts to check before publishing** (gov.uk, eSafety, BMJ): Australia's law taking effect on 10 December 2025, livestreaming and stranger contact, regulations laid in December, the bereaved-parents and child-safety-charity attributions, the eSafety 52.4% to 42.1% figures and the BMJ "over 85%" figure (accounts held versus use are not like for like). Only the 15 June date and the spring 2027 start are in the repo, via one law-firm article.
+- Nothing applied to hosted, no settings changed, legal files and PLACEHOLDER strings untouched.
 
 ### 2026-11-13 — Launch documents refreshed (branch `docs-launch-refresh`)
 
