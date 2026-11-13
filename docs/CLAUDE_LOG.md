@@ -16,6 +16,7 @@ Worktrees: `TGS/` (main checkout) and `TGS-legal/` (legal-hardening). `TGS-sprin
 
 ## Open for the owner
 
+- Sprint 7: answer D1 to D8 in `docs/SPRINT_7_PLAN.md` (Vercel Hobby terms, email volume, minimum account age and invite binding, collusion policy, judge prompt v2, kill-switch wording, backups, Anthropic cap) before Phase B starts.
 - Legal hardening: after the merge PR, fill the bracketed facts listed in `docs/SESSION_LOG_LEGAL_HARDENING.md`; `LEGAL.reviewed` stays false until the solicitor signs off and account deletion stays OFF. Apply the six migrations to hosted only after review and a dry run (see the migration items below; apply them and deploy the code within minutes of each other).
 - Password reset (merged as PR #13, not usable on the live site until you do this): in Supabase paste the "Reset password" template from `docs/LAUNCH_EMAIL_SETUP.md` step 12b, and check Redirect URLs allow `https://thegrandstrategist.com/auth/confirm?next=/reset-password` (covered if `https://thegrandstrategist.com/**` is listed).
 - Before legal-hardening goes live: fill `privacyEmail` and `contactEmail` in `src/lib/legal.ts` (empty now, so pages show "[to be added]" and privacy-request alert emails are skipped).
@@ -28,6 +29,12 @@ Worktrees: `TGS/` (main checkout) and `TGS-legal/` (legal-hardening). `TGS-sprin
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-13 — Sprint 7 Phase A: audit and plan (branch `sprint-7-hardening`)
+
+- Read-only audit and plan, no feature code. Wrote `docs/SPRINT_7_PLAN.md`: top 10 risks, findings tables for anti-gaming, load and capacity, security and launch readiness, 14 ordered work items (size, migration, owner decision), 8 questions for the owner (D1 to D8) and a list of what could not be verified. Branch is pushed; no PR opened. Nothing applied to hosted, nothing written to hosted, no load run, no upgrades. Legal files and placeholders untouched.
+- Real findings worth remembering: only the AI has a kill switch; voting needs only one posted Dispatch (no account age); mind-change picks and steelman confirmations are unweighted or uncapped; the AI judge never receives `dispatches.sources`; `safeNextPath` lets tab and line-break characters through (confirmed open redirect in `/auth/confirm`); no CSP; 115 SECURITY DEFINER functions all set `search_path`; `npm audit --omit=dev` shows 0 vulnerabilities. The claim that the app has no rate limits of its own is partly wrong: posting has a cooldown and per-round cap, AI has per-user and global caps, votes have credits.
+- Capacity: on free plans Resend (about 100 a day, to verify) and the $30 Anthropic cap limit the pilot to roughly 100 members unless email is cut to essentials.
 
 ### 2026-11-13 — legal-hardening merged into a branch (not main)
 
