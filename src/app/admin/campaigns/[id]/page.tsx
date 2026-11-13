@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { requireAdmin } from "@/lib/auth";
 import { getCampaign, getCampaignAdminFields } from "@/lib/campaign-data";
 import { DISPATCH_KINDS, toUkInputValue } from "@/lib/campaigns";
+import { formatUkDateTime } from "@/lib/campaigns";
 import { CampaignForm } from "../campaign-form";
+import { RubricPanel } from "../rubric-panel";
 
 export const metadata: Metadata = { title: "Edit Campaign" };
 export const dynamic = "force-dynamic";
@@ -15,7 +17,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default async function EditCampaignPage({ params, searchParams }: PageProps<"/admin/campaigns/[id]">) {
   const { id } = await params;
-  const { saved } = await searchParams;
+  const { saved, rubric } = await searchParams;
   await requireAdmin(`/admin/campaigns/${id}`);
   if (!UUID.test(id)) notFound();
   const c = await getCampaign({ id });
@@ -27,6 +29,11 @@ export default async function EditCampaignPage({ params, searchParams }: PagePro
       {saved ? (
         <p role="status" className="rounded-lg border-2 border-success bg-success/10 p-4 text-lg font-semibold">
           Saved. The change has been recorded in the audit log.
+        </p>
+      ) : null}
+      {rubric ? (
+        <p role="status" className="rounded-lg border-2 border-success bg-success/10 p-4 text-lg font-semibold">
+          The rubric is published. The change has been recorded in the audit log.
         </p>
       ) : null}
       {adminFields?.needs_owner_decision ? (
@@ -42,6 +49,7 @@ export default async function EditCampaignPage({ params, searchParams }: PagePro
           <Link href={`/campaigns/${c.slug}`}>View page</Link>
         </Button>
       </div>
+      <RubricPanel campaignId={c.id} publishedLabel={c.rubric_published_at ? formatUkDateTime(c.rubric_published_at) : null} />
       <CampaignForm
         key={`${c.id}-${saved ?? ""}`}
         values={{

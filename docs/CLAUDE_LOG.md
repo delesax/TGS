@@ -10,7 +10,7 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 | --- | --- | --- | --- |
 | `main` | Sprints 1–4 and **Sprint 5 merged (PRs #6 to #8, 12 Nov), ratified gold set and logs merged (PR #10)**, launch email docs | see `git log origin/main` | All migrations applied to hosted (Sprint 4, Sprint 5, legal-hardening and audit-handle, last on 13 Nov) |
 | `sprint-7-batch-2b` | **Pushed for the owner to PR, not merged.** W7 judge prompt v2, W9 load tests, W13 backups, W14 documents, CSP report-only, Resend pacing. One migration, `20261113000700_judge_prompt_v2.sql`, tested locally only | see `git log sprint-7-batch-2b` | **`20261113000700` applied to hosted on the owner's go (13 Nov)**; branch not yet merged |
-| `rule7-rubric-publish` | **Pushed for the owner to PR, not merged.** Rule 7: publish the rubric, scheduling requires it, rubric shown on the Campaign page. Migration `20261113000800_rubric_publish.sql`, local only | see `git log rule7-rubric-publish` | **Not applied** |
+| `rule7-rubric-publish` | **Pushed for the owner to PR, not merged.** Rule 7: publish the rubric, scheduling requires it, rubric shown on the Campaign page. Migration `20261113000800_rubric_publish.sql`, local only | see `git log rule7-rubric-publish` | **`20261113000800` applied to hosted by the owner (13 Nov)**; branch not yet merged |
 | `launch-owner-actions` | Stacked on `sprint-7-batch-2b` (merge that first): owner actions before the first invite wave in the runbook and go/no-go, and this entry | see `git log launch-owner-actions` | n/a |
 | `main` also has legal-hardening | **Merged to `main` as PR #22 (13 Nov); its six migrations were applied to hosted on 13 Nov** (`20261107000100` to `000600`). The `legal-hardening` and `merge-legal-hardening` branches were deleted | see `git log origin/main` | Applied |
 
@@ -36,6 +36,14 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-13 — Rule 7 migration applied to hosted by the owner (branch `rule7-rubric-publish`)
+
+- **`20261113000800_rubric_publish.sql` was applied to hosted by the owner from their own terminal.** Reported by the owner: the CLI dry run listed exactly that one file, and a fresh dry run said the remote database is up to date. I did not see either output.
+- **Why not from Claude's shell:** the Supabase CLI was not linked or logged in on this machine (my shell had no access token, `supabase link` failed with `AccessTokenRequiredError` three times, even after the owner ran `supabase login`). Hosted CLI steps are therefore run from the owner's terminal with `--linked`. Nothing was written to hosted from my side.
+- **Catalog verification** (function overloads, SECURITY DEFINER/INVOKER, search_path, anon and authenticated execute, `RUBRIC_NOT_PUBLISHED` in `save_campaign`, Campaign counts by status, `rubric_published_at`) was run by the owner in the Supabase dashboard SQL Editor. I did not run it and have not seen the results.
+- **What I did check:** before the apply, the branch was rebased onto `origin/main` (batch 2b merged), CHANGELOG and `tests/rls/sprint7-grants.test.ts` conflicts resolved keeping both sides, migration unchanged, then typecheck and lint clean, 354 unit, 361 RLS, 55 Playwright passing, force-with-lease push. After the apply, `/api/health`, `/`, `/login`, `/signup`, `/campaigns` and `/leaderboard` on the live site all returned 200 with no error markers in the body.
+- Nothing merged. The rule 7 PR is for the owner to merge. No settings changed, no rubric published, nothing scheduled.
 
 ### 2026-11-13 — Batch 2b migration applied; rule 7 branch; owner actions; branch clean-up
 
