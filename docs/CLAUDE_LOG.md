@@ -28,25 +28,30 @@ Worktrees: `TGS/` (main checkout) and `TGS-legal/` (legal-hardening). `TGS-sprin
 
 ## Entries
 
+### 2026-11-13 — Log housekeeping
+
+- Marked the three earlier "this log branch is pushed" lines as merged and deleted (PRs #18, #19 and #20 are merged; their branches are gone). Nothing else changed: origin has only `main`, `legal-hardening` and `sprint-4-audit-handle`, and hosted has the Sprint 5 migrations only.
+- Convention from here: a log entry may say its own branch is pushed only until that PR merges; later entries should not repeat it, so lines do not go stale after the merge.
+
 ### 2026-11-13 — Old sprint branches deleted, sprint5 checkout removed
 
 - On the owner's instruction deleted on origin `launch-email-confirm-template`, `sprint-1`, `sprint-2`, `sprint-3`, `sprint-4`, `sprint-4-hardening` and `sprint-5-judging`, each after checking it was contained in `origin/main`; the local copies too. Origin now has only `main`, `legal-hardening` and `sprint-4-audit-handle`.
 - Removed the `TGS-sprint5/` checkout (it had no tracked changes and nothing unmerged; only ignored files, including `node_modules`, `.env.test.local` and the local eval reports in `evals/out/`, were lost; its `.env.local` was a symlink so `TGS/.env.local` is untouched). The real eval results are in this log and in `docs/SESSION_LOG_SPRINT_5.md`; the reports can be regenerated with `npm run eval:judging -- --real` (about £0.14).
 - Removed the stale "Current state" rows for the two deleted branches and fixed the worktrees line and the `legal-hardening` row (origin matches local).
-- This log branch (`claude-log-cleanup-sprint5`) is pushed together with this entry for the owner to PR.
+- Log branch `claude-log-cleanup-sprint5`: merged by the owner and deleted.
 
 ### 2026-11-13 — Merged branches deleted
 
 - On the owner's instruction deleted `claude-log-admin-account`, `header-signout-wrap` and `claude-log-pr17`, locally and on origin, each after checking it was contained in `origin/main`. Earlier entries that said they were waiting for deletion are marked superseded.
 - Only `legal-hardening` and `sprint-4-audit-handle` remain as branches on origin besides `main`. `main` is `4eeee3d`, clean and in sync. Hosted unchanged: Sprint 5 migrations applied, nothing else.
 - Correction: after the deletion I told the owner the log needed no update, which was wrong because two entries still described those branches as undeleted.
-- This log branch (`claude-log-branches-deleted`) is pushed together with this entry for the owner to PR.
+- Log branch `claude-log-branches-deleted`: merged by the owner and deleted.
 
 ### 2026-11-13 — Header fix merged
 
 - Owner merged PR #17 (`header-signout-wrap`): the admin header now keeps "Sign out" on one row from 1080px up; 375px unchanged. Fast-forwarded local `main`; removed the header branch row from "Current state".
 - (Superseded: those branches were deleted the same day, see the newest entry.) Open work: `legal-hardening` and `sprint-4-audit-handle`. Hosted unchanged: Sprint 5 migrations applied; the other two sets not applied.
-- This log branch (`claude-log-pr17`) is pushed together with this entry for the owner to PR.
+- Log branch `claude-log-pr17`: merged by the owner and deleted.
 
 ### 2026-11-12 — Branch housekeeping
 
