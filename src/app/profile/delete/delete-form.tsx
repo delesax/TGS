@@ -13,7 +13,7 @@ export function DeleteForm({ handle }: { handle: string }) {
       <FormMessage state={state} />
       <TextField name="handle" label={`Type your handle, ${handle}, to confirm`} autoComplete="off" autoCapitalize="off" spellCheck={false} error={e.handle} />
       <TextField name="password" type="password" label="Your password" autoComplete="current-password" error={e.password} />
-      <CheckboxField name="understood" label="I understand this cannot be undone. (DRAFT wording)" error={e.understood} />
+      <CheckboxField name="understood" label="I understand that deleting my account is permanent, and that what is listed under “Stays, without your name” remains." error={e.understood} />
       <Button type="submit" variant="destructive" size="full" disabled={pending} aria-disabled={pending}>
         {pending ? "Deleting…" : "Delete my account"}
       </Button>

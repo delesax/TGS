@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { MessageCircleQuestion, ThumbsDown, ThumbsUp } from "lucide-react";
 import { checkTone, getCoachFeedback, rateCoachFeedback, type CoachReply } from "@/app/campaigns/[slug]/dispatch-actions";
 import { Button } from "@/components/ui/button";
@@ -54,7 +55,11 @@ export function AiHelp({ campaignId, kind, body, draftKey, usesPerDraft }: { cam
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-border p-3">
       <p className="text-base text-muted-foreground">
-        Optional, private help from AI. Your draft is sent to our AI provider to check it, and is not stored. Nothing here is shown to anyone else.
+        Optional, private help from AI. If you use it, your draft is sent to our AI provider, Anthropic, to check it. We do not keep your draft, and only
+        you see the result.{" "}
+        <Link href="/ai-use" target="_blank" className="font-semibold text-primary underline">
+          How we use AI
+        </Link>
       </p>
       <div className="flex flex-col gap-2 sm:flex-row">
         <Button

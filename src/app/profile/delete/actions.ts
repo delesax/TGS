@@ -3,6 +3,7 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import type { FormState } from "@/components/form";
+import { deleteAccount } from "@/lib/account-deletion";
 import { getViewer } from "@/lib/auth";
 import { publicEnv } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -36,16 +37,15 @@ export async function deleteMyAccount(_prev: FormState, formData: FormData): Pro
   if (passwordError) return { formError: "That password is not right.", formHint: "Nothing has been deleted. Try again, or reset your password first.", fieldErrors: { password: "That password is not right." } };
   await check.auth.signOut({ scope: "local" });
 
-  const { data: summary, error } = await admin.rpc("anonymise_profile", { p_user_id: viewer.userId, p_via: "self_service" });
-  if (error) {
-    console.error("anonymise_profile failed", error.code);
+  const result = await deleteAccount(admin, viewer.userId, "self_service");
+  if (!result.ok) {
+    console.error("deleteAccount failed", result.reason);
     return { formError: "We could not delete your account.", formHint: "Nothing has been deleted. Please try again in a moment." };
   }
-  const { error: authError } = await admin.auth.admin.deleteUser(viewer.userId);
-  if (authError) console.error("Deleting the sign-in failed after anonymising; the profile is already anonymised", authError.code);
+  if (!result.signInDeleted) console.error("Deleting the sign-in failed after anonymising; the profile is already anonymised");
 
   const supabase = await createClient();
   await supabase.auth.signOut().catch(() => undefined);
-  const kept = Number((summary as { kept_dispatches?: number } | null)?.kept_dispatches ?? 0);
+  const kept = Number(result.summary.kept_dispatches ?? 0);
   redirect(`/account-deleted?kept=${kept}`);
 }

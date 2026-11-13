@@ -45,7 +45,7 @@ function Item({ item, adminId }: { item: QueueItem; adminId: string }) {
         ))}
       </ul>
       <p className="text-base text-muted-foreground">
-        @{d.author?.handle ?? "a deleted Strategist"} in{" "}
+        {d.author?.handle ? `@${d.author.handle}` : "a deleted Strategist"} in{" "}
         {d.campaign ? (
           <Link href={`/campaigns/${d.campaign.slug}#dispatch-${d.id}`} className="font-semibold underline">
             {d.campaign.title}
@@ -127,7 +127,7 @@ function Item({ item, adminId }: { item: QueueItem; adminId: string }) {
       <div className="flex flex-col gap-4 border-t border-border pt-3">
         <DispatchDecision
           dispatchId={d.id}
-          summary={`@${d.author?.handle ?? "a deleted Strategist"}: “${words.length > 60 ? `${words.slice(0, 60).trimEnd()}…` : words}”`}
+          summary={`${d.author?.handle ? `@${d.author.handle}` : "a deleted Strategist"}: “${words.length > 60 ? `${words.slice(0, 60).trimEnd()}…` : words}”`}
           status={d.moderation_status}
           hasReports={item.reports.length > 0}
           sameAdminWarning={Boolean(item.appeal?.original_actor && item.appeal.original_actor === adminId)}
@@ -136,7 +136,7 @@ function Item({ item, adminId }: { item: QueueItem; adminId: string }) {
           ? item.flags.map((f) => (
               <details key={f.id} className="rounded-lg border border-border p-3">
                 <summary className="min-h-12 cursor-pointer py-2 text-lg font-semibold">Or close the “{REASON_LABELS[f.kind as "unscreened"]}” flag with no change</summary>
-                <FlagDecision flagId={f.id} summary={`Flag on @${d.author?.handle ?? "a deleted Strategist"}’s Dispatch`} />
+                <FlagDecision flagId={f.id} summary={`Flag on ${d.author?.handle ? `@${d.author.handle}` : "a deleted Strategist"}’s Dispatch`} />
               </details>
             ))
           : null}

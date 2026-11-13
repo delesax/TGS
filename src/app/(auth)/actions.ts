@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { FormState } from "@/components/form";
 import { publicEnv } from "@/lib/env";
+import { LEGAL } from "@/lib/legal";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { RECOVERY_COOKIE } from "@/lib/recovery";
@@ -28,6 +29,7 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
     password: formData.get("password"),
     inviteCode: formData.get("inviteCode"),
     ageConfirmed: formData.get("ageConfirmed") === "on",
+    publicAcknowledged: formData.get("publicAcknowledged") === "on",
     termsAccepted: formData.get("termsAccepted") === "on",
   });
   if (!parsed.success) {
@@ -45,7 +47,16 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
     password,
     options: {
       emailRedirectTo: `${publicEnv().NEXT_PUBLIC_SITE_URL}/auth/confirm?next=/onboarding`,
-      data: { invite_code: inviteCode, age_confirmed: true, terms_accepted: true },
+      // The database trigger refuses the account without all three consents,
+      // and records the versions agreed to.
+      data: {
+        invite_code: inviteCode,
+        age_confirmed: true,
+        public_acknowledged: true,
+        terms_accepted: true,
+        terms_version: LEGAL.termsVersion,
+        privacy_version: LEGAL.privacyVersion,
+      },
     },
   });
 

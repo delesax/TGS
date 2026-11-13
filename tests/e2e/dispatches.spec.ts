@@ -23,7 +23,7 @@ async function makeStrategist(prefix: string) {
     email,
     password,
     email_confirm: true,
-    user_metadata: { invite_code: code, age_confirmed: true, terms_accepted: true },
+    user_metadata: { invite_code: code, age_confirmed: true, terms_accepted: true, public_acknowledged: true, terms_version: "test", privacy_version: "test" },
   });
   if (error) throw error;
   userIds.push(data.user.id);
@@ -93,10 +93,8 @@ test("two Strategists post, reply, react, follow, search and get an email", asyn
   // --- Ada posts an argument, then evidence with a source link ---
   const a = await signIn(browser, ada.email);
   await a.goto(`/campaigns/${slug}`);
-  await expect(a.getByText("Record your position to post")).toBeVisible();
-  await a.getByLabel("For").check();
-  await a.getByRole("button", { name: "Record my position" }).click();
-  await expect(a.getByText("Your position now has been recorded.")).toBeVisible();
+  // Recording a position is optional: Ada posts without one.
+  await expect(a.getByText("Record your position to post")).toHaveCount(0);
 
   const compose = a.getByRole("form", { name: "Write a Dispatch" });
   await compose.getByRole("button", { name: "Post Dispatch" }).click();
@@ -132,9 +130,18 @@ test("two Strategists post, reply, react, follow, search and get an email", asyn
   // --- Bo reacts, replies and follows Ada ---
   const b = await signIn(browser, bo.email);
   await b.goto(`/campaigns/${slug}`);
+  // The first time, the notice and a required box show before a position is saved.
   await b.getByLabel("Against").check();
+  await expect(b.getByText("Recording your position is optional. It shows your view on a public issue, which UK law treats as sensitive.")).toBeVisible();
+  await expect(b.getByText("Anyone outside our moderation team sees only anonymous totals.", { exact: false })).toBeVisible();
+  await b.getByRole("button", { name: "Record my position" }).click();
+  await expect(b.getByText("Please tick the box to agree before we record your position.")).toBeVisible();
+  await b.getByLabel("I agree to you recording my position on Campaigns.").check();
   await b.getByRole("button", { name: "Record my position" }).click();
   await expect(b.getByText("Your position now has been recorded.")).toBeVisible();
+  // Withdrawing is available on the Account page.
+  const { data: consent } = await service.from("profiles").select("positions_consent_at, positions_consent_version").eq("id", bo.id).single();
+  expect(consent?.positions_consent_at).not.toBeNull();
 
   const target = b.locator("article").filter({ hasText: word }).first();
   const persuasive = target.getByRole("button", { name: /^Persuasive/ });

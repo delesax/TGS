@@ -19,13 +19,13 @@ function signUpWith(meta: Record<string, unknown>) {
 
 describe("invite-only sign-up (enforced by the database trigger)", () => {
   it("rejects sign-up with no invite code, even straight through the Auth API", async () => {
-    const { data, error } = await signUpWith({ age_confirmed: true, terms_accepted: true });
+    const { data, error } = await signUpWith({ age_confirmed: true, terms_accepted: true, public_acknowledged: true, terms_version: "test", privacy_version: "test" });
     expect(error).not.toBeNull();
     expect(data.user).toBeNull();
   });
 
   it("rejects an unknown invite code", async () => {
-    const { error } = await signUpWith({ invite_code: "TGS-NOPE-NOPE-NOPE", age_confirmed: true, terms_accepted: true });
+    const { error } = await signUpWith({ invite_code: "TGS-NOPE-NOPE-NOPE", age_confirmed: true, terms_accepted: true, public_acknowledged: true, terms_version: "test", privacy_version: "test" });
     expect(error).not.toBeNull();
   });
 
@@ -33,7 +33,7 @@ describe("invite-only sign-up (enforced by the database trigger)", () => {
     const revoked = await createInvite({ revoked_at: new Date().toISOString() });
     const expired = await createInvite({ expires_at: new Date(Date.now() - 1000).toISOString() });
     for (const code of [revoked.code, expired.code]) {
-      const { error } = await signUpWith({ invite_code: code, age_confirmed: true, terms_accepted: true });
+      const { error } = await signUpWith({ invite_code: code, age_confirmed: true, terms_accepted: true, public_acknowledged: true, terms_version: "test", privacy_version: "test" });
       expect(error).not.toBeNull();
     }
   });
@@ -46,7 +46,7 @@ describe("invite-only sign-up (enforced by the database trigger)", () => {
 
   it("reserves the invite at sign-up and uses it up only when the email is confirmed", async () => {
     const invite = await createInvite({ max_uses: 1 });
-    const first = await signUpWith({ invite_code: invite.code.toLowerCase(), age_confirmed: true, terms_accepted: true });
+    const first = await signUpWith({ invite_code: invite.code.toLowerCase(), age_confirmed: true, terms_accepted: true, public_acknowledged: true, terms_version: "test", privacy_version: "test" });
     expect(first.error).toBeNull();
     expect(first.data.user).not.toBeNull();
     const firstId = first.data.user!.id;
@@ -58,7 +58,7 @@ describe("invite-only sign-up (enforced by the database trigger)", () => {
     // Not used up yet, but the place is held: a second person cannot take it.
     const { data: reserved } = await service.from("invites").select("use_count").eq("id", invite.id).single();
     expect(reserved!.use_count).toBe(0);
-    const second = await signUpWith({ invite_code: invite.code, age_confirmed: true, terms_accepted: true });
+    const second = await signUpWith({ invite_code: invite.code, age_confirmed: true, terms_accepted: true, public_acknowledged: true, terms_version: "test", privacy_version: "test" });
     expect(second.error).not.toBeNull();
 
     // Confirming the email uses it up and records it.
@@ -71,13 +71,13 @@ describe("invite-only sign-up (enforced by the database trigger)", () => {
     const { data: log } = await service.from("audit_log").select("action").eq("target_id", invite.id);
     expect(log!.map((l) => l.action)).toContain("invite.consumed");
 
-    const third = await signUpWith({ invite_code: invite.code, age_confirmed: true, terms_accepted: true });
+    const third = await signUpWith({ invite_code: invite.code, age_confirmed: true, terms_accepted: true, public_acknowledged: true, terms_version: "test", privacy_version: "test" });
     expect(third.error).not.toBeNull();
   });
 
   it("releases an invite held by a sign-up that was never confirmed within 24 hours", async () => {
     const invite = await createInvite({ max_uses: 1 });
-    const stale = await signUpWith({ invite_code: invite.code, age_confirmed: true, terms_accepted: true });
+    const stale = await signUpWith({ invite_code: invite.code, age_confirmed: true, terms_accepted: true, public_acknowledged: true, terms_version: "test", privacy_version: "test" });
     expect(stale.error).toBeNull();
     extraUserIds.push(stale.data.user!.id);
 
@@ -86,7 +86,7 @@ describe("invite-only sign-up (enforced by the database trigger)", () => {
     const { data: usable } = await service.rpc("invite_is_usable", { p_code: invite.code });
     expect(usable).toBe(true);
 
-    const fresh = await signUpWith({ invite_code: invite.code, age_confirmed: true, terms_accepted: true });
+    const fresh = await signUpWith({ invite_code: invite.code, age_confirmed: true, terms_accepted: true, public_acknowledged: true, terms_version: "test", privacy_version: "test" });
     expect(fresh.error).toBeNull();
     extraUserIds.push(fresh.data.user!.id);
     expect((await service.auth.admin.updateUserById(fresh.data.user!.id, { email_confirm: true })).error).toBeNull();

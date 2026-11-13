@@ -69,7 +69,7 @@ async function main() {
       email,
       password: PASSWORD,
       email_confirm: true,
-      user_metadata: { invite_code: INVITE, age_confirmed: true, terms_accepted: true },
+      user_metadata: { invite_code: INVITE, age_confirmed: true, terms_accepted: true, public_acknowledged: true, terms_version: "test", privacy_version: "test" },
     });
     if (error && !/already/i.test(error.message)) throw error;
     let created = made;

@@ -27,21 +27,46 @@ describe("buildTopicRows", () => {
     expect(new Set(rows.map((r) => r.status))).toEqual(new Set(["draft"]));
   });
 
-  it("gives sensitive topics the placeholder content note and nothing else", () => {
-    for (const r of rows) {
-      expect(r.content_note).toBe(r.is_sensitive ? SENSITIVE_NOTE_PLACEHOLDER : null);
-    }
-    expect(rows.find((r) => r.slug === "assisted-dying-or-fix-care-first")?.is_sensitive).toBe(true);
+  it("loads the owner's content note for assisted dying, and a placeholder for any sensitive topic that has none", () => {
+    const dying = rows.find((r) => r.slug === "assisted-dying-or-fix-care-first")!;
+    expect(dying.is_sensitive).toBe(true);
+    expect(dying.content_note).toMatch(/^This Campaign is about assisted dying, death and terminal illness\./);
+    expect(dying.content_note).toContain("Samaritans 116 123 (free, any time); Cruse Bereavement Support 0808 808 1677; Marie Curie Support Line 0800 090 2309.");
+    expect(dying.content_note!.length).toBeLessThanOrEqual(1000);
+    for (const r of rows.filter((x) => !x.is_sensitive)) expect(r.content_note).toBeNull();
+    const synthetic = buildTopicRows({ ...file, topics: [{ ...file.topics[0], is_sensitive: true, content_note: undefined }] }, "2026-12-01");
+    expect(synthetic[0].content_note).toBe(SENSITIVE_NOTE_PLACEHOLDER);
   });
 
-  it("flags the Bank of England topic for an owner decision", () => {
-    expect(rows.find((r) => r.slug === "bank-of-england-rate-decision-november")?.needs_owner_decision).toMatch(/MPC/);
-  });
-
-  it("loads closed, moderated debate as open arena with a note", () => {
-    const r = rows.find((x) => x.slug === "assisted-dying-or-fix-care-first")!;
+  it("Bank of England: new title, open arena, finance, opinion not advice, no date, placeholder summary, decision cleared", () => {
+    const r = rows.find((x) => x.slug === "bank-of-england-rate-decision-november")!;
+    expect(r.title).toBe("Should the Bank of England keep interest rates high until inflation is firmly back at 2%, even if that slows growth?");
     expect(r.format).toBe("open_arena");
-    expect(r.notes).toMatch(/Closed, moderated debate/);
+    expect(r.category).toBe("financial_services");
+    expect(r.opinion_not_advice).toBe(true);
+    expect(r.needs_owner_decision).toBeNull();
+    expect(r.summary).toBe("As of [opening date], Bank Rate is [x]% and CPI inflation is [y]%. The Bank's target is 2%. [One sentence on the latest decision and vote.]");
+    expect(r.brief.argument_for).toBe("Stable prices protect savers and wages over time, and cutting too early risks inflation returning.");
+    expect(r.brief.argument_against).toBe("High rates hurt mortgage holders and businesses now, and a weak economy can bring inflation down by itself.");
+    expect(`${r.title} ${r.summary}`).not.toMatch(/November|\b5 Nov|2026/);
+  });
+
+  it("Rosebank: reworded, wave 4, still needs an owner decision, with the three opening conditions in the admin notes", () => {
+    const r = rows.find((x) => x.slug === "rosebank-after-jackdaw")!;
+    expect(r.title).toBe("Should the UK approve new North Sea oil and gas projects such as Rosebank?");
+    expect(r.wave).toBe(4);
+    expect(r.needs_owner_decision).toBeTruthy();
+    expect(r.notes).toContain("Open only when ALL are true: (1) eval:moderation --real met its targets; (2) at least two wave-1 Campaigns have finished with every hold and appeal answered within 48 hours; (3) a second reviewer is in place.");
+  });
+
+  it("assisted dying: Oxford, wave 4, sensitive, still an owner decision, with the admin note", () => {
+    const r = rows.find((x) => x.slug === "assisted-dying-or-fix-care-first")!;
+    expect(r.format).toBe("oxford");
+    expect(r.wave).toBe(4);
+    expect(r.is_sensitive).toBe(true);
+    expect(r.needs_owner_decision).toBeTruthy();
+    expect(r.notes).toContain("Check each phone number on the day it opens. Open only after the three Rosebank conditions, with the second reviewer on call for the first 48 hours.");
+    expect(r.notes).toMatch(/three rounds/);
   });
 
   it("runs topics back to back in wave order, 7 days each, from midnight UK time on the start date", () => {
@@ -67,6 +92,24 @@ describe("buildTopicRows", () => {
       expect(r.summary).not.toContain(t.summary);
       expect(r.brief.summary).toBe(t.summary);
     }
+  });
+
+  it("--concurrent: every wave 1 Campaign shares one start and one end, 7 days; the rest follow; the default is unchanged", () => {
+    const c = buildTopicRows(file, "2026-12-01", { concurrent: true });
+    const wave1 = c.filter((r) => r.wave === 1);
+    expect(wave1).toHaveLength(3);
+    expect(wave1.map((r) => r.slug).sort()).toEqual(["in-person-exams-ai-cheating", "lifelong-learning-loans-age-60", "under-16-social-media-ban"]);
+    for (const r of wave1) {
+      expect(r.starts_at).toBe("2026-12-01T00:00:00.000Z");
+      expect(r.ends_at).toBe("2026-12-08T00:00:00.000Z");
+    }
+    const rest = c.filter((r) => r.wave !== 1);
+    expect(rest[0].starts_at).toBe("2026-12-08T00:00:00.000Z");
+    for (let i = 1; i < rest.length; i++) expect(rest[i].starts_at).toBe(rest[i - 1].ends_at);
+    expect(c).toHaveLength(rows.length);
+    // Default (no option) is exactly what it was.
+    expect(buildTopicRows(file, "2026-12-01")).toEqual(rows);
+    expect(buildTopicRows(file, "2026-12-01", { concurrent: false })).toEqual(rows);
   });
 
   it("refuses a missing or malformed start date", () => {

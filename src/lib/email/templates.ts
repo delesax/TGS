@@ -1,4 +1,5 @@
 import { formatUkDateTime } from "@/lib/campaigns";
+import { companyBlockLines } from "@/lib/legal";
 
 // Email wording and markup. Pure functions, unit tested. Plain text and HTML
 // say the same thing; HTML is simple, large and readable, with a language set.
@@ -61,7 +62,7 @@ export function render(site: string, recipient: Recipient, preference: Preferenc
   const unsubscribeUrl = unsubscribeLink(site, recipient.unsubscribeToken, preference);
   const settingsUrl = `${site}/profile/email`;
   const greeting = recipient.handle ? `Hello @${recipient.handle},` : "Hello,";
-  const footerText = `You are getting this because of your email settings: ${PREFERENCE_WORDS[preference]}.\nStop these emails: ${unsubscribeUrl}\nAll email settings: ${settingsUrl}\n\nThe Grand Strategist`;
+  const footerText = `You are getting this because of your email settings: ${PREFERENCE_WORDS[preference]}.\nStop these emails: ${unsubscribeUrl}\nAll email settings: ${settingsUrl}\n\nSent by The Grand Strategist.\n${companyBlockLines().join("\n")}`;
 
   const text = [
     greeting,
@@ -96,11 +97,44 @@ ${blockHtml}
 <hr style="border:none;border-top:1px solid #d1d5db;margin:24px 0">
 <p style="margin:0 0 8px;font-size:16px;line-height:1.5;color:#374151">You are getting this because of your email settings: ${escapeHtml(PREFERENCE_WORDS[preference])}.</p>
 <p style="margin:0 0 8px;font-size:16px;line-height:1.5"><a href="${escapeHtml(unsubscribeUrl)}" style="color:#1e3a5f;text-decoration:underline">Stop these emails</a> &middot; <a href="${escapeHtml(settingsUrl)}" style="color:#1e3a5f;text-decoration:underline">All email settings</a></p>
+${companyFooterHtml()}
 </div>
 </body>
 </html>`;
 
   return { subject, text, html, unsubscribeUrl, preference };
+}
+
+/** Who sent it: the company block every email carries (name, registration, registered office). */
+export function companyFooterHtml(): string {
+  const [name, registration, office] = companyBlockLines();
+  return `<p style="margin:16px 0 0;font-size:14px;line-height:1.5;color:#374151">Sent by The Grand Strategist.<br>${escapeHtml(name)}<br>${escapeHtml(registration)}<br>${escapeHtml(office)}</p>`;
+}
+
+export type TransactionalEmail = { subject: string; text: string; html: string };
+
+/**
+ * An email sent because the person (or an admin) asked for something, such as
+ * the acknowledgement of a privacy request. It is not a subscription, so there is
+ * no stop link, but it says why it was sent and carries the company block.
+ */
+export function transactionalEmail(subject: string, paragraphs: string[], why: string): TransactionalEmail {
+  const text = [...paragraphs.flatMap((p) => [p, ""]), "--", why, "", "Sent by The Grand Strategist.", ...companyBlockLines()].join("\n");
+  const p = (v: string) => `<p style="margin:0 0 16px;font-size:18px;line-height:1.5;color:#111827">${escapeHtml(v)}</p>`;
+  const html = `<!doctype html>
+<html lang="en-GB">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${escapeHtml(subject)}</title></head>
+<body style="margin:0;padding:0;background:#ffffff">
+<div role="article" aria-label="${escapeHtml(subject)}" lang="en-GB" style="max-width:600px;margin:0 auto;padding:24px 16px;font-family:Arial,Helvetica,sans-serif">
+<p style="margin:0 0 24px;font-size:20px;font-weight:bold;color:#1e3a5f">The Grand Strategist</p>
+${paragraphs.map(p).join("\n")}
+<hr style="border:none;border-top:1px solid #d1d5db;margin:24px 0">
+<p style="margin:0 0 8px;font-size:16px;line-height:1.5;color:#374151">${escapeHtml(why)}</p>
+${companyFooterHtml()}
+</div>
+</body>
+</html>`;
+  return { subject, text, html };
 }
 
 /** One digest for every reply waiting for this person. */

@@ -151,7 +151,7 @@ describe("when the AI is unavailable (owner decision 1 default)", () => {
     expect((await service.rpc("ai_reserve_call", { p_feature: "screen_dispatch", p_user_id: null })).data).toBe("off");
     await settings({ ai_enabled: true, ai_daily_cap_global: 0 });
     expect((await service.rpc("ai_reserve_call", { p_feature: "screen_dispatch", p_user_id: null })).data).toBe("global_cap");
-    await settings({ ai_daily_cap_global: 3000, ai_daily_cap_per_strategist: 0 });
+    await settings({ ai_daily_cap_global: 1000, ai_daily_cap_per_strategist: 0 });
     expect((await service.rpc("ai_reserve_call", { p_feature: "coach", p_user_id: author.id })).data).toBe("user_cap");
     // Screening is never capped per Strategist.
     expect((await service.rpc("ai_reserve_call", { p_feature: "screen_dispatch", p_user_id: author.id })).data).toBe("ok");

@@ -140,7 +140,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
                 ) : null}
                 {r.result_type === "dispatch" ? (
                   <p className="text-base text-muted-foreground">
-                    By @{r.handle}, {formatUkShort(r.created_at)}
+                    By {r.handle ? `@${r.handle}` : "a deleted Strategist"}, {formatUkShort(r.created_at)}
                   </p>
                 ) : null}
               </li>

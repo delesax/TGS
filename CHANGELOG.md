@@ -37,6 +37,33 @@ Branch `sprint-5-judging`, cut from `main` at `eec5c7c`. **Not applied to hosted
 - **Seed** `npm run seed:judging`: 12 users, a closed Campaign, panel, votes, picks, fake AI scores and a draft Verdict; one run at a time, repeat runs write nothing.
 - **Tests**: unit, RLS and Playwright suites green; see the session log for counts.
 
+## Legal hardening and launch decisions (7 November 2026). Awaiting review
+
+Branch `legal-hardening`, cut from `origin/main` at `eec5c7c`. **Six migrations written, none applied to hosted** (list below). Branch `sprint-4-audit-handle` is **not merged**, so its migration `20261104000500` is not in this branch (it matters for one sentence on the delete page; see the session log). Built from `docs/LEGAL_HARDENING_BRIEF.md`; the internal write-up is `docs/SESSION_LOG_LEGAL_HARDENING.md`. Not legal advice: a solicitor still reviews it. Self-service deletion stays OFF and the DRAFT banners stay.
+
+### Migrations (written, not applied to hosted)
+`20261107000100_signup_consents`, `20261107000200_positions_consent`, `20261107000300_anonymise_text_copies`, `20261107000400_privacy_requests`, `20261107000500_retention_jobs`, `20261107000600_launch_decisions`.
+
+### Added
+- **One place for legal facts** (`src/lib/legal.ts`): company name, number, registered office, ICO number, mailboxes, versions, `reviewed` flag. Empty values show a highlighted `[to be added]`. The DRAFT banner now says "this page is complete but has not yet had its final legal review". A Vitest gate fails if `reviewed` is switched on while any fact is missing or any page shows a placeholder. The footer shows the company block and links to Terms, Privacy, How we use AI, Accessibility and Contact us about your data.
+- **Three sign-up boxes** (18 or over; Dispatches are public and stay without your name; terms and privacy), each required, each with its own error, checked again on the server and in the database trigger, which now stores the terms and privacy versions and when the public-record acknowledgement was given.
+- **Private positions need explicit consent.** Recording a position is optional and asks for consent the first time. Posting a Dispatch no longer needs a position, and a private position is **no longer copied onto a Dispatch** (it used to be, which made it public). In an Oxford-style Campaign the author chooses For or Against when posting. Clear a position; "Stop recording my positions" on the Account page deletes open positions, unlinks closed ones, clears the consent and audits it. The mind-change measure reads only `consented_positions`.
+- **Legal pages rewritten** with the brief's wording: privacy policy, terms, How we use AI, a new accessibility statement, the delete-my-account pages, the compose-box AI note. The cookie table comes from a real audit.
+- **Deletion removes every copy of the handle** it can: `anonymise_profile()` now scrubs award rationales, decision reasons, flags, appeal and report text, and other people's queued reply emails. One shared `deleteAccount()` serves both the page and the by-hand script `npm run account:delete -- --email X [--confirm]` (dry run by default).
+- **Privacy requests and complaints:** a form at `/privacy/contact` (nine request types, honeypot, 5 a day per address, acknowledgement email at once, alert to the privacy mailbox), a closed table with a one-month clock, and `/admin/privacy-requests` (due dates highlighted, status and outcome note, audited by request id only).
+- **Retention jobs** (pg_cron, daily, off the hour): never-confirmed sign-ups 30 days, AI decisions 12 months, reports and flags 12 months after resolved, coach feedback 90 days, emails 30 days, passkey challenges 1 day, privacy requests six years after closed, audit record six years through one deliberate, tested exception to the append-only rule. Each writes one `retention.purged` audit entry (count only) and never deletes anything linked to an open flag, appeal or privacy request.
+- **"Download my data" is complete** (consents and versions, invite code, passkey names, decisions about your Dispatches and handle, coach records, privacy requests...) and leaves out other people's data (reports about you, reviewer identities, who follows you, moderation flags).
+- **Emails:** every template says who sent it, why, carries the company block, and optional ones have a working stop link. A footer for the Supabase-sent emails is in `docs/legal/AUTH_EMAIL_FOOTER.md` (you paste it in the dashboard).
+- **Internal legal records** in `docs/legal/`: data map, processors, DPIA, LIA, Online Safety Act record, cookies, retention, two runbooks and a breach log.
+- **Launch decisions:** AI global daily cap 3,000 to 1,000 (migration plus audit entry); Bank of England, Rosebank and assisted-dying topics updated in the topics file; `npm run topics:load -- --concurrent`; a one-off dry-run-by-default script for the hosted DRAFT Campaigns; content notes may now be 1,000 characters; `docs/OWNER_DECISIONS.md` and `docs/LEGAL_WORDING.md`.
+
+### Fixed along the way
+- Search showed "By @null" for a deleted author; the admin queue showed "@a deleted Strategist". Both now say "a deleted Strategist".
+- The handle was written into the append-only audit log when chosen (`profile.handle_set`). It no longer is.
+
+### Tests
+Unit 174, RLS 238, Playwright 29, all passing on a freshly reset local database; typecheck and lint clean. `eval:moderation` and `eval:coach` (fake provider) run: 100% recall, 0% false holds. New tests cover the gate, consent trigger, privacy requests, retention (with back-dated rows and exclusions), the audit exception, the export, the delete script, the draft-topic script, email footers and stop links, and the pages at 375px.
+
 ## Sprint 4 hardening (6 November 2026). Awaiting review
 
 Branch `sprint-4-hardening`, cut from the `sprint-4` head `4ba8692` because PR #3 had not been merged when it was started. Merge PR #3 first; this branch's own pull request then shows only the changes below. **Not applied to hosted.**

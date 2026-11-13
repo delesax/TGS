@@ -1,3 +1,4 @@
+import { LEGAL } from "@/lib/legal";
 import { cn } from "@/lib/utils";
 
 /** Standard page wrapper: one h1, an optional plain-English intro, then content. */
@@ -32,12 +33,15 @@ export function EmptyState({ title, children, action }: { title: string; childre
   );
 }
 
-/** Banner for draft legal and policy text. */
+/**
+ * Banner for legal pages while LEGAL.reviewed is false (src/lib/legal.ts).
+ * Renders nothing once the owner has flipped the flag after the final review.
+ */
 export function DraftNotice() {
+  if (LEGAL.reviewed) return null;
   return (
     <div role="note" className="rounded-lg border-2 border-accent-foreground bg-accent p-4 text-lg text-accent-foreground">
-      <p className="font-bold">DRAFT — placeholder text, not yet reviewed.</p>
-      <p>This page will be replaced with reviewed wording before the pilot opens. Do not rely on it.</p>
+      <p className="font-bold">DRAFT: this page is complete but has not yet had its final legal review. Some details are still to be added.</p>
     </div>
   );
 }

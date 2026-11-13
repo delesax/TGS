@@ -135,7 +135,7 @@ export function CampaignForm({ values }: { values: CampaignFormValues }) {
       <fieldset className="flex flex-col gap-4">
         <legend className="mb-2 text-xl font-semibold">Labels</legend>
         <CheckboxField name="isSensitive" label="Sensitive topic (shows a content note before anything else)" defaultChecked={values.isSensitive} />
-        <TextAreaField name="contentNote" label="Content note" hint="Needed when the topic is sensitive. Up to 500 characters." defaultValue={values.contentNote} maxLength={500} rows={3} error={errors.contentNote} />
+        <TextAreaField name="contentNote" label="Content note" hint="Needed when the topic is sensitive. Up to 1,000 characters." defaultValue={values.contentNote} maxLength={1000} rows={3} error={errors.contentNote} />
         <CheckboxField name="opinionNotAdvice" label="Show the “opinion, not advice” label (financial and medical topics)" defaultChecked={values.opinionNotAdvice} />
       </fieldset>
 

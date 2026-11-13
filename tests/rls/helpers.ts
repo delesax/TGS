@@ -28,18 +28,27 @@ export type TestUser = { id: string; email: string; client: SupabaseClient };
 const PASSWORD = "rls-test-password-123";
 
 /** Creates a confirmed user through the real sign-up trigger, signed in on its own client. */
-export async function createUser(opts: { admin?: boolean; handle?: string | null } = {}): Promise<TestUser> {
+export async function createUser(opts: { admin?: boolean; handle?: string | null; positionsConsent?: boolean } = {}): Promise<TestUser> {
   const invite = await createInvite();
   const email = `rls-${randomUUID()}@example.test`;
   const { data, error } = await service.auth.admin.createUser({
     email,
     password: PASSWORD,
     email_confirm: true,
-    user_metadata: { invite_code: invite.code, age_confirmed: true, terms_accepted: true },
+    user_metadata: { invite_code: invite.code, age_confirmed: true, terms_accepted: true, public_acknowledged: true, terms_version: "test", privacy_version: "test" },
     app_metadata: opts.admin ? { role: "admin" } : {},
   });
   if (error) throw error;
   const id = data.user.id;
+
+  // Recording a position needs consent (Part 3). Most tests that record one want it granted.
+  if (opts.positionsConsent !== false) {
+    const { error: consentError } = await service
+      .from("profiles")
+      .update({ positions_consent_at: new Date().toISOString(), positions_consent_version: "test" })
+      .eq("id", id);
+    if (consentError) throw consentError;
+  }
 
   const handle = opts.handle === undefined ? `T${id.replace(/-/g, "").slice(0, 12)}` : opts.handle;
   if (handle) {

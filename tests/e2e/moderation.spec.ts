@@ -24,7 +24,7 @@ async function makeStrategist(prefix: string, admin = false) {
     email,
     password,
     email_confirm: true,
-    user_metadata: { invite_code: code, age_confirmed: true, terms_accepted: true },
+    user_metadata: { invite_code: code, age_confirmed: true, terms_accepted: true, public_acknowledged: true, terms_version: "test", privacy_version: "test" },
     app_metadata: admin ? { role: "admin" } : {},
   });
   if (error) throw error;
@@ -196,24 +196,36 @@ test("account deletion is off by default, and when on it anonymises and keeps Di
   await expect(p.getByText("Your Dispatch has been posted.", { exact: false })).toBeVisible();
 
   await p.goto("/profile/delete");
-  await expect(p.getByText("Deleting your account is not switched on yet")).toBeVisible();
+  await expect(p.getByText("Self-service deletion is not switched on yet during this closed test.")).toBeVisible();
+  await expect(p.getByText("We will delete it by hand and confirm within one month.", { exact: false })).toBeVisible();
+  await expect(p.locator("#main").getByRole("link", { name: "Contact us about your data" })).toBeVisible();
+  await expect(p.getByRole("link", { name: "Back to your account" })).toBeVisible();
+  await expect(p.getByText("DRAFT: this page is complete but has not yet had its final legal review.", { exact: false })).toBeVisible();
   await expect(p.getByRole("button", { name: "Delete my account" })).toHaveCount(0);
   await expectNoHorizontalOverflow(p);
 
   await service.from("community_settings").update({ account_deletion_enabled: true }).eq("id", true);
   await p.reload();
-  await expect(p.getByText("DRAFT", { exact: false }).first()).toBeVisible();
+  await expect(p.getByText("DRAFT: this page is complete but has not yet had its final legal review.", { exact: false })).toBeVisible();
+  await expect(p.getByRole("heading", { name: "1. Download your data first" })).toBeVisible();
   await expect(p.getByRole("link", { name: "Download my data" })).toBeVisible();
-  await expect(p.getByText("your 1 Dispatch, shown as by", { exact: false })).toBeVisible();
+  await expect(p.getByText("Once your account is deleted we cannot give you a copy.")).toBeVisible();
+  await expect(p.getByText("Your 1 Dispatch. You published them in public debates", { exact: false })).toBeVisible();
+  await expect(p.getByText("In rare cases a moderator’s note may mention your handle.")).toBeVisible();
+  await expect(p.getByText("(DRAFT wording)", { exact: false })).toHaveCount(0);
+  await expect(p.getByRole("link", { name: "Keep my account" })).toBeVisible();
   await expectNoHorizontalOverflow(p);
   await p.getByLabel(/Type your handle/).fill("wrong");
   await p.getByLabel("Your password").fill(password);
-  await p.getByLabel(/I understand this cannot be undone/).check();
+  await p.getByLabel(/I understand that deleting my account is permanent/).check();
   await p.getByRole("button", { name: "Delete my account" }).click();
   await expect(p.getByText(/Type your handle, .* exactly to confirm/)).toBeVisible();
   await p.getByLabel(/Type your handle/).fill(leaver.handle);
   await p.getByRole("button", { name: "Delete my account" }).click();
   await expect(p.getByRole("heading", { level: 1, name: "Your account has been deleted" })).toBeVisible();
+  await expect(p.getByText("We have removed your email address, sign-in, passkeys, handle and profile.", { exact: false })).toBeVisible();
+  await expect(p.getByText("Your 1 Dispatch stays in the debates, shown as by ‘a deleted Strategist’.", { exact: false })).toBeVisible();
+  await expect(p.getByRole("link", { name: "Go to the home page" })).toBeVisible();
   await expectNoHorizontalOverflow(p);
 
   const visitor = await (await browser.newContext({ viewport: { width: 375, height: 812 } })).newPage();

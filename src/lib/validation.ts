@@ -36,8 +36,9 @@ export const signUpSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
   inviteCode: inviteCodeSchema,
-  ageConfirmed: z.literal(true, "Please confirm you are 18 or over."),
-  termsAccepted: z.literal(true, "Please agree to the terms and privacy policy."),
+  ageConfirmed: z.literal(true, "Please tick the box to confirm you are 18 or over."),
+  publicAcknowledged: z.literal(true, "Please tick the box to confirm you understand that your Dispatches are public."),
+  termsAccepted: z.literal(true, "Please tick the box to agree to the terms of use and confirm you have read the privacy policy."),
 });
 
 export const signInSchema = z.object({
