@@ -8,22 +8,23 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 
 | Branch | State | Latest commit | Hosted |
 | --- | --- | --- | --- |
-| `main` | Sprints 1–4 and **Sprint 5 merged (PRs #6 to #8, 12 Nov), ratified gold set and logs merged (PR #10)**, launch email docs | see `git log origin/main` | All migrations applied to hosted (Sprint 4, Sprint 5, legal-hardening and audit-handle, last on 13 Nov) |
+| `main` | Sprints 1–4 and **Sprint 5 merged (PRs #6 to #8, 12 Nov), ratified gold set and logs merged (PR #10)**, launch email docs | see `git log origin/main` | All migrations applied to hosted (Sprint 4, Sprint 5, legal-hardening and audit-handle, through `20261113000800`, 13 Nov) |
 | `sprint-7-batch-2b` | **Merged to `main` as PR #31 (13 Nov).** W7 judge prompt v2, W9 load tests, W13 backups, W14 documents, CSP report-only, Resend pacing | see `git log origin/main` | `20261113000700` applied to hosted on the owner's go (13 Nov) |
 | `rule7-rubric-publish` | **Merged to `main` (with the log entry, PR #34, 13 Nov).** Rule 7: publish the rubric, scheduling requires it, rubric shown on the Campaign page | see `git log origin/main` | `20261113000800` applied to hosted by the owner from their own terminal (13 Nov) |
 | `launch-owner-actions` | **Merged to `main` as PR #33 (13 Nov).** Owner actions before the first invite wave in the runbook and go/no-go | see `git log origin/main` | n/a |
 | `main` also has legal-hardening | **Merged to `main` as PR #22 (13 Nov); its six migrations were applied to hosted on 13 Nov** (`20261107000100` to `000600`). The `legal-hardening` and `merge-legal-hardening` branches were deleted | see `git log origin/main` | Applied |
+| Launch setup (owner-reported 13 Nov; Claude did not see these) | Reset password and Confirm sign up templates and redirect URLs done. Judging Vault secrets and `JUDGING_PROCESSOR_SECRET` done, all six Vault secrets exist. Auth rate limits raised (owner to confirm exact values). First hosted dump taken and encrypted by the owner. Member post test complete | n/a | n/a |
 
 Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were removed on 13 Nov). Local Supabase is shared by whatever runs from `TGS/`.
 
 ## Open for the owner
 
-- **Owner actions before the first invite wave** (batches 1, 2a, 2b and rule 7 are merged and applied): do the list in `docs/LAUNCH_RUNBOOK.md` (Supabase Auth rate limits 150/150/100 per 5 minutes, Vault secrets, Vercel variables, Anthropic and Resend limits, second admin) and work through `docs/GO_NO_GO.md`. Take the first hosted dump with `bash scripts/backup-dump.sh` (needs `DATABASE_URL` in `.env.local`, Docker running). Look at the v2 versus v1 judge numbers (`docs/SPRINT_7_PLAN.md`) before leaving v2 as the default; v1 is one setting away (Admin, Judging).
-- **Campaign 1 brief:** read `docs/campaigns/under-16-social-media-ban.md`, run its four SQL Editor queries, choose the title (or drop the summary's last line), confirm the close date, check the summary's facts on gov.uk, eSafety and the BMJ, then follow its click order.
-- **Campaign 1 and rule 7:** the admin Campaign edit page has "Publish the rubric", and scheduling a draft is refused until it is published. All 15 Campaigns are drafts (as the owner reported from the SQL Editor; not seen by Claude). Campaign 1 still needs its real summary, rules checked, rubric published, then scheduling.
+- **Remaining owner actions before the first invite wave** (batches 1, 2a, 2b and rule 7 are merged and applied; the Auth limits, dump, templates, Vault secrets and member post test are reported done, see Current state): the rest of `docs/LAUNCH_RUNBOOK.md` (Vercel variables, Anthropic and Resend limits, re-read the free-plan limits, second admin, move provider accounts into the company) and the rest of `docs/GO_NO_GO.md`. Confirm the exact Auth rate limit values so this log can record them (raised, owner to confirm; target 150/150/100 per 5 minutes).
+- **Campaign 1: publish and schedule.** Read `docs/campaigns/under-16-social-media-ban.md`, run its four SQL Editor queries, choose the title (or drop the summary's last line), confirm the close date, check the summary's facts on gov.uk, eSafety and the BMJ, then follow its click order: save as draft, confirm the weights version, publish the rubric (cannot be undone), then schedule for 1 December 2026. Scheduling a draft is refused until its rubric is published.
+- **The other 14 Campaigns need real summaries and rules** (all 15 are drafts, as the owner reported from the SQL Editor; not seen by Claude). Each needs its rubric published before it can be scheduled.
+- **The three flagged Campaigns** each carry an owner decision flag and cannot be scheduled until you clear it: `bank-of-england-rate-decision-november` (still timely?), `rosebank-after-jackdaw`, and `assisted-dying-or-fix-care-first` (sensitive: needs the real content note).
+- **Decide the judge prompt version:** v2 is the default but is slightly less aligned than v1 in the real evaluation (`docs/SPRINT_7_PLAN.md`, W7); look at the numbers before leaving it. v1 is one setting away (Admin, Judging).
 - **Hosted CLI steps run from your terminal, not Claude's.** Claude's shell has no Supabase access token (`supabase link` fails with `AccessTokenRequiredError`). Run `npx supabase login` and `npx supabase link --project-ref <ref>`, then dry runs and applies with `--linked`, and paste back the output with any connection string removed. Hosted migrations: none pending as far as Claude knows (`20261113000800` applied by the owner on 13 Nov; Claude did not see the dry-run output).
-- **Vault secrets and judging:** add Vault secrets `judging_processor_url`, `judging_processor_secret` and the Vercel variable `JUDGING_PROCESSOR_SECRET` (optional: `AI_MODEL_JUDGING`). Judging only does anything once a Campaign closes, and without these the AI scoring work waits. The check is in `docs/LAUNCH_RUNBOOK.md`.
-- **Password reset** (merged as PR #13, not usable on the live site until you do this): in Supabase paste the "Reset password" template from `docs/LAUNCH_EMAIL_SETUP.md` step 12b, and check Redirect URLs allow `https://thegrandstrategist.com/auth/confirm?next=/reset-password` (covered if `https://thegrandstrategist.com/**` is listed).
 - **PLACEHOLDER strings:** edit the three in `src/lib/judging/notices.ts` before the first Campaign can close (parked legal item; Claude does not touch it).
 - **Decide the AI cap:** the default of 1,000 calls a day only judges about 800 Dispatches of a big Campaign on day one (measured). Raise `ai_daily_cap_global` for judging days, or accept a day's wait.
 - **Legal (parked):** the rate limiter keeps a SHA-256 hash of IP and email addresses for up to two days; the privacy and retention wording needs a review.
@@ -31,6 +32,12 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 - **Account deletion stays OFF.** Decide whether it also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-13 — Current state and Open for the owner brought up to date (branch `claude-log-state-refresh`)
+
+- Docs only. Per the owner: the Reset password and Confirm sign up templates and redirect URLs, the judging Vault secrets and `JUDGING_PROCESSOR_SECRET` (all six Vault secrets exist), the first encrypted hosted dump and the member post test are done; Auth rate limits are raised (owner to confirm the exact values). None of this was seen by Claude. Batches 1, 2a, 2b and rule 7 are merged and applied (PRs #27, #29, #31 and #34; `docs-launch-refresh` is PR #37).
+- Removed from Open for the owner because the owner has done them: the Vault secrets and judging item, the Reset password item, and the dump and Auth limit steps inside the owner-actions item. Kept: Campaign 1 publish and schedule, the 14 other Campaigns' summaries and rules, the three flagged Campaigns, the PLACEHOLDER strings, the AI cap decision, the v2 versus v1 judge prompt decision, the legal items and account deletion staying off.
+- Not changed here: `docs/GO_NO_GO.md` row 22 (member post test) and rows 4, 6 and 8 still say Open or not verified; update them when you confirm. No hosted command run, legal files and PLACEHOLDER strings untouched, nothing merged.
 
 ### 2026-11-13 — Campaign 1 brief for owner approval (PR #38)
 
