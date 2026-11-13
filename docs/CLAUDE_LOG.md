@@ -9,25 +9,51 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 | Branch | State | Latest commit | Hosted |
 | --- | --- | --- | --- |
 | `main` | Sprints 1–4 and **Sprint 5 merged (PRs #6 to #8, 12 Nov), ratified gold set and logs merged (PR #10)**, launch email docs | see `git log origin/main` | Sprint 4 migrations applied; **Sprint 5 migrations applied 12 Nov** (`20261111000100`, `20261111000200`) |
-| `legal-hardening` | **Merged into a branch, `merge-legal-hardening`, for the owner to PR** (conflicts in the changelog, this log and the RLS table list resolved by keeping both sides). Six migrations written, **not applied to hosted** | see `git log origin/merge-legal-hardening` | Nothing applied |
+| `main` also has legal-hardening | **Merged to `main` as PR #22 (13 Nov); its six migrations were applied to hosted on 13 Nov** (`20261107000100` to `000600`). The `legal-hardening` and `merge-legal-hardening` branches were deleted | see `git log origin/main` | Applied |
+| `sprint-7-hardening` | **Pushed**, Phase A only: `docs/SPRINT_7_PLAN.md` (audit and plan, no code). No PR | see `git log origin/sprint-7-hardening` | — |
 | `sprint-4-audit-handle` | On origin, no PR; one migration `20261104000500_audit_no_handle.sql` (stops new handle writes in `decide_held_handle`; old rows untouched; main's onboarding still writes the handle, fixed only by legal-hardening) | `bc88132` | Nothing applied |
 
-Worktrees: `TGS/` (main checkout) and `TGS-legal/` (legal-hardening). `TGS-sprint5/` was removed on 13 Nov. They share one local Supabase database.
+Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were removed on 13 Nov). Local Supabase is shared by whatever runs from `TGS/`.
 
 ## Open for the owner
 
-- Legal hardening: after the merge PR, fill the bracketed facts listed in `docs/SESSION_LOG_LEGAL_HARDENING.md`; `LEGAL.reviewed` stays false until the solicitor signs off and account deletion stays OFF. Apply the six migrations to hosted only after review and a dry run (see the migration items below; apply them and deploy the code within minutes of each other).
+- Sprint 7: answer D1 to D8 in `docs/SPRINT_7_PLAN.md` (Vercel Hobby terms, email volume, minimum account age and invite binding, collusion policy, judge prompt v2, kill-switch wording, backups, Anthropic cap) before Phase B starts.
+- Legal hardening (applied to hosted 13 Nov): fill the bracketed facts listed in `docs/SESSION_LOG_LEGAL_HARDENING.md` (the pages still show "[to be added]" for company number, registered office, ICO number and effective date); `LEGAL.reviewed` stays false until the solicitor signs off; account deletion stays OFF. Existing members have no positions consent until they give it.
 - Password reset (merged as PR #13, not usable on the live site until you do this): in Supabase paste the "Reset password" template from `docs/LAUNCH_EMAIL_SETUP.md` step 12b, and check Redirect URLs allow `https://thegrandstrategist.com/auth/confirm?next=/reset-password` (covered if `https://thegrandstrategist.com/**` is listed).
 - Before legal-hardening goes live: fill `privacyEmail` and `contactEmail` in `src/lib/legal.ts` (empty now, so pages show "[to be added]" and privacy-request alert emails are skipped).
 - Sprint 5: edit the three PLACEHOLDER strings in `src/lib/judging/notices.ts`.
 - Sprint 5: add Vault secrets `judging_processor_url`, `judging_processor_secret` and the Vercel variable `JUDGING_PROCESSOR_SECRET` (optional: `AI_MODEL_JUDGING`).
 - PR descriptions for `legal-hardening` and `sprint-4-audit-handle` are in `~/Desktop/pr-descriptions.md` (outside the repo; its apply-order notes pre-date Sprint 5 going live, see the next line). Apply the legal-hardening migrations and deploy its code within minutes of each other: migrations first breaks sign-up and positions on live main; code first breaks export, privacy contact and positions.
-- Hosted migrations still to apply: audit-handle (`20261104000500`) and legal-hardening (`20261107000100` to `000600`). Sprint 5's `20261111…` pair is already on hosted, so these are older than the newest applied migration and the CLI will need `--include-all`. Dry-run with `--include-all` first and check it lists exactly those seven files.
+- Hosted migrations still to apply: only audit-handle (`20261104000500`, on `sprint-4-audit-handle`, unmerged). It is older than the newest applied migration, so it needs `--include-all`; dry-run first.
 - Sprint 5 on hosted: judging only does anything once a Campaign closes. Add the Vault secrets above so the AI scoring kick can run (without them the work waits).
 - Sprint 5 and legal-hardening both add `docs/CLAUDE_LOG.md`: expect an add/add conflict (and in `CHANGELOG.md` and `tests/rls/every-table-has-rls.test.ts`) when the second one merges; keep both sides.
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-13 — Legal branches and checkout removed
+
+- On the owner's instruction deleted `legal-hardening` and `merge-legal-hardening` on origin (both contained in `origin/main`), and locally. Removed the `TGS-legal/` checkout after confirming no tracked changes, no untracked files and no commits missing from `origin/main`; only ignored files (including `node_modules`, `.next`, test results, `evals/out/`, `.env.test.local`) went with it. `TGS/.env.local` is untouched.
+- Origin now has `main`, `sprint-4-audit-handle` and `sprint-7-hardening`. Fixed the stale worktrees line and the legal row in "Current state".
+
+### 2026-11-13 — legal-hardening migrations applied to hosted
+
+- On the owner's "go": dry run first listed exactly `20261107000100` to `20261107000600`; then `supabase db push --include-all` applied them (run from `TGS/` on `main`, with output filtered so no connection string was printed).
+- Verified read-only: `privacy_requests` exists with RLS on; the `consented_positions` view exists; the five new `profiles` columns exist; the four new functions exist; all eight `retention-*` cron jobs are in `cron.job` (03:17 to 03:31 UTC, active); `ai_daily_cap_global` is now 1,000 (changed by `20261107000600`); a fresh dry run says the remote database is up to date.
+- Live site (`https://thegrandstrategist.com`): `/privacy/contact`, `/privacy`, `/terms`, `/signup`, `/login` and `/leaderboard` return 200 with no error markers; the contact address `contact@thegrandstrategist.com` shows; four "[to be added]" placeholders remain for the other legal facts.
+- First retention run is the next 03:xx UTC; only expired passkey challenges are expected to be deleted (hosted data not queried beforehand). Existing members have null consents, so their positions do not count for mind-change until they consent.
+- Still pending on hosted: audit-handle migration only (needs `--include-all`), the Vault secrets for judging, and the Supabase password-reset template.
+
+### 2026-11-13 — Log state refreshed
+
+- Current state table brought up to date: legal-hardening is merged (PR #22) but its migrations are not applied to hosted (the live code is ahead of its database); `sprint-7-hardening` row added (Phase A plan only). Open list wording for legal hardening changed from "after the merge PR" to "apply the six migrations".
+- Reminder of the one urgent item: until those six migrations are applied, positions consent, Download my data, the privacy contact form and the admin privacy queue error on the live site.
+
+### 2026-11-13 — Sprint 7 Phase A: audit and plan (branch `sprint-7-hardening`)
+
+- Read-only audit and plan, no feature code. Wrote `docs/SPRINT_7_PLAN.md`: top 10 risks, findings tables for anti-gaming, load and capacity, security and launch readiness, 14 ordered work items (size, migration, owner decision), 8 questions for the owner (D1 to D8) and a list of what could not be verified. Branch is pushed; no PR opened. Nothing applied to hosted, nothing written to hosted, no load run, no upgrades. Legal files and placeholders untouched.
+- Real findings worth remembering: only the AI has a kill switch; voting needs only one posted Dispatch (no account age); mind-change picks and steelman confirmations are unweighted or uncapped; the AI judge never receives `dispatches.sources`; `safeNextPath` lets tab and line-break characters through (confirmed open redirect in `/auth/confirm`); no CSP; 115 SECURITY DEFINER functions all set `search_path`; `npm audit --omit=dev` shows 0 vulnerabilities. The claim that the app has no rate limits of its own is partly wrong: posting has a cooldown and per-round cap, AI has per-user and global caps, votes have credits.
+- Capacity: on free plans Resend (about 100 a day, to verify) and the $30 Anthropic cap limit the pilot to roughly 100 members unless email is cut to essentials.
 
 ### 2026-11-13 — legal-hardening merged into a branch (not main)
 
