@@ -84,9 +84,10 @@ export type JudgeRubricOutput = z.infer<typeof judgeRubricSchema> & {
 /** Prompt v2: the same answer plus up to three short claims to check. Tolerant of a long list or long strings (trimmed, never rejected). */
 export const judgeRubricSchemaV2 = judgeRubricSchema.extend({
   unverified_claims: z
-    .array(z.string())
+    .array(z.unknown())
     .transform((a) =>
       a
+        .filter((s): s is string => typeof s === "string") // anything that is not a string is dropped, not rejected
         .map((s) => s.trim().slice(0, 200))
         .filter(Boolean)
         .slice(0, 3),

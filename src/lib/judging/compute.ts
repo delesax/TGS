@@ -171,7 +171,8 @@ export async function processRubricBatch(db: SupabaseClient, deps: EngineDeps, l
           steelman_confidence: Math.round(s.steelman.confidence * 100) / 100,
           steelman_note: s.steelman.note,
           // Prompt v2 only; null for v1 (and the database tolerates a missing key).
-          unverified_claims: s.unverified_claims ?? null,
+          // The schema already limits this to three strings; the database check (at most 3) is the last line of defence.
+          unverified_claims: Array.isArray(s.unverified_claims) ? s.unverified_claims.filter((c) => typeof c === "string").slice(0, 3) : null,
           output: s,
           input_tokens: result.record.inputTokens,
           output_tokens: result.record.outputTokens,

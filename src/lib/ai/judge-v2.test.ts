@@ -81,6 +81,15 @@ describe("judgeRubricWith, prompt v2", () => {
     }
   });
 
+  it("a 4-claim result is cut to the first 3, and entries that are not strings are dropped, not rejected", () => {
+    const base = { logic: 3, evidence: 3, originality: 3, responsiveness: 3, rationale: "A plain rationale sentence.", steelman: { present: false, confidence: 0.1, note: "none" } };
+    const four = judgeRubricSchemaV2.safeParse({ ...base, unverified_claims: ["a", "b", "c", "d"] });
+    expect(four.success && four.data.unverified_claims).toEqual(["a", "b", "c"]);
+    const mixed = judgeRubricSchemaV2.safeParse({ ...base, unverified_claims: [42, "first", null, { x: 1 }, "second", ["nested"], "third", "fourth"] });
+    expect(mixed.success && mixed.data.unverified_claims).toEqual(["first", "second", "third"]);
+    expect(judgeRubricSchemaV2.safeParse({ ...base, unverified_claims: [1, 2] }).success).toBe(true);
+  });
+
   it("tolerates a long list or long strings from the model (trims, never rejects) and discards a wrong type", async () => {
     const parsed = judgeRubricSchemaV2.safeParse({
       logic: 3, evidence: 3, originality: 3, responsiveness: 3, rationale: "A plain rationale sentence.",
