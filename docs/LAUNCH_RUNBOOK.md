@@ -17,7 +17,7 @@ Do these in order. Nothing here has been done by Claude. Tick each one and write
 7. **Decide the three flagged Campaigns** (each has an owner decision flag and cannot be scheduled until you clear it): `bank-of-england-rate-decision-november` (is the topic still timely?), `rosebank-after-jackdaw`, and `assisted-dying-or-fix-care-first` (sensitive: it needs the real content note).
 8. **Edit the three PLACEHOLDER strings** in `src/lib/judging/notices.ts` before the first Campaign can close (8 December 2026 at the earliest). This is a parked legal item and is not touched by Claude.
 9. **Member post test** (needs a second, non-admin account). Account deletion stays OFF and the legal items stay parked.
-   1. In a terminal in the project folder: `npm run invite:create -- --email <mailbox> --note "TEST account"` (one use, bound to that address; it writes to hosted and prints the host first). Use a mailbox that is not a plus-variant of your admin address (Signals would flag it).
+   1. In a terminal in the project folder: `npm run invite:create -- --email <mailbox> --note "TEST account"` (one use, bound to that address; it writes to hosted and prints the host first). **The sign-up link it prints uses the LOCAL site address, so do not use it as printed:** open `https://thegrandstrategist.com/signup?code=<printed code>` instead. Use a mailbox that is not a plus-variant of your admin address (Signals would flag it).
    2. In a private window sign up with the code, confirm the email, choose a handle.
    3. As admin: Admin, Campaigns, New. Title "TEST: please ignore", address `test-please-ignore`, summary starting "TEST ONLY", open arena, no rounds, not sensitive. Opens: a few minutes ago. **Closes: 31 December 2027.** If the form rejects the far-future close date, **stop and tell the reviewer**. Save as a draft, then (once the rule 7 change is live) Publish the rubric, then set Publish to "Schedule it" and save. Wait a minute: the Campaign reads Open and `/admin/audit` shows `campaign.opened`.
    4. As the test member, **on a phone**: open the TEST Campaign and post one short argument declared "none". Check it appears after screening (these are the post and the visible-result checks, steps 7 and 8 of the test plan, and must be done on a phone).
@@ -31,17 +31,24 @@ Do these in order. Nothing here has been done by Claude. Tick each one and write
 Nothing below has been done by Claude. Tick them off in order; none needs a code change.
 
 **Before any migration or release**
-1. Merge order and hosted migrations: apply to hosted in timestamp order with a dry run first (`supabase db push --dry-run --include-all` must list exactly the files you expect). Batch 2b adds `20261113000700_judge_prompt_v2.sql`. Migrations go first, then the merge, because the new code reads the new columns. Each migration is additive, so the code already live keeps working in between.
+1. Merge order and hosted migrations: apply to hosted in timestamp order with a dry run first (`supabase db push --dry-run --include-all` must list exactly the files you expect). Migrations go first, then the merge, because the new code reads the new columns. Each migration is additive, so the code already live keeps working in between. **Hosted CLI steps are run from the owner's terminal**, after `npx supabase login` and `npx supabase link --project-ref <ref>`, using `--linked` (for example `npx supabase db push --dry-run --include-all --linked`). Claude's shell has no access token and cannot reach hosted, so it cannot run them; paste back the output with any connection string removed.
 2. Take a dump immediately before applying (`bash scripts/backup-dump.sh`, see `docs/BACKUP_RESTORE.md`).
 
 **Supabase dashboard (hosted project)**
 3. Authentication, Rate Limits (decision made 13 Nov): sign-ups and sign-ins 150 per 5 minutes, token verifications 100 per 5 minutes. Reason: every Auth call comes from Vercel's shared addresses, so the per-address defaults would count the whole membership as one visitor. Check the values saved, and write them in `docs/CLAUDE_LOG.md`.
 4. Authentication, Email Templates: Confirm sign up and Reset password saved with the wording in `docs/legal/AUTH_EMAIL_FOOTER.md`. Authentication, URL Configuration: Site URL and redirect URLs are the live address only.
 5. Vault secrets present: `email_processor_url`, `email_processor_secret`, `moderation_processor_url`, `moderation_processor_secret`, `judging_processor_url`, `judging_processor_secret` (see `docs/LAUNCH_EMAIL_SETUP.md`). The three secrets are fresh random strings of 40 or more characters, the same values as the Vercel variables `EMAIL_PROCESSOR_SECRET`, `MODERATION_PROCESSOR_SECRET`, `JUDGING_PROCESSOR_SECRET`.
+   - **Check (read-only, names only).** In the Supabase SQL Editor run `select name from vault.secrets order by name;`. Expect exactly these six names: `email_processor_secret`, `email_processor_url`, `judging_processor_secret`, `judging_processor_url`, `moderation_processor_secret`, `moderation_processor_url`. Never select the secret values.
+   - **Check the three routes with no header.** Each must answer **401**. A **503** means the matching Vercel variable is unset.
+     ```bash
+     curl -s -o /dev/null -w '%{http_code}\n' -X POST https://thegrandstrategist.com/api/email/process
+     curl -s -o /dev/null -w '%{http_code}\n' -X POST https://thegrandstrategist.com/api/moderation/sweep
+     curl -s -o /dev/null -w '%{http_code}\n' -X POST https://thegrandstrategist.com/api/judging/process
+     ```
 
 **Vercel**
 6. Production variables set: `ANTHROPIC_API_KEY`, the three processor secrets, `RESEND_API_KEY`, `EMAIL_FROM` (on `updates.thegrandstrategist.com`), `NEXT_PUBLIC_SITE_URL`, the three Supabase variables. Never paste any of them into chat.
-7. Note the current Production deployment (the one to roll back to). Confirm the project is on Hobby and understand that Hobby is for non-commercial use (decision D1: accepted for the pilot, no sponsors or payments until the company account takes over).
+7. Note the Production deployment to promote if you need to roll back (it is shown as a rollback candidate on the Vercel Deployments page). Confirm the project is on Hobby and understand that Hobby is for non-commercial use (decision D1: accepted for the pilot, no sponsors or payments until the company account takes over).
 
 **Anthropic and Resend**
 8. Anthropic console: monthly limit $30, notify at $10 (decision D8). Resend: domain verified, and read the free quota (about 100 a day at the time of writing; check the pricing page again before launch).
@@ -86,7 +93,7 @@ Email essentials and the global cap are a separate form (`set_email_controls`). 
 Version 2 is the default after the real evaluation (see `docs/SPRINT_7_PLAN.md`, W7). v2 adds a list of claims the model cannot check, shown to judges and admins as "Check before relying". It never changes a score. To go back to v1 with no deploy: Admin, Judging, "Judge prompt version", choose 1 and give a reason (database function `set_judge_prompt_version`). The next processor run uses it.
 
 ## Rolling back
-- **Code**: Vercel dashboard, Deployments, the previous Ready deployment, Promote to Production (Instant Rollback; confirm it is offered on Hobby when you first look). Note the deployment you leave.
+- **Code**: Vercel dashboard, Deployments, the previous Ready deployment, Promote to Production (Instant Rollback; confirm it is offered on Hobby when you first look). Note the deployment you leave (the "Production deployment to promote" you noted as an owner action, shown as a rollback candidate on the Deployments page).
 - **Database**: never rolled back. Every migration is additive; roll forward with a new migration, and flip a kill switch before any risky change.
 - **Data lost or damaged**: restore from the latest dump into a scratch project first (`docs/BACKUP_RESTORE.md`).
 
