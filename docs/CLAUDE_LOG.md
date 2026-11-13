@@ -8,9 +8,8 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 
 | Branch | State | Latest commit | Hosted |
 | --- | --- | --- | --- |
-| `main` | Sprints 1–4 and **Sprint 5 merged (PRs #6 to #8, 12 Nov), ratified gold set and logs merged (PR #10)**, launch email docs | see `git log origin/main` | Sprint 4 migrations applied; **Sprint 5 migrations applied 12 Nov** (`20261111000100`, `20261111000200`) |
+| `main` | Sprints 1–4 and **Sprint 5 merged (PRs #6 to #8, 12 Nov), ratified gold set and logs merged (PR #10)**, launch email docs | see `git log origin/main` | All migrations applied to hosted (Sprint 4, Sprint 5, legal-hardening and audit-handle, last on 13 Nov) |
 | `main` also has legal-hardening | **Merged to `main` as PR #22 (13 Nov); its six migrations were applied to hosted on 13 Nov** (`20261107000100` to `000600`). The `legal-hardening` and `merge-legal-hardening` branches were deleted | see `git log origin/main` | Applied |
-| `sprint-4-audit-handle` | **Merged into a branch, `merge-audit-handle`, for the owner to PR** (one conflict, `CHANGELOG.md`, kept both). One migration `20261104000500_audit_no_handle.sql` (stops new handle writes in `decide_held_handle`; old rows untouched), **not applied to hosted** | see `git log origin/merge-audit-handle` | Not applied |
 
 Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were removed on 13 Nov). Local Supabase is shared by whatever runs from `TGS/`.
 
@@ -23,12 +22,19 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 - Sprint 5: edit the three PLACEHOLDER strings in `src/lib/judging/notices.ts`.
 - Sprint 5: add Vault secrets `judging_processor_url`, `judging_processor_secret` and the Vercel variable `JUDGING_PROCESSOR_SECRET` (optional: `AI_MODEL_JUDGING`).
 - PR descriptions for `legal-hardening` and `sprint-4-audit-handle` are in `~/Desktop/pr-descriptions.md` (outside the repo; its apply-order notes pre-date Sprint 5 going live, see the next line). Apply the legal-hardening migrations and deploy its code within minutes of each other: migrations first breaks sign-up and positions on live main; code first breaks export, privacy contact and positions.
-- Hosted migrations still to apply: only audit-handle (`20261104000500`, on `sprint-4-audit-handle`, unmerged). It is older than the newest applied migration, so it needs `--include-all`; dry-run first.
+- Hosted migrations: none pending. Every migration in `supabase/migrations` is applied (last dry run with `--include-all` said the remote database is up to date, 13 Nov).
 - Sprint 5 on hosted: judging only does anything once a Campaign closes. Add the Vault secrets above so the AI scoring kick can run (without them the work waits).
 - Sprint 5 and legal-hardening both add `docs/CLAUDE_LOG.md`: expect an add/add conflict (and in `CHANGELOG.md` and `tests/rls/every-table-has-rls.test.ts`) when the second one merges; keep both sides.
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-13 — audit-handle migration applied to hosted
+
+- Merged to `main` as PR #25 (via `merge-audit-handle`); both audit-handle branches deleted. On the owner's "go": a dry run with `--include-all` listed exactly `20261104000500_audit_no_handle.sql`, then it was applied from `TGS/` on `main` (output filtered; no connection string printed).
+- Verified read-only: `decide_held_handle` on hosted now writes only `reason` and `flag_id` into the audit entry (the `handle` write is gone); it is still SECURITY DEFINER with `search_path` set; EXECUTE is not granted to anon and is granted to authenticated; a fresh dry run says the remote database is up to date. No existing audit rows were changed.
+- State: every migration on `main` is applied to hosted. Origin has only `main`. Removed the stale `sprint-4-audit-handle` row and the "migrations still to apply" item.
+- Still open: judging Vault secrets and `JUDGING_PROCESSOR_SECRET`, the three PLACEHOLDER strings in `src/lib/judging/notices.ts`, the Supabase Reset password template and redirect URL, the remaining legal facts, and Sprint 7 Phase B (waiting on D1 to D8).
 
 ### 2026-11-13 — audit-handle merged into a branch (not main)
 
