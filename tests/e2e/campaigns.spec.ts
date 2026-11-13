@@ -80,9 +80,21 @@ test("an admin creates a Campaign; a Strategist sees it, records a before positi
   await adminPage.getByLabel("Round 2 starts").fill(uk(mid));
   await adminPage.getByLabel("Round 2 deadline").fill(uk(end));
   await adminPage.getByLabel(/opinion, not advice/).check();
+  // Rule 7: a Campaign cannot be created as scheduled, and cannot be scheduled until its rubric is published.
   await adminPage.getByLabel("Publish").selectOption("scheduled");
   await adminPage.getByRole("button", { name: "Save Campaign" }).click();
+  await expect(adminPage.getByRole("alert").filter({ hasText: "Publish the rubric before scheduling this Campaign." })).toBeVisible();
+  await adminPage.getByLabel("Publish").selectOption("draft");
+  await adminPage.getByRole("button", { name: "Save Campaign" }).click();
   await expect(adminPage.getByRole("heading", { level: 1, name: "Edit Campaign" })).toBeVisible();
+  await expect(adminPage.getByText("Saved. The change has been recorded in the audit log.")).toBeVisible();
+  await adminPage.getByLabel("Publish").selectOption("scheduled");
+  await adminPage.getByRole("button", { name: "Save Campaign" }).click();
+  await expect(adminPage.getByRole("alert").filter({ hasText: "Publish the rubric before scheduling this Campaign." })).toBeVisible();
+  await adminPage.getByRole("button", { name: "Publish the rubric" }).click();
+  await expect(adminPage.getByText("The rubric is published. The change has been recorded in the audit log.")).toBeVisible();
+  await adminPage.getByLabel("Publish").selectOption("scheduled");
+  await adminPage.getByRole("button", { name: "Save Campaign" }).click();
   await expect(adminPage.getByText("Saved. The change has been recorded in the audit log.")).toBeVisible();
 
   const { data: saved } = await service.from("campaigns").select("id, starts_at, ends_at").eq("slug", slug).single();
@@ -100,6 +112,10 @@ test("an admin creates a Campaign; a Strategist sees it, records a before positi
   await expect(page.getByRole("heading", { level: 1, name: "Should e2e tests run on every change?" })).toBeVisible();
   await expect(page.getByText("Opinion, not advice.")).toBeVisible();
   await expect(page.getByText("Round 1: Opening arguments")).toBeVisible();
+  // The published rubric is shown to members (criteria and the weights pinned at publication).
+  await expect(page.getByRole("heading", { name: "How this Campaign is judged" })).toBeVisible();
+  await expect(page.getByText("Responsiveness.")).toBeVisible();
+  await expect(page.getByText(/Panel of judges: \d+%/)).toBeVisible();
   await expect(page.getByText("Dispatches open when the Campaign opens")).toBeVisible();
 
   // Sprint 2 carry-over: the Campaign page's buttons fit at 375px.

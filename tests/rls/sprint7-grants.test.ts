@@ -39,6 +39,9 @@ const FUNCTIONS: Record<string, "none" | "admin" | "everyone" | "signed-in"> = {
   store_rubric_score: "none",
   dispatch_unverified_claims: "signed-in",
   set_judge_prompt_version: "admin",
+  // 20261113000800 rubric publish (rule 7)
+  publish_campaign_rubric: "admin",
+  save_campaign: "admin",
   // 20261113000600 email essentials
   enqueue_email: "none",
   claim_email_batch: "none",

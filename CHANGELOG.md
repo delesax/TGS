@@ -13,6 +13,16 @@ Branch `sprint-7-batch-2b`, cut from `main`. **One new migration, tested on loca
 - **Tests:** typecheck and lint clean; see `docs/CLAUDE_LOG.md` for counts.
 - **Migration order:** apply `20261113000700` first, then merge. It is additive. The code already live does not read the new column or setting.
 
+## Rule 7: publish the rubric before a Campaign opens (13 November 2026). Awaiting review
+
+Branch `rule7-rubric-publish`, cut from `main`. **One new migration, `20261113000800_rubric_publish.sql`, tested on local Supabase only, not applied to hosted.** Until now `campaigns.rubric_published_at` existed but nothing set or checked it (it is empty on all 15 hosted Campaigns) and the public Campaign page did not show how a Campaign is judged.
+
+- **Publish the rubric.** New admin function `publish_campaign_rubric(p_campaign_id)` and a "Publish the rubric" button on the admin Campaign edit page. It sets `rubric_published_at` (once, never undone), pins the current judging weights version to the Campaign (`judging_weights_version`, previously pinned only when it opened) and writes an `audit_log` row (`campaign.rubric_published`). A closed Campaign cannot be published.
+- **Scheduling needs it.** `save_campaign` now refuses a change into "scheduled" (or creating a Campaign as scheduled) with `RUBRIC_NOT_PUBLISHED` until the rubric is published. The admin form explains it in plain words and keeps what was typed. Campaigns already scheduled, open or closed are untouched; no status is changed and nothing is backfilled.
+- **Public page.** Once published, the Campaign page shows "How this Campaign is judged": the four criteria, the steelman bonus and the blend weights pinned at publication.
+- **Tests:** new RLS suite `tests/rls/rubric-publish.test.ts`; the Campaign create journey in `tests/e2e/campaigns.spec.ts` now publishes the rubric before scheduling and checks the public section.
+- **Order:** apply the migration first, then merge. The admin form on main cannot schedule a draft after the migration until this code is deployed (it shows its generic save error), which is the intended direction of travel and affects nothing live today (all 15 are drafts).
+
 ## Sprint 7 Phase B, batch 2a: rules and migrations (13 November 2026). Awaiting review
 
 Branch `sprint-7-batch-2a`, cut from `main`. **Four new migrations, tested on local Supabase only, not applied to hosted.** Nothing written to hosted. Legal files and the placeholder strings untouched. Plan and the owner's decisions: `docs/SPRINT_7_PLAN.md` ("Decided 13 Nov").

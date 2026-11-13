@@ -86,6 +86,12 @@ export async function saveCampaign(_prev: FormState, formData: FormData): Promis
   if (error) {
     console.error("saveCampaign failed", error.code);
     if (error.code === "23505") return { formError: "That web address is already used by another Campaign.", fieldErrors: { slug: "Choose a different web address." } };
+    if (error.message.includes("RUBRIC_NOT_PUBLISHED"))
+      return {
+        formError: "Publish the rubric before scheduling this Campaign.",
+        formHint: id ? "Use \"Publish the rubric\" at the top of this page, then schedule it. Nothing has been saved." : "Save it as a draft first, publish the rubric from its edit page, then schedule it. Nothing has been saved.",
+        fieldErrors: { status: id ? "Publish the rubric first (button at the top of this page)." : "Save as a draft first, then publish the rubric." },
+      };
     if (error.message.includes("campaigns_no_schedule_while_undecided"))
       return {
         formError: "This Campaign needs an owner decision before it can be scheduled.",
@@ -98,4 +104,22 @@ export async function saveCampaign(_prev: FormState, formData: FormData): Promis
   revalidatePath("/campaigns");
   revalidatePath("/admin/campaigns");
   redirect(`/admin/campaigns/${savedId as string}?saved=1`);
+}
+
+/** Publishes a Campaign's rubric (rule 7). Admin only; the database checks again and writes the audit entry. */
+export async function publishRubric(_prev: FormState, formData: FormData): Promise<FormState> {
+  const viewer = await getViewer();
+  if (!viewer?.isAdmin) return { formError: "Only admins can publish a rubric.", formHint: "Sign in with an admin account and try again." };
+  const id = text(formData, "id");
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return { formError: "We could not find that Campaign." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("publish_campaign_rubric", { p_campaign_id: id });
+  if (error) {
+    console.error("publishRubric failed", error.code);
+    if (error.message.includes("CAMPAIGN_CLOSED")) return { formError: "A closed Campaign cannot have its rubric published." };
+    return { formError: "We could not publish the rubric.", formHint: "Please try again in a moment." };
+  }
+  revalidatePath("/campaigns");
+  revalidatePath("/admin/campaigns");
+  redirect(`/admin/campaigns/${id}?rubric=1`);
 }

@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getViewer } from "@/lib/auth";
 import { hasPositionsConsent } from "@/lib/positions-consent";
-import { getCampaign, getMyPosition, getServerNow } from "@/lib/campaign-data";
+import { CampaignRubric } from "@/components/campaign-rubric";
+import { getCampaign, getMyPosition, getPublishedRubric, getServerNow } from "@/lib/campaign-data";
 import { POSITION_LABELS, currentRound, formatUkDateTime, statusAt } from "@/lib/campaigns";
 import { DispatchSection } from "./dispatch-section";
 import { JudgingLinks } from "./judging-links";
@@ -27,6 +28,7 @@ export default async function CampaignPage({ params }: PageProps<"/campaigns/[sl
   if (!campaign) notFound();
 
   const status = statusAt(campaign, now);
+  const rubric = await getPublishedRubric(campaign);
   const round = status === "open" ? currentRound(campaign.rounds, now) : null;
   const [position, consented] = viewer?.profile?.handle
     ? await Promise.all([getMyPosition(campaign.id, viewer.userId), hasPositionsConsent(viewer.userId)])
@@ -102,6 +104,8 @@ export default async function CampaignPage({ params }: PageProps<"/campaigns/[sl
           <p className="whitespace-pre-line text-lg">{campaign.summary}</p>
         </section>
       ) : null}
+
+      {rubric ? <CampaignRubric rubric={rubric} /> : null}
 
       <Card id="your-position" className="scroll-mt-4">
         <CardHeader>
