@@ -75,9 +75,19 @@ export function fieldErrors(error: z.ZodError): Record<string, string> {
   return out;
 }
 
-/** Only allow redirects to paths on this site. */
+/**
+ * Only allow redirects to paths on this site. A path is refused if it holds any
+ * control character (tab, line break, NUL...) or a backslash anywhere, because
+ * browsers and URL parsers strip or rewrite those, so "/\t/evil.com" would
+ * become "//evil.com". As a last check it must still resolve to our own origin.
+ */
 export function safeNextPath(next: unknown, fallback = "/dossier"): string {
-  if (typeof next !== "string" || !next.startsWith("/") || next.startsWith("//") || next.startsWith("/\\")) {
+  if (typeof next !== "string" || !next.startsWith("/") || next.startsWith("//")) return fallback;
+  if (/[\u0000-\u001f\u007f\\]/.test(next)) return fallback;
+  try {
+    const base = "http://tgs.invalid";
+    if (new URL(next, base).origin !== base) return fallback;
+  } catch {
     return fallback;
   }
   return next;
