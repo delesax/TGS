@@ -9,7 +9,8 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 | Branch | State | Latest commit | Hosted |
 | --- | --- | --- | --- |
 | `main` | Sprints 1–4 and **Sprint 5 merged (PRs #6 to #8, 12 Nov), ratified gold set and logs merged (PR #10)**, launch email docs | see `git log origin/main` | Sprint 4 migrations applied; **Sprint 5 migrations applied 12 Nov** (`20261111000100`, `20261111000200`) |
-| `legal-hardening` | **Merged into a branch, `merge-legal-hardening`, for the owner to PR** (conflicts in the changelog, this log and the RLS table list resolved by keeping both sides). Six migrations written, **not applied to hosted** | see `git log origin/merge-legal-hardening` | Nothing applied |
+| `main` also has legal-hardening | **Merged to `main` as PR #22 (13 Nov)**; branches `legal-hardening` and the merge branch may still exist on origin. Its six migrations are **not applied to hosted**, so the code is live ahead of its database (dry run with `--include-all` lists exactly `20261107000100` to `000600`) | see `git log origin/main` | Not applied |
+| `sprint-7-hardening` | **Pushed**, Phase A only: `docs/SPRINT_7_PLAN.md` (audit and plan, no code). No PR | see `git log origin/sprint-7-hardening` | — |
 | `sprint-4-audit-handle` | On origin, no PR; one migration `20261104000500_audit_no_handle.sql` (stops new handle writes in `decide_held_handle`; old rows untouched; main's onboarding still writes the handle, fixed only by legal-hardening) | `bc88132` | Nothing applied |
 
 Worktrees: `TGS/` (main checkout) and `TGS-legal/` (legal-hardening). `TGS-sprint5/` was removed on 13 Nov. They share one local Supabase database.
@@ -17,7 +18,7 @@ Worktrees: `TGS/` (main checkout) and `TGS-legal/` (legal-hardening). `TGS-sprin
 ## Open for the owner
 
 - Sprint 7: answer D1 to D8 in `docs/SPRINT_7_PLAN.md` (Vercel Hobby terms, email volume, minimum account age and invite binding, collusion policy, judge prompt v2, kill-switch wording, backups, Anthropic cap) before Phase B starts.
-- Legal hardening: after the merge PR, fill the bracketed facts listed in `docs/SESSION_LOG_LEGAL_HARDENING.md`; `LEGAL.reviewed` stays false until the solicitor signs off and account deletion stays OFF. Apply the six migrations to hosted only after review and a dry run (see the migration items below; apply them and deploy the code within minutes of each other).
+- Legal hardening (merged, PR #22): apply the six migrations to hosted soon (the live site's legal pages error until then; say "go" for the apply), then fill the bracketed facts listed in `docs/SESSION_LOG_LEGAL_HARDENING.md`; `LEGAL.reviewed` stays false until the solicitor signs off and account deletion stays OFF. Apply the six migrations to hosted only after review and a dry run (see the migration items below; apply them and deploy the code within minutes of each other).
 - Password reset (merged as PR #13, not usable on the live site until you do this): in Supabase paste the "Reset password" template from `docs/LAUNCH_EMAIL_SETUP.md` step 12b, and check Redirect URLs allow `https://thegrandstrategist.com/auth/confirm?next=/reset-password` (covered if `https://thegrandstrategist.com/**` is listed).
 - Before legal-hardening goes live: fill `privacyEmail` and `contactEmail` in `src/lib/legal.ts` (empty now, so pages show "[to be added]" and privacy-request alert emails are skipped).
 - Sprint 5: edit the three PLACEHOLDER strings in `src/lib/judging/notices.ts`.
@@ -29,6 +30,11 @@ Worktrees: `TGS/` (main checkout) and `TGS-legal/` (legal-hardening). `TGS-sprin
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-13 — Log state refreshed
+
+- Current state table brought up to date: legal-hardening is merged (PR #22) but its migrations are not applied to hosted (the live code is ahead of its database); `sprint-7-hardening` row added (Phase A plan only). Open list wording for legal hardening changed from "after the merge PR" to "apply the six migrations".
+- Reminder of the one urgent item: until those six migrations are applied, positions consent, Download my data, the privacy contact form and the admin privacy queue error on the live site.
 
 ### 2026-11-13 — Sprint 7 Phase A: audit and plan (branch `sprint-7-hardening`)
 
