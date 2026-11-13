@@ -1,5 +1,18 @@
 # Changelog
 
+## Sprint 7 Phase B, batch 2b: judge prompt v2, load tests, backups, launch documents, CSP (13 November 2026). Awaiting review
+
+Branch `sprint-7-batch-2b`, cut from `main`. **One new migration, tested on local Supabase only, not applied to hosted.** Nothing was written to hosted. Legal files, `src/lib/legal.ts` and the placeholder strings untouched. Plan: `docs/SPRINT_7_PLAN.md`.
+
+- **W7, judge prompt v2** (decision D5; `prompts/judge-rubric.v2.md`, `20261113000700_judge_prompt_v2.sql`). The model is told it cannot browse or look anything up, must never treat a named study, figure, quote or link as verified, and lists up to three `unverified_claims`. Stored on `ai_rubric_scores.unverified_claims`. Judges and admins see them, with a simple count of links, figures and named studies, as "Check before relying" (never caps or changes a score). A Dispatch's source links are passed to the model as text only. The version is a database setting (`judging_settings.judge_prompt_version`, default 2, switch in Admin, Judging, function `set_judge_prompt_version`) so falling back to v1 needs no deploy. Judges read claims only through `dispatch_unverified_claims(p_campaign_id)` (`ai_rubric_scores` stays admin-only). Real evaluation, run once: all criteria pass (pooled mean error 0.62, within one point 93%, Spearman 0.92), a little less aligned than v1 (0.55, 97%, 0.93). Cost about 16p.
+- **W9, load tests** (`scripts/load/`, `npm run load:test`, local Supabase only). Five scenarios, 20 checks, all pass; results in `docs/LOAD_TEST_RESULTS.md`. Finding: with the default daily AI cap of 1,000 a closed Campaign of 1,500 Dispatches is only partly judged on day one (800 scored, the rest wait; none fail).
+- **Resend pacing.** Requests to Resend are now at least 200 ms apart (about 5 a second, the free limit is 10) and a 429 is retried once after Resend's Retry-After (capped at 5 s), with the same idempotency key. Unit tests in `src/lib/email/pacing.test.ts`.
+- **W13, backups** (`scripts/backup-dump.sh`, `scripts/backup-restore-local.sh`, `docs/BACKUP_RESTORE.md`). The dump covers `auth` and `public` (a dump without `auth.users` is refused), is written to `~/TGS-backups` with mode 600, never prints or stores the database address, and writes a manifest of row counts. A full local restore rehearsal matched every row count and every content fingerprint. Not tested on hosted.
+- **W14, documents:** `docs/LAUNCH_RUNBOOK.md` (with the owner's actions), `docs/GO_NO_GO.md`, `docs/INCIDENT_CHECKLIST.md`.
+- **CSP, report-only.** `Content-Security-Policy-Report-Only` and `Reporting-Endpoints` headers; a rate-limited public route `/api/csp-report` stores only the directive and the blocked host in `system_events`. Nothing is enforced.
+- **Tests:** typecheck and lint clean; see `docs/CLAUDE_LOG.md` for counts.
+- **Migration order:** apply `20261113000700` first, then merge. It is additive. The code already live does not read the new column or setting.
+
 ## Sprint 7 Phase B, batch 2a: rules and migrations (13 November 2026). Awaiting review
 
 Branch `sprint-7-batch-2a`, cut from `main`. **Four new migrations, tested on local Supabase only, not applied to hosted.** Nothing written to hosted. Legal files and the placeholder strings untouched. Plan and the owner's decisions: `docs/SPRINT_7_PLAN.md` ("Decided 13 Nov").

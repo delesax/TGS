@@ -9,12 +9,15 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 | Branch | State | Latest commit | Hosted |
 | --- | --- | --- | --- |
 | `main` | Sprints 1–4 and **Sprint 5 merged (PRs #6 to #8, 12 Nov), ratified gold set and logs merged (PR #10)**, launch email docs | see `git log origin/main` | All migrations applied to hosted (Sprint 4, Sprint 5, legal-hardening and audit-handle, last on 13 Nov) |
+| `sprint-7-batch-2b` | **Pushed for the owner to PR, not merged.** W7 judge prompt v2, W9 load tests, W13 backups, W14 documents, CSP report-only, Resend pacing. One migration, `20261113000700_judge_prompt_v2.sql`, tested locally only | see `git log sprint-7-batch-2b` | **Not applied.** Apply the migration first, then merge |
 | `main` also has legal-hardening | **Merged to `main` as PR #22 (13 Nov); its six migrations were applied to hosted on 13 Nov** (`20261107000100` to `000600`). The `legal-hardening` and `merge-legal-hardening` branches were deleted | see `git log origin/main` | Applied |
 
 Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were removed on 13 Nov). Local Supabase is shared by whatever runs from `TGS/`.
 
 ## Open for the owner
 
+- Sprint 7 batch 2b (branch `sprint-7-batch-2b`): read the migration SQL, then (with your go) dry run, apply `20261113000700`, merge. Then do the **Owner actions** in `docs/LAUNCH_RUNBOOK.md` (Supabase Auth rate limits 150/150/100 per 5 minutes, Vault secrets, Vercel variables, Anthropic and Resend limits, second admin) and work through `docs/GO_NO_GO.md`. Take the first hosted dump with `bash scripts/backup-dump.sh` (needs `DATABASE_URL` in `.env.local`, Docker running). Look at the v2 versus v1 judge numbers (`docs/SPRINT_7_PLAN.md`) before leaving v2 as the default; v1 is one setting away (Admin, Judging).
+- Decide: the default AI cap of 1,000 calls a day only judges about 800 Dispatches of a big Campaign on day one (measured). Raise `ai_daily_cap_global` for judging days, or accept a day's wait.
 - Sprint 7 batch 2a is live (merged as PR #29, migrations applied 13 Nov). Still to do in Sprint 7: W7 judge prompt v2 (approved), W9 local load tests, W13 backup procedure, W14 runbook and checklists, report-only CSP. Check Authentication, Rate Limits in the Supabase dashboard (all Auth calls come from Vercel's shared addresses, see the 13 Nov follow-up).
 - Sprint 7 Phase B batch 1 is live (merged as PR #27, migrations applied 13 Nov). Set the kill-switch wording you want in `src/lib/switches.ts` (D6). Still waiting on your answers to D1 to D8 for the rest of Phase B (W4, W5, W7, W10, W13 need D3, D4, D5, D3b, D7).
 - Legal (parked): the new rate limiter keeps a SHA-256 hash of IP and email addresses for up to two days; the privacy and retention wording needs a review.
@@ -31,6 +34,16 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-13 — Sprint 7 Phase B, batch 2b (branch `sprint-7-batch-2b`)
+
+- **W7 judge prompt v2** (D5): `prompts/judge-rubric.v2.md` (v1 untouched), `unverified_claims` (up to three) stored on `ai_rubric_scores`, shown as "Check before relying" with a count of links, figures and named studies, source links passed to the model as text only; never changes a score. Prompt version is the database setting `judging_settings.judge_prompt_version` (default 2), switch in Admin, Judging; `JUDGE_PROMPT_VERSION` is only a fall-back if the column is missing. Judges read claims only through `dispatch_unverified_claims(uuid)`. Migration `20261113000700_judge_prompt_v2.sql`, local only. Real eval run once: PASS on all criteria (pooled error 0.62, within one 93%, Spearman 0.92) but a little less aligned than v1 (0.55, 97%, 0.93); about 16p.
+- **W9**: `scripts/load/` (`npm run load:test`), five scenarios, 20 of 20 checks pass locally (`docs/LOAD_TEST_RESULTS.md`). Finding: the default AI cap (1,000 a day, judging stops at 80%) judged 800 of a 1,500-Dispatch close on day one; the rest wait, none fail. Resend requests are now paced to about 5 a second with one safe retry on 429 (`src/lib/email/pacing.ts`).
+- **W13**: `scripts/backup-dump.sh` (hosted by default, `--local` for rehearsals; reads `DATABASE_URL` from `.env.local` without printing it; writes `~/TGS-backups`, mode 600) and `scripts/backup-restore-local.sh`. Local dump, reset and restore: all 61 table counts match, fingerprints identical, a restored account signs in. Not tested on hosted; no hosted dump was taken. `docs/BACKUP_RESTORE.md` lists what is not covered (Vault secrets, Auth dashboard settings, sessions, hosted restore).
+- **W14**: `docs/LAUNCH_RUNBOOK.md` (with Owner actions), `docs/GO_NO_GO.md`, `docs/INCIDENT_CHECKLIST.md`. **CSP**: report-only header plus `/api/csp-report` (rate limited, stores directive and blocked host only).
+- Results: typecheck and lint clean; 353 unit and 352 RLS tests pass; Playwright 55 of 55 (the new CSP flood test had a counting mistake of mine, fixed and rerun).
+- Local Supabase was reset several times and holds load-test or restore data from the last rehearsal; reset before the next test run. Nothing applied to or written to hosted. Legal files and placeholders untouched.
+- Found on the way: `audit_log` refuses TRUNCATE, so a restore must clear tables with triggers off.
 
 ### 2026-11-13 — Sprint 7 batch 2a applied to hosted
 
