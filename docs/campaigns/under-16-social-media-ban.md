@@ -63,30 +63,35 @@ Plain text only, because the page does not render Markdown. Every mechanic below
 ```text
 This is an open arena: there are no rounds. You can post at any time while the Campaign is open.
 
-Before you post
-Choose a handle, then say where you stand ("Where do you stand before the debate?"). Recording your position is optional and needs your agreement; you need one to post. You can record where you stand now once the debate has moved you.
-
 What you can post
-An Argument can be up to 1,500 characters; it cannot contain links, so post sources as Evidence. A Rebuttal can be up to 1,000 characters and must answer another Dispatch; you may add sources. Evidence can be up to 600 characters and must include at least one source, with a short note on why it matters.
-You can post up to 10 Dispatches in this Campaign, and replies count. You can post again 30 seconds after your last Dispatch, and you can edit a Dispatch for 5 minutes after posting it.
+An Argument can be up to 1,500 characters. A Rebuttal can be up to 1,000 characters. Evidence can be up to 600 characters.
+You can post up to 10 Dispatches in this Campaign. If you reach the limit, the message may say "in this round": it means the Campaign.
+You can post again 30 seconds after your last Dispatch, and you can edit a Dispatch for 5 minutes after posting it.
 
 Being open about AI
-Each Dispatch must say whether you used AI: none ("Written without AI"), assisted ("Written with AI help") or generated ("Mostly written by AI"). Your answer is shown on your Dispatch. Please answer honestly.
+Each Dispatch carries a declaration: none, assisted or generated. It is shown publicly. Please declare honestly.
 
 Keeping it civil
-Handles and Dispatches are screened. If something is held, a person checks it before others can see it; you can still see your own. Screening never deletes anything: only a person can remove a Dispatch, and a removed Dispatch shows as "Removed by a moderator."
+Handles and Dispatches are screened. Anything held is hidden until a person has checked it. Screening never deletes anything, and only an admin can remove a Dispatch. Argue with the idea, not the person.
 
 Changing your mind
-If a Dispatch changed your mind, you can pick it (one pick a Campaign). Your account must be at least 48 hours old, you must have taken part in this Campaign, and picks are open while the Campaign runs and for a short while after it closes. A pick only counts if you recorded where you stood before and where you stand now, and those two records are at least 24 hours apart.
+If a Dispatch changes your mind, you can pick it. Your account must be at least 48 hours old, you must have taken part in this Campaign, and your recorded position must have changed over at least 24 hours. You can pick while the Campaign is open or during its peer-voting window.
 
 How it is judged
 The four criteria and the blend of judging weights are set out under "How this Campaign is judged" on this page, and are fixed before the Campaign opens.
 
 The clock
-The countdown on this page runs from the server's closing time. It is the only clock that counts.
+The countdown on this page uses the server's time. It is the only clock that counts.
 ```
 
-Length: 2,044 characters of the 10,000 allowed.
+Length: 1,414 characters of the 10,000 allowed.
+
+**This is the owner's edited version (pasted 13 Nov), replacing Claude's longer draft.** Checked against the code again:
+- Accurate: the three length limits, the 10-Dispatch cap counting the whole Campaign in an open arena, 30 seconds, 5 minutes, the none, assisted or generated declaration shown publicly, held items hidden until a person checks them, screening never deleting and only an admin removing, 48 hours, taking part, the 24-hour span, the open or peer-window timing, and the server clock.
+- Left out compared with the earlier draft, which members then learn only from the forms: that a handle and a recorded position are needed before posting (the position needs their agreement); that an Argument cannot contain links, a Rebuttal must answer another Dispatch and Evidence needs a source; the three public AI labels; and one pick per Campaign. None of these makes the text wrong.
+- The sentence about "in this round" is true but rarely needed: in an open arena members read "You can post N more here" and "You have posted N Dispatches here" (`dispatch-section.tsx:93-96, 111`); "in this round" appears only in the server error text (`src/lib/dispatches.ts:247-250`) if the database refuses a post. You may drop that sentence.
+- One wording point: "your recorded position must have changed over at least 24 hours" reads as a condition for picking. The code lets anyone eligible pick, but the pick only **counts** toward the result if the before and after records are at least 24 hours apart (`src/lib/judging/blend.ts`). Consider "for your pick to count, ...".
+- The numbers (1,500, 1,000, 600, 10, 30 seconds, 5 minutes, 48 and 24 hours) are code defaults: confirm with queries C and E before pasting.
 
 Checked against the repo:
 
