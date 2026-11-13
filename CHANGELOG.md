@@ -64,6 +64,12 @@ Branch `legal-hardening`, cut from `origin/main` at `eec5c7c`. **Six migrations 
 ### Tests
 Unit 174, RLS 238, Playwright 29, all passing on a freshly reset local database; typecheck and lint clean. `eval:moderation` and `eval:coach` (fake provider) run: 100% recall, 0% false holds. New tests cover the gate, consent trigger, privacy requests, retention (with back-dated rows and exclusions), the audit exception, the export, the delete script, the draft-topic script, email footers and stop links, and the pages at 375px.
 
+## Audit log: no handles (7 November 2026). Awaiting review
+
+Branch `sprint-4-audit-handle`, cut from `main` at `cbc3d7a`. **Not applied to hosted.**
+- **Migration `20261104000500_audit_no_handle.sql`.** `decide_held_handle()` used to write the Strategist's handle into `audit_log.details`. The audit log can never be edited or erased, so that handle would outlive an account deletion. The entry now holds only `flag_id` and `reason` (the Strategist is already identified by `target_id`). Nothing else in the function changed. 5 new RLS tests; they fail against the old function.
+- **Not fixed here (found while checking):** onboarding (`src/app/onboarding/actions.ts`) still writes `{ handle }` into `audit_log` as `profile.handle_set`, and entries already written by either path cannot be changed. See the pull request text.
+
 ## Sprint 4 hardening (6 November 2026). Awaiting review
 
 Branch `sprint-4-hardening`, cut from the `sprint-4` head `4ba8692` because PR #3 had not been merged when it was started. Merge PR #3 first; this branch's own pull request then shows only the changes below. **Not applied to hosted.**

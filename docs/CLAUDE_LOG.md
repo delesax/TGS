@@ -10,7 +10,7 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 | --- | --- | --- | --- |
 | `main` | Sprints 1–4 and **Sprint 5 merged (PRs #6 to #8, 12 Nov), ratified gold set and logs merged (PR #10)**, launch email docs | see `git log origin/main` | Sprint 4 migrations applied; **Sprint 5 migrations applied 12 Nov** (`20261111000100`, `20261111000200`) |
 | `main` also has legal-hardening | **Merged to `main` as PR #22 (13 Nov); its six migrations were applied to hosted on 13 Nov** (`20261107000100` to `000600`). The `legal-hardening` and `merge-legal-hardening` branches were deleted | see `git log origin/main` | Applied |
-| `sprint-4-audit-handle` | On origin, no PR; one migration `20261104000500_audit_no_handle.sql` (stops new handle writes in `decide_held_handle`; old rows untouched; main's onboarding still writes the handle, fixed only by legal-hardening) | `bc88132` | Nothing applied |
+| `sprint-4-audit-handle` | **Merged into a branch, `merge-audit-handle`, for the owner to PR** (one conflict, `CHANGELOG.md`, kept both). One migration `20261104000500_audit_no_handle.sql` (stops new handle writes in `decide_held_handle`; old rows untouched), **not applied to hosted** | see `git log origin/merge-audit-handle` | Not applied |
 
 Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were removed on 13 Nov). Local Supabase is shared by whatever runs from `TGS/`.
 
@@ -29,6 +29,13 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-13 — audit-handle merged into a branch (not main)
+
+- On the owner's "merge audit-handle": merged `origin/sprint-4-audit-handle` into a new branch `merge-audit-handle` cut from current `main`, for the owner to merge by PR. Nothing pushed to `main`, nothing applied to hosted.
+- Checked before merging: `decide_held_handle` has only one earlier definition (`20261104000100`), and the new migration's body differs from it only in the audit insert (`reason` and `flag_id` kept, `handle` removed), so no later change is reverted. Only conflict: `CHANGELOG.md` (kept both). Main's onboarding already stopped writing the handle (legal-hardening).
+- Typecheck and lint clean; 214 unit tests under `src` pass. The new RLS test `tests/rls/audit-no-handle.test.ts` was not run (needs the local database reset with this migration; no database command was run).
+- To apply later: the migration is older than the newest applied one, so use `supabase db push --include-all` after a dry run that lists exactly `20261104000500_audit_no_handle.sql`.
 
 ### 2026-11-13 — Sprint 7 Phase A merged
 
