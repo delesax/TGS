@@ -3,7 +3,7 @@ import { Page } from "@/components/page";
 import { requireAdmin } from "@/lib/auth";
 import { DEFAULT_MODELS } from "@/lib/ai/config";
 import { createClient } from "@/lib/supabase/server";
-import { ReactionTypeForm, SettingsForm } from "../admin-forms";
+import { ReactionTypeForm, SettingsForm, SwitchesForm } from "../admin-forms";
 import type { SettingsValues } from "../actions";
 import { AdminNav } from "../admin-nav";
 
@@ -28,6 +28,13 @@ export default async function SettingsPage() {
   return (
     <Page title="Settings" intro="Community limits, email caps, reactions and the AI controls. Every change is recorded in the audit log with the values before and after.">
       <AdminNav current="/admin/settings" />
+      <SwitchesForm
+        values={{
+          posting_paused: Boolean((settings as Record<string, unknown>).posting_paused),
+          signups_paused: Boolean((settings as Record<string, unknown>).signups_paused),
+          emails_paused: Boolean((settings as Record<string, unknown>).emails_paused),
+        }}
+      />
       <SettingsForm values={settings as SettingsValues} defaults={defaults} />
       <section aria-labelledby="reactions-h" className="flex flex-col gap-4">
         <h2 id="reactions-h" className="text-2xl font-bold">

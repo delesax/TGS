@@ -10,6 +10,7 @@ const SECTIONS = [
   { href: "/admin/settings", label: "Settings" },
   { href: "/admin/judging", label: "Judging" },
   { href: "/admin/audit", label: "Audit log" },
+  { href: "/admin/health", label: "Health" },
 ] as const;
 
 /** The admin console's own navigation. Wraps on small screens. */

@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { sweepPending } from "@/lib/moderation";
+import { logEvent } from "@/lib/events";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +29,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(await sweepPending(), { headers: noStore });
   } catch (e) {
     console.error("Moderation sweep failed", e instanceof Error ? e.message : e);
+    await logEvent("processor_failed", "moderation");
     return NextResponse.json({ error: "Failed" }, { status: 500, headers: noStore });
   }
 }

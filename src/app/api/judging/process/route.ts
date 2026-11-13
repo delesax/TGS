@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { processJudging } from "@/lib/judging/processor";
+import { logEvent } from "@/lib/events";
 
 export const dynamic = "force-dynamic";
 // AI rubric calls can take a while; ten per run.
@@ -31,6 +32,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(await processJudging(), { headers: noStore });
   } catch (e) {
     console.error("Judging processor failed", e instanceof Error ? e.message : e);
+    await logEvent("processor_failed", "judging");
     return NextResponse.json({ error: "Failed" }, { status: 500, headers: noStore });
   }
 }

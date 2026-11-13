@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Atkinson_Hyperlegible, Source_Serif_4 } from "next/font/google";
 import { SiteHeader } from "@/components/site-header";
+import { SiteNotice } from "@/components/site-notice";
 import { SiteFooter } from "@/components/site-footer";
 import "./globals.css";
 
@@ -38,6 +39,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en-GB" className={`${atkinson.variable} ${sourceSerif.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <SiteHeader />
+        <SiteNotice />
         <main id="main" tabIndex={-1} className="flex flex-1 flex-col focus:outline-none">
           {children}
         </main>

@@ -5,7 +5,7 @@ import { useActionState } from "react";
 import { ActionForm, CheckboxField, FormMessage, SubmitButton, TextAreaField, TextField, type FormState } from "@/components/form";
 import { Label } from "@/components/ui/label";
 import { useDecisionLog } from "./decision-log";
-import { decideHandle, moderateDispatch, resolveFlag, saveJudgingWeights, saveReactionType, saveSettings, setPostingMute, type SettingsValues } from "./actions";
+import { decideHandle, moderateDispatch, resolveFlag, saveJudgingWeights, saveReactionType, saveSettings, setPostingMute, setSiteSwitches, type SettingsValues } from "./actions";
 
 type Choice = { value: string; label: string; hint?: string };
 
@@ -189,6 +189,29 @@ function SelectSetting({ name, label, value, options, hint, error }: { name: str
         ))}
       </select>
     </div>
+  );
+}
+
+export function SwitchesForm({ values }: { values: { posting_paused: boolean; signups_paused: boolean; emails_paused: boolean } }) {
+  const [state, run, pending] = useActionState(setSiteSwitches, {} as FormState);
+  const e = state.fieldErrors ?? {};
+  return (
+    <ActionForm action={run} aria-label="Site switches">
+      <FormMessage state={state} />
+      <fieldset className="flex flex-col gap-4 rounded-lg border-2 border-destructive p-4">
+        <legend className="px-2 text-2xl font-bold">Site switches</legend>
+        <p className="text-lg text-muted-foreground">
+          For an emergency or a busy launch hour. Takes effect at once, with no deploy. The AI switch is in the AI section below.
+        </p>
+        <CheckboxField name="posting_paused" label="Pause posting (nobody can post a new Dispatch; reading, reacting and voting carry on)" defaultChecked={values.posting_paused} />
+        <CheckboxField name="signups_paused" label="Pause sign-ups (no new accounts, even with a valid invite)" defaultChecked={values.signups_paused} />
+        <CheckboxField name="emails_paused" label="Pause emails (they wait in the queue and go out when you untick this)" defaultChecked={values.emails_paused} />
+        <TextField name="reason" label="Reason" hint="Required. Kept in the audit log." error={e.reason} required />
+        <SubmitButton pending={pending} pendingLabel="Saving…">
+          Save switches
+        </SubmitButton>
+      </fieldset>
+    </ActionForm>
   );
 }
 

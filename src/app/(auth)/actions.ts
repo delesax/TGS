@@ -7,7 +7,9 @@ import { publicEnv } from "@/lib/env";
 import { LEGAL } from "@/lib/legal";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { hashSubject, ipSubject, withinLimit } from "@/lib/rate-limit";
 import { RECOVERY_COOKIE } from "@/lib/recovery";
+import { getSwitches, SWITCH_WORDING } from "@/lib/switches";
 import { fieldErrors, forgotPasswordSchema, resetPasswordSchema, safeNextPath, signInSchema, signUpSchema } from "@/lib/validation";
 
 const INVITE_PROBLEM =
@@ -36,6 +38,15 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
     return { formError: "Please check the highlighted answers.", fieldErrors: fieldErrors(parsed.error) };
   }
   const { email, password, inviteCode } = parsed.data;
+
+  // Admin kill switch: no new accounts while sign-ups are paused (the database refuses them too).
+  if ((await getSwitches()).signups_paused) {
+    return { formError: SWITCH_WORDING.signUpRefused.message, formHint: SWITCH_WORDING.signUpRefused.hint };
+  }
+
+  if (!(await withinLimit("sign_up_ip", await ipSubject()))) {
+    return { formError: "Too many sign-up attempts just now.", formHint: "Please wait an hour and try again. Your answers are still filled in." };
+  }
 
   if (!(await inviteIsUsable(inviteCode))) {
     return { formError: "Your invite code was not accepted.", fieldErrors: { inviteCode: INVITE_PROBLEM } };
@@ -100,6 +111,10 @@ export async function signIn(_prev: FormState, formData: FormData): Promise<Form
     return { formError: "Please check the highlighted answers.", fieldErrors: fieldErrors(parsed.error) };
   }
 
+  if (!(await withinLimit("sign_in_ip", await ipSubject())) || !(await withinLimit("sign_in_email", hashSubject(parsed.data.email)))) {
+    return { formError: "Too many sign-in attempts.", formHint: "Please wait a few minutes and try again." };
+  }
+
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
 
@@ -138,6 +153,11 @@ export async function requestPasswordReset(_prev: FormState, formData: FormData)
   const parsed = forgotPasswordSchema.safeParse({ email: formData.get("email") });
   if (!parsed.success) {
     return { formError: "Please check the highlighted answers.", fieldErrors: fieldErrors(parsed.error) };
+  }
+
+  // Over the limit: send nothing but answer exactly as if we had, so the page never reveals anything.
+  if (!(await withinLimit("reset_ip", await ipSubject())) || !(await withinLimit("reset_email", hashSubject(parsed.data.email)))) {
+    redirect("/forgot-password/sent");
   }
 
   const supabase = await createClient();
