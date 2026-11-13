@@ -33,6 +33,19 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 
 ## Entries
 
+### 2026-11-13 — Campaign 1 rules checked against the code (PR #43)
+
+- Docs only. A read-only check of seven claims against the repo (no hosted command, no env file) led to PR #43, which rewrote the rules in `docs/campaigns/under-16-social-media-ban.md` (now 2,044 characters) and added a source table and a fifth SQL Editor query (judging settings).
+- **Findings that shaped the rules:** the AI-use declaration is exactly none, assisted or generated and is shown publicly; screening can hold and hide a Dispatch or handle until a person checks it but never deletes, and only an admin can remove one; the countdown runs from the database's `server_now()`; mind-change picks need an account at least 48 hours old (default), taking part in the Campaign, an open or peer-window Campaign, and a recorded position change spanning at least 24 hours (default); the per-round cap applies to an open arena as 10 Dispatches in the whole Campaign (default), and the member's message still says "in this round"; the post form shows a live character count and the cooldown only once running, never the cap or cooldown length in advance; summary and rules stay editable after the rubric is published, scheduled or open, so settle them before publishing.
+- **Open:** run queries C and E to confirm the live limits and pick conditions; check that the Verdict reads only consented positions (`consented_positions` is not referenced in `src`, so Claude could not confirm it); the title and close date for Campaign 1 are still the owner's to settle.
+- Nothing applied to hosted, nothing changed there.
+
+### 2026-11-13 — GO_NO_GO and Auth limits merged (PRs #41 and #42)
+
+- Docs only. PR #41 (`go-no-go-owner-done`) updated `docs/GO_NO_GO.md` rows 4, 6, 8 and 22 with the owner's reports (Vault secrets, Auth limits, first encrypted dump, member post test). PR #42 (`auth-limits-recorded`) recorded the Auth rate limit values from the owner's dashboard screenshot (sign-ups and sign-ins 150, token verifications 100, token refreshes 150 per 5 minutes; emails 30 an hour). `main` is at `2865f83`. All of this is owner-reported or from a screenshot, not checked by Claude.
+- Still open for the owner, unchanged: reload Authentication, Rate Limits to confirm the values saved; decide whether 30 emails an hour is enough for the first invite wave; confirm the TEST Campaign is back to draft; run the three processor 401 curls (`docs/LAUNCH_RUNBOOK.md`); where the encrypted dump is stored off the laptop and a hosted restore test; Campaign 1 publish and schedule; the 14 other Campaigns' summaries and rules; the three flagged Campaigns; the PLACEHOLDER strings; the AI cap and judge prompt decisions; the legal items.
+- No hosted command run, nothing else changed.
+
 ### 2026-11-13 — Auth rate limit values recorded (branch `auth-limits-recorded`)
 
 - Docs only. The owner sent a screenshot of Authentication, Rate Limits: token refreshes 150, token verifications 100 and sign-ups and sign-ins 150 per 5 minutes per IP (the targets); emails 30 an hour, SMS 30 an hour, anonymous 30 an hour, Web3 30 per 5 minutes, minimum interval per user 60 seconds. This is the form as displayed: it does not prove the values were saved, so the owner should reload the page to confirm. `docs/GO_NO_GO.md` row 6 and the Current state row updated.
