@@ -8,7 +8,6 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 
 | Branch | State | Latest commit | Hosted |
 | --- | --- | --- | --- |
-| `sprint-7-phase-b` | **Pushed, no PR**: Sprint 7 Phase B batch 1 (W1 kill switches, W2 rate limiter and event log, W3 open redirect, W6 health, W8 injection tests, W11 HSTS, W12 patch upgrades). Two new migrations `20261113000100` and `20261113000200`, **not applied to hosted** | see `git log origin/sprint-7-phase-b` | Not applied |
 | `main` | Sprints 1–4 and **Sprint 5 merged (PRs #6 to #8, 12 Nov), ratified gold set and logs merged (PR #10)**, launch email docs | see `git log origin/main` | All migrations applied to hosted (Sprint 4, Sprint 5, legal-hardening and audit-handle, last on 13 Nov) |
 | `main` also has legal-hardening | **Merged to `main` as PR #22 (13 Nov); its six migrations were applied to hosted on 13 Nov** (`20261107000100` to `000600`). The `legal-hardening` and `merge-legal-hardening` branches were deleted | see `git log origin/main` | Applied |
 
@@ -16,7 +15,7 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 
 ## Open for the owner
 
-- Sprint 7 Phase B batch 1: review the PR when opened; applying its two migrations to hosted needs a dry run (`--include-all`) and your "go". After applying, set the kill-switch wording you want in `src/lib/switches.ts` (D6).
+- Sprint 7 Phase B batch 1 is live (merged as PR #27, migrations applied 13 Nov). Set the kill-switch wording you want in `src/lib/switches.ts` (D6). Still waiting on your answers to D1 to D8 for the rest of Phase B (W4, W5, W7, W10, W13 need D3, D4, D5, D3b, D7).
 - Legal (parked): the new rate limiter keeps a SHA-256 hash of IP and email addresses for up to two days; the privacy and retention wording needs a review.
 - Sprint 7: answer D1 to D8 in `docs/SPRINT_7_PLAN.md` (Vercel Hobby terms, email volume, minimum account age and invite binding, collusion policy, judge prompt v2, kill-switch wording, backups, Anthropic cap) before Phase B starts.
 - Legal hardening (applied to hosted 13 Nov): fill the bracketed facts listed in `docs/SESSION_LOG_LEGAL_HARDENING.md` (the pages still show "[to be added]" for company number, registered office, ICO number and effective date); `LEGAL.reviewed` stays false until the solicitor signs off; account deletion stays OFF. Existing members have no positions consent until they give it.
@@ -31,6 +30,13 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-13 — Sprint 7 batch 1 applied to hosted
+
+- Batch 1 merged as PR #27. On the owner's "go": a dry run with `--include-all` listed exactly `20261113000100_site_switches.sql` and `20261113000200_rate_limits_events_health.sql`; both applied (output filtered, no connection string printed).
+- Verified read-only: `rate_limits` and `system_events` exist with RLS on; the nine new functions exist, all SECURITY DEFINER with `search_path` set; anon cannot execute `set_site_switches` or `rate_limit_hit` and can execute only `site_switches`; both triggers (`dispatches_refuse_when_paused`, `auth_users_refuse_when_paused`) are enabled; cron job `housekeeping-limits-events` (03:41 UTC) is active; all three switches read off; a fresh dry run says the remote database is up to date.
+- Live site: `/api/health` returns 200 `{"ok":true}`; `/`, `/login`, `/signup`, `/campaigns`, `/leaderboard` and `/privacy/contact` return 200 with no error markers and no pause banner; the HSTS header (`max-age=31536000`) shows the new deploy is live.
+- State: every migration on `main` is applied to hosted. Not checked: the admin Settings switches form and `/admin/health` on the live site (they need an admin sign-in).
 
 ### 2026-11-13 — Sprint 7 Phase B, batch 1 (branch `sprint-7-phase-b`)
 
