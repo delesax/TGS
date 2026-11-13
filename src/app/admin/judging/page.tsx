@@ -8,7 +8,7 @@ import { getJudgingSettings } from "@/lib/judging/data";
 import { createClient } from "@/lib/supabase/server";
 import { WeightsForm } from "../admin-forms";
 import { AdminNav } from "../admin-nav";
-import { saveJudgingSettings } from "./actions";
+import { saveJudgingSettings, setJudgePromptVersion } from "./actions";
 import { AdminForm } from "./forms";
 import { stage, type StatusRow } from "./status";
 
@@ -26,6 +26,9 @@ export default async function JudgingPage() {
     getJudgingSettings(),
   ]);
   if (error || boardError) throw new Error("Could not load judging");
+  // Read separately so a database without the setting yet still shows the rest of the page.
+  const { data: promptRow } = await supabase.from("judging_settings").select("judge_prompt_version").maybeSingle<{ judge_prompt_version: number }>();
+  const promptVersionNow = promptRow?.judge_prompt_version ?? null;
   const versions = (data as Version[]) ?? [];
   const usage = new Map<number, number>();
   for (const c of (used as { judging_weights_version: number }[]) ?? []) usage.set(c.judging_weights_version, (usage.get(c.judging_weights_version) ?? 0) + 1);
@@ -79,6 +82,30 @@ export default async function JudgingPage() {
           <TextField name="min_position_span_hours" label="Hours a position change must span to earn mind-change credit" hint="Between the recorded before and after. 0 switches the rule off." type="number" inputMode="numeric" min={0} max={720} defaultValue={settings.min_position_span_hours} />
           <CheckboxField name="ai_rationale_wording" label="Let the AI improve the wording of draft rationales (marked as AI-assisted; scores never change)" defaultChecked={settings.ai_rationale_wording} />
         </AdminForm>
+      </section>
+
+      <section aria-labelledby="prompt-h" className="flex flex-col gap-3">
+        <h2 id="prompt-h" className="text-2xl font-bold">
+          Judge prompt version
+        </h2>
+        <p className="text-lg">
+          Version 2 tells the AI judge it cannot verify any source and asks it to list up to three claims for a person to check; version 1 is the original wording. The change takes effect the next time scoring runs, with no deploy. Scores already stored keep the version that wrote them.
+          {promptVersionNow === null ? " (This database does not have the setting yet: the judge uses version 1.)" : ` Now using version ${promptVersionNow}.`}
+        </p>
+        {promptVersionNow !== null ? (
+          <AdminForm action={setJudgePromptVersion} label="Judge prompt version" submitLabel="Save version">
+            <div className="flex flex-col gap-2">
+              <label htmlFor="judge_prompt_version" className="text-lg font-semibold">
+                Version to use
+              </label>
+              <select id="judge_prompt_version" name="version" defaultValue={String(promptVersionNow)} className="min-h-12 rounded-md border-2 border-input bg-background px-3 text-lg">
+                <option value="1">Version 1 (original)</option>
+                <option value="2">Version 2 (cannot verify sources; lists claims to check)</option>
+              </select>
+            </div>
+            <TextField id="judge_prompt_reason" name="reason" label="Reason (kept in the audit log)" maxLength={500} required />
+          </AdminForm>
+        ) : null}
       </section>
 
       <section aria-labelledby="weights-h" className="flex flex-col gap-3">

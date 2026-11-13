@@ -1,5 +1,6 @@
 "use client";
 
+import { CheckBeforeRelying } from "@/components/judging/check-before-relying";
 import * as React from "react";
 import { useActionState } from "react";
 import { ActionForm, CheckboxField, FormMessage, type FormState } from "@/components/form";
@@ -7,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { savePanelScores } from "../actions";
 
-export type PanelDispatch = { id: string; author: string; kind: string; body: string; createdAt: string; parentExcerpt: string | null };
+export type PanelDispatch = { id: string; author: string; kind: string; body: string; sources?: { url: string; title?: string | null }[]; claims?: string[]; createdAt: string; parentExcerpt: string | null };
 export type PanelScore = { logic: number; evidence: number; originality: number; responsiveness: number; comment: string | null };
 
 const CRITERIA = [
@@ -58,6 +59,7 @@ export function PanelForm({ campaignId, dispatches, scores, locked }: { campaign
             </h2>
             {d.parentExcerpt ? <p className="border-l-4 border-border pl-3 text-base text-muted-foreground">Replying to: {d.parentExcerpt}</p> : null}
             <p className="whitespace-pre-line text-lg [overflow-wrap:anywhere]">{d.body}</p>
+            <CheckBeforeRelying body={d.body} sources={d.sources} claims={d.claims} />
             {errors[d.id] ? (
               <p role="alert" className="text-base font-semibold text-destructive">
                 {errors[d.id]}

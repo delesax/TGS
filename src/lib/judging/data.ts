@@ -114,6 +114,7 @@ export type JudgingDispatch = {
   body: string;
   created_at: string;
   parent_id: string | null;
+  sources: { url: string; title?: string | null }[] | null;
   author: { handle: string | null; deleted_at: string | null } | null;
 };
 
@@ -121,7 +122,7 @@ export async function getEligibleDispatches(campaignId: string): Promise<Judging
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("dispatches")
-    .select("id, author_id, kind, body, created_at, parent_id, author:profiles!dispatches_author_id_fkey(handle, deleted_at)")
+    .select("id, author_id, kind, body, created_at, parent_id, sources, author:profiles!dispatches_author_id_fkey(handle, deleted_at)")
     .eq("campaign_id", campaignId)
     .eq("moderation_status", "visible")
     .is("withdrawn_at", null)

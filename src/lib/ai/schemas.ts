@@ -76,7 +76,22 @@ export const judgeRubricSchema = z.strictObject({
     note: z.string().trim().max(300),
   }),
 });
-export type JudgeRubricOutput = z.infer<typeof judgeRubricSchema>;
+export type JudgeRubricOutput = z.infer<typeof judgeRubricSchema> & {
+  /** Prompt v2 only: up to three factual claims a reader should check. Absent in v1 answers and older rows. */
+  unverified_claims?: string[];
+};
+
+/** Prompt v2: the same answer plus up to three short claims to check. Tolerant of a long list or long strings (trimmed, never rejected). */
+export const judgeRubricSchemaV2 = judgeRubricSchema.extend({
+  unverified_claims: z
+    .array(z.string())
+    .transform((a) =>
+      a
+        .map((s) => s.trim().slice(0, 200))
+        .filter(Boolean)
+        .slice(0, 3),
+    ),
+});
 
 export const judgeRationaleSchema = z.strictObject({
   rationale: z.string().trim().min(20).max(4000),
@@ -122,6 +137,17 @@ export const JSON_SCHEMAS = {
   }),
   judge_rationale: obj({ rationale: str }),
 } as const;
+
+/** Prompt v2 of the judge: the v1 shape plus the list of claims to check. */
+export const JUDGE_RUBRIC_V2_JSON_SCHEMA = obj({
+  logic: { type: "integer" },
+  evidence: { type: "integer" },
+  originality: { type: "integer" },
+  responsiveness: { type: "integer" },
+  rationale: str,
+  steelman: obj({ present: { type: "boolean" }, confidence: num, note: str }),
+  unverified_claims: { type: "array", items: str },
+});
 
 /** Parses model text as JSON and validates it. Returns null for anything else. */
 export function parseStrict<T>(schema: z.ZodType<T>, text: string): T | null {

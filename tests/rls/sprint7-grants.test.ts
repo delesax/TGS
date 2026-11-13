@@ -35,6 +35,10 @@ const FUNCTIONS: Record<string, "none" | "admin" | "everyone" | "signed-in"> = {
   // 20261113000500 invite binding
   invite_check: "none",
   handle_new_user: "none",
+  // 20261113000700 judge prompt v2
+  store_rubric_score: "none",
+  dispatch_unverified_claims: "signed-in",
+  set_judge_prompt_version: "admin",
   // 20261113000600 email essentials
   enqueue_email: "none",
   claim_email_batch: "none",
