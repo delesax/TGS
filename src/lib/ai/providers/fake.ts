@@ -233,6 +233,13 @@ const clamp15 = (n: number) => Math.max(1, Math.min(5, Math.round(n)));
 
 const STEELMAN = /\b(?:the strongest (?:case|argument|point|objection) (?:for|against)|to be fair to|restating (?:your|their|the other) (?:view|case)|the best case for the other side|i accept that (?:opponents|critics|the other side)|opponents are right that|critics rightly)\b/;
 
+/** Prompt v2 stand-in: up to three sentences that lean on a figure, a study or a quote and carry no link. A crude heuristic, NOT the model. */
+export function fakeUnverifiedClaims(raw: string): string[] {
+  const sentences = raw.split(/(?<=[.!?])\s+/).map((s) => s.trim()).filter(Boolean);
+  const checkable = /(\d[\d,.]*\s?(?:%|per cent|percent)|[£$€]\s?\d|\b(?:19|20)\d\d\b|\b(?:study|survey|report|poll|trial|research|according to)\b)/i;
+  return sentences.filter((s) => checkable.test(s) && !/https?:\/\//.test(s)).slice(0, 3).map((s) => s.slice(0, 160));
+}
+
 export function fakeJudgeRubric(raw: string, kind: string, parent: string | null): JudgeRubricOutput {
   const text = normalise(raw);
   const words = text.match(/[a-z']+/g) ?? [];
@@ -297,7 +304,11 @@ export const fakeProvider: AiProvider = {
           : req.task === "nudge"
             ? fakeNudge(blocks.draft ?? "")
             : req.task === "judge_rubric"
-              ? fakeJudgeRubric(blocks.dispatch ?? "", /Dispatch kind: (\w+)/.exec(req.user)?.[1] ?? "argument", blocks.replying_to ?? null)
+              ? {
+                  ...fakeJudgeRubric(blocks.dispatch ?? "", /Dispatch kind: (\w+)/.exec(req.user)?.[1] ?? "argument", blocks.replying_to ?? null),
+                  // Prompt v2 asks for the list; v1 does not.
+                  ...("unverified_claims" in ((req.schema as { properties?: Record<string, unknown> }).properties ?? {}) ? { unverified_claims: fakeUnverifiedClaims(blocks.dispatch ?? "") } : {}),
+                }
               : req.task === "judge_rationale"
                 ? { rationale: blocks.draft ?? "" }
                 : fakeCoach(blocks.draft ?? "");

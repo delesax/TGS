@@ -1,3 +1,4 @@
+import { CheckBeforeRelying } from "@/components/judging/check-before-relying";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -66,6 +67,12 @@ export default async function AdminCampaignJudgingPage({ params }: PageProps<"/a
     getEligibleDispatches(campaignId),
     getServerNow(),
   ]);
+  // The model's "claims to check" (prompt v2) are read separately so a database without the column still shows the scores.
+  const { data: claimData } = await supabase.from("ai_rubric_scores").select("dispatch_id, unverified_claims, created_at").eq("campaign_id", campaignId).order("created_at", { ascending: false });
+  const claimsByDispatch = new Map<string, string[]>();
+  for (const r of (claimData as { dispatch_id: string; unverified_claims: string[] | null }[]) ?? []) {
+    if (!claimsByDispatch.has(r.dispatch_id) && r.unverified_claims) claimsByDispatch.set(r.dispatch_id, r.unverified_claims);
+  }
   const status = ((statusRows as StatusRow[]) ?? [])[0];
   if (!status) notFound();
   const judges = (judgesData as Judge[]) ?? [];
@@ -301,6 +308,7 @@ export default async function AdminCampaignJudgingPage({ params }: PageProps<"/a
                     {handleOf(d)} · {KIND_LABELS[d.kind].label}
                   </p>
                   <p className="line-clamp-3 text-base [overflow-wrap:anywhere]">{d.body}</p>
+                  <CheckBeforeRelying body={d.body} sources={d.sources} claims={claimsByDispatch.get(d.id)} />
                   {s && shown ? (
                     <>
                       <p className="flex flex-wrap gap-2 text-base">

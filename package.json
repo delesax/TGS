@@ -31,7 +31,8 @@
     "eval:coach": "tsx scripts/eval-coach.ts",
     "eval:judging": "tsx scripts/eval-judging.ts",
     "eval:judge": "tsx scripts/eval-judging.ts",
-    "seed:judging": "tsx scripts/seed-judging.ts"
+    "seed:judging": "tsx scripts/seed-judging.ts",
+    "load:test": "tsx --conditions react-server scripts/load/run.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.4.0",

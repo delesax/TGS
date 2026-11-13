@@ -13,6 +13,9 @@ export const LIMITS = {
   follow_user: { max: 60, windowSeconds: 3600 },
   react_user: { max: 120, windowSeconds: 3600 },
   position_user: { max: 30, windowSeconds: 3600 },
+  // CSP reports (public route): one caller, and all callers together, so a flood cannot fill the event log.
+  csp_ip: { max: 60, windowSeconds: 600 },
+  csp_all: { max: 600, windowSeconds: 3600 },
 } as const;
 
 export type Bucket = keyof typeof LIMITS;

@@ -10,6 +10,8 @@ import {
   dispatchScreenSchema,
   judgeRationaleSchema,
   judgeRubricSchema,
+  judgeRubricSchemaV2,
+  JUDGE_RUBRIC_V2_JSON_SCHEMA,
   nudgeSchema,
   parseStrict,
   textScreenSchema,
@@ -47,9 +49,9 @@ type CallFailed = { ok: false; why: Unavailable; record: CallRecord | null };
  */
 export async function callStructured<T>(
   provider: AiProvider,
-  opts: { task: AiTask; prompt: PromptKey; model: string; user: string; schema: z.ZodType<T>; timeoutMs: number; maxTokens: number; accept?: (value: T) => boolean },
+  opts: { task: AiTask; prompt: PromptKey; promptVersion?: number; jsonSchema?: Record<string, unknown>; model: string; user: string; schema: z.ZodType<T>; timeoutMs: number; maxTokens: number; accept?: (value: T) => boolean },
 ): Promise<CallOk<T> | CallFailed> {
-  const { text: system, version } = loadPrompt(opts.prompt);
+  const { text: system, version } = loadPrompt(opts.prompt, opts.promptVersion);
   const record: CallRecord = { provider: provider.name, model: opts.model, promptVersion: version, inputTokens: 0, outputTokens: 0, latencyMs: 0 };
   let why: Unavailable = "error";
   const started = Date.now();
@@ -70,7 +72,7 @@ export async function callStructured<T>(
           model: opts.model,
           system,
           user: opts.user,
-          schema: JSON_SCHEMAS[opts.task],
+          schema: opts.jsonSchema ?? JSON_SCHEMAS[opts.task],
           maxTokens: opts.maxTokens,
           signal: controller.signal,
         }),
@@ -268,7 +270,19 @@ export type RubricInput = {
   campaign: { title: string; category: string };
   /** The Dispatch this one replies to, as context only. */
   parentBody?: string | null;
+  /** Links the author gave (prompt v2 only). Passed as untrusted text; nothing is fetched or looked up. */
+  sources?: { url: string; title?: string | null }[];
+  /** 1 (frozen) or 2 (Sprint 7). Defaults to the code default (v1). */
+  promptVersion?: 1 | 2;
 };
+
+/** The sources block for the model: numbered web addresses with their titles. Text only. */
+export function sourcesText(sources: { url: string; title?: string | null }[]): string {
+  return sources
+    .slice(0, 5)
+    .map((s, i) => `${i + 1}. ${String(s.url).slice(0, 300)}${s.title ? ` (${String(s.title).slice(0, 120)})` : ""}`)
+    .join("\n");
+}
 
 export type RubricResult =
   | { ok: true; scores: JudgeRubricOutput; record: CallRecord }
@@ -281,20 +295,25 @@ export type RubricResult =
  */
 export async function judgeRubricWith(deps: EngineDeps, input: RubricInput): Promise<RubricResult> {
   const model = resolveModel("judging", deps.settings, deps.env);
+  const version = input.promptVersion ?? 1;
   const blocks = [{ label: "dispatch", text: input.body }];
   if (input.parentBody) blocks.unshift({ label: "replying_to", text: input.parentBody });
+  // v2 only: the links the author listed, as plain text (a numbered list of addresses and titles). The model cannot open them.
+  if (version === 2 && input.sources?.length) blocks.push({ label: "sources", text: sourcesText(input.sources) });
   const user = buildUserMessage(
     { "Campaign question": input.campaign.title, "Campaign kind": input.campaign.category.replace(/_/g, " "), "Dispatch kind": input.kind },
     blocks,
   );
-  const length = input.body.length + (input.parentBody?.length ?? 0);
+  const length = input.body.length + (input.parentBody?.length ?? 0) + blocks.filter((b) => b.label === "sources").reduce((n, b) => n + b.text.length, 0);
   const result = await guarded(deps, "judge_rubric", null, length, (p) =>
     callStructured<JudgeRubricOutput>(p, {
       task: "judge_rubric",
       prompt: "judge_rubric",
+      promptVersion: version,
+      jsonSchema: version === 2 ? JUDGE_RUBRIC_V2_JSON_SCHEMA : undefined,
       model,
       user,
-      schema: judgeRubricSchema,
+      schema: version === 2 ? judgeRubricSchemaV2 : judgeRubricSchema,
       timeoutMs: deps.timeouts?.judging ?? TIMEOUT_MS.judging,
       maxTokens: 4000,
     }),

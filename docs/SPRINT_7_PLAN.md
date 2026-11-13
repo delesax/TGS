@@ -7,7 +7,7 @@ Parked, not touched here: `legal-hardening` work, `src/lib/legal.ts`, the PLACEH
 ## Phase B progress (updated 13 November)
 
 Batch 1 is built on branch `sprint-7-phase-b`: **W1** kill switches, **W2** rate limiter and event log, **W3** open redirect, **W6** health route and page, **W8** injection corpus, **W11** HSTS (CSP left for later), **W12** patch upgrades. Two migrations (`20261113000100`, `20261113000200`), local only, not applied to hosted. One change from the plan: per-IP limits are generous (sign-in 100 per 10 minutes, sign-up 60 per hour, reset 30 per hour) because a pilot class shares one address; the sharp limits are per email and per user.
-**Still to do:** W7 (judge prompt v2, batch 2b), W9, W13, W14, CSP report-only. W4, W5, W10 and W15 are built in batch 2a (see "Decided 13 Nov").
+**Batch 2b (branch `sprint-7-batch-2b`, not merged, migration `20261113000700` not applied):** W7 judge prompt v2, W9 local load tests (`docs/LOAD_TEST_RESULTS.md`), W13 backups (`docs/BACKUP_RESTORE.md`), W14 (`docs/LAUNCH_RUNBOOK.md`, `docs/GO_NO_GO.md`, `docs/INCIDENT_CHECKLIST.md`), CSP report-only and Resend pacing. W4, W5, W10 and W15 are built in batch 2a (see "Decided 13 Nov").
 
 ## Decided 13 Nov (owner)
 
@@ -19,6 +19,20 @@ Batch 1 is built on branch `sprint-7-phase-b`: **W1** kill switches, **W2** rate
 - **D6** Wording set in `src/lib/switches.ts`: paused posting reads "Posting is paused for a short while. You can still read everything. Please check back soon."; paused sign-ups reads "Sign-ups are paused for a short while. Please try again later."; paused emails needs no member-facing text.
 - **D7** Manual database dumps by the owner; no database URL stored anywhere new.
 - **D8** Keep the $30 Anthropic cap; the coach limit stays 10.
+
+### Batch 2b: judge prompt v2 evaluation (real model, run once, 13 Nov, gold set `2026-11-12-ratified-1`)
+
+| | v1 (12 Nov) | v2 (13 Nov) |
+| --- | --- | --- |
+| Pooled mean absolute error | 0.55 | 0.62 |
+| Within one point (pooled) | 97% | 93% |
+| Spearman (pooled) | 0.93 | 0.92 |
+| Per criterion within one point (logic, evidence, originality, responsiveness) | 100, 90, 100, 97% | 97, 87, 93, 97% |
+| Steelman | 4 of 4 found, 1 false positive | 4 of 4 found, 1 false positive |
+| Injection item `hs-06` | all 1s | all 1s |
+| Cost | about 14p | about 16p |
+
+Every criterion passes its threshold (at least 80% within one point and Spearman 0.7 or more), so v2 is the default, as agreed. v2 is slightly less aligned with the human scores than v1 on this set, and 21 of 30 items got at least one "unverified claim" (42 in all), including items with no figure or study. The claims never change a score. Fall-back to v1: Admin, Judging, "Judge prompt version".
 
 ### Batch 2a (built on branch `sprint-7-batch-2a`, not applied to hosted)
 

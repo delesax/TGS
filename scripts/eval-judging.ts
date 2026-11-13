@@ -23,10 +23,14 @@ import { judgeRubricWith, type EngineDeps } from "../src/lib/ai/engine";
 import { loadPrompt, promptVersion } from "../src/lib/ai/prompts";
 import { agreement, passes, type Agreement } from "../src/lib/judging/metrics";
 import { scriptDeps } from "./lib/ai-deps";
+import { countCheckSignals } from "../src/lib/judging/check-before-relying";
 import { loadEnv } from "./lib/env";
 
 loadEnv();
 const real = process.argv.includes("--real");
+/** --prompt 2 runs judge prompt v2 (Sprint 7). Default: v1, the frozen prompt. */
+const promptIdx = process.argv.indexOf("--prompt");
+const PROMPT: 1 | 2 = promptIdx >= 0 && process.argv[promptIdx + 1] === "2" ? 2 : 1;
 const CAP_GBP = 5;
 /** Deliberately below the market rate (about 1.3), so costs in pounds err high. */
 const USD_PER_GBP = 1.2;
@@ -83,14 +87,14 @@ async function main() {
   }
 
   let spent = 0;
-  const rows: { item: Item; got: Record<Criterion, number> | null; steelman: boolean | null; why: string; rationale: string }[] = [];
+  const rows: { item: Item; got: Record<Criterion, number> | null; steelman: boolean | null; why: string; rationale: string; claims?: string[] }[] = [];
   for (const g of gold.items) {
     if (gbp(spent) > CAP_GBP) {
       console.log("Stopped: the spending cap was reached.");
       break;
     }
     const parent = g.parent ? byId.get(g.parent)?.text ?? null : null;
-    const r = await judgeRubricWith(deps, { body: g.text, kind: g.kind as "argument", campaign: { title: g.campaign_title, category: g.category }, parentBody: parent });
+    const r = await judgeRubricWith(deps, { body: g.text, kind: g.kind as "argument", campaign: { title: g.campaign_title, category: g.category }, parentBody: parent, promptVersion: PROMPT });
     if (r.record && real) spent += estimateCostUsd(r.record.model, r.record.inputTokens, r.record.outputTokens);
     const rejected = errors.find((e) => e.status === 401 || e.status === 403);
     if (rejected) {
@@ -100,7 +104,7 @@ async function main() {
     }
     rows.push(
       r.ok
-        ? { item: g, got: { logic: r.scores.logic, evidence: r.scores.evidence, originality: r.scores.originality, responsiveness: r.scores.responsiveness }, steelman: r.scores.steelman.present, why: "", rationale: r.scores.rationale }
+        ? { item: g, got: { logic: r.scores.logic, evidence: r.scores.evidence, originality: r.scores.originality, responsiveness: r.scores.responsiveness }, steelman: r.scores.steelman.present, why: "", rationale: r.scores.rationale , claims: r.scores.unverified_claims }
         : { item: g, got: null, steelman: null, why: r.why, rationale: "" },
     );
   }
@@ -125,7 +129,7 @@ async function main() {
   const lines = [
     `# Judging evaluation, ${new Date().toISOString().slice(0, 16).replace("T", " ")} UTC`,
     "",
-    `Provider: ${real ? `real, ${model}` : "fake (keyword-driven stand-in, NOT the real model)"}. Prompt: ${promptVersion("judge_rubric")}. Gold set: ${gold.status} ${gold.version}${gold.status === "ratified" ? "" : " (labels not yet ratified by the owner)"}. Estimated spend: ${money(spent)}.`,
+    `Provider: ${real ? `real, ${model}` : "fake (keyword-driven stand-in, NOT the real model)"}. Prompt: ${promptVersion("judge_rubric", PROMPT)}. Gold set: ${gold.status} ${gold.version}${gold.status === "ratified" ? "" : " (labels not yet ratified by the owner)"}. Estimated spend: ${money(spent)}.`,
     "",
     `Scored ${scored.length} of ${gold.items.length}${rows.length - scored.length ? ` (unavailable: ${rows.filter((r) => !r.got).map((r) => `${r.item.id} ${r.why}`).join(", ")})` : ""}${rows.length < gold.items.length ? `; ${gold.items.length - rows.length} not attempted` : ""}.`,
     ...(errors.length ? ["", `First provider error: ${errors[0].status ?? "no status"} ${errors[0].message}`] : []),
@@ -142,6 +146,14 @@ async function main() {
     `Steelman detection: ${steelHits} of ${steelTrue.length} labelled steelmen found; ${steelFound.length - steelHits} false positives.`,
     `Prompt-injection item hs-06: ${injection?.got ? CRITERIA.map((c) => `${c} ${injection.got![c]}`).join(", ") : "unavailable"} (expected all 1).`,
     "",
+    ...(PROMPT === 2
+      ? [
+          `Prompt v2 claims to check: ${scored.filter((r) => r.claims?.length).length} of ${scored.length} items got at least one (${scored.reduce((n, r) => n + (r.claims?.length ?? 0), 0)} claims in all); ${scored.filter((r) => r.claims && r.claims.length > 3).length} items had more than 3 (should be 0).`,
+          `Items whose text has no figure, study or quote but still got claims: ${scored.filter((r) => r.claims?.length && countCheckSignals(r.item.text).figures + countCheckSignals(r.item.text).namedStudies === 0).map((r) => r.item.id).join(", ") || "none"}.`,
+          `Items with 2 or more figures or named studies and no claims: ${scored.filter((r) => !r.claims?.length && countCheckSignals(r.item.text).figures + countCheckSignals(r.item.text).namedStudies >= 2).map((r) => r.item.id).join(", ") || "none"}.`,
+          "",
+        ]
+      : []),
     "| id | kind | human (L/E/O/R) | AI (L/E/O/R) | steelman human/AI | AI rationale |",
     "| --- | --- | --- | --- | --- | --- |",
     ...rows.map(
@@ -151,7 +163,7 @@ async function main() {
     "",
   ];
   mkdirSync("evals/out", { recursive: true });
-  const file = `evals/out/judging-${real ? "real" : "fake"}-${new Date().toISOString().slice(0, 10)}.md`;
+  const file = `evals/out/judging-${real ? "real" : "fake"}${PROMPT === 2 ? "-v2" : ""}-${new Date().toISOString().slice(0, 10)}.md`;
   writeFileSync(file, lines.join("\n"));
   console.log(lines.slice(2, lines.indexOf("| id | kind | human (L/E/O/R) | AI (L/E/O/R) | steelman human/AI | AI rationale |") - 1).join("\n"));
   console.log(`\nFull table: ${file}`);

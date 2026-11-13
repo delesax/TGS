@@ -38,6 +38,10 @@ export default async function PanelPage({ params }: PageProps<"/judging/[campaig
     getEligibleDispatches(campaignId),
     supabase.from("panel_scores").select("dispatch_id, logic, evidence, originality, responsiveness, comment").eq("campaign_id", campaignId).eq("judge_id", viewer.userId),
   ]);
+  // The model's "claims to check" (prompt v2): judges may read these (and only these) from the AI record, never its scores.
+  // If the database does not have the function yet, nothing is shown.
+  const { data: claimRows } = await supabase.rpc("dispatch_unverified_claims", { p_campaign_id: campaignId });
+  const claimsById = new Map(((claimRows as { dispatch_id: string; unverified_claims: string[] | null }[]) ?? []).map((r) => [r.dispatch_id, r.unverified_claims ?? []]));
   const byId = new Map(all.map((d) => [d.id, d]));
   const dispatches = all
     .filter((d) => d.author_id !== viewer.userId)
@@ -48,6 +52,8 @@ export default async function PanelPage({ params }: PageProps<"/judging/[campaig
         author: handleOf(d),
         kind: KIND_LABELS[d.kind].label.toLowerCase(),
         body: d.body,
+        sources: d.sources ?? [],
+        claims: claimsById.get(d.id) ?? [],
         createdAt: d.created_at,
         parentExcerpt: parent ? `${handleOf(parent)}: ${parent.body.slice(0, 200)}${parent.body.length > 200 ? "…" : ""}` : null,
       };

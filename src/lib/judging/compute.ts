@@ -97,6 +97,7 @@ type DispatchRow = {
   id: string;
   body: string;
   kind: "argument" | "rebuttal" | "evidence";
+  sources?: { url: string; title?: string | null }[] | null;
   parent: { body: string; hidden_at: string | null; withdrawn_at: string | null; moderation_status: string } | null;
   campaign: { title: string; category: string } | null;
 };
@@ -106,8 +107,20 @@ const WAIT_REASONS: Unavailable[] = ["off", "global_cap", "no_provider"];
 
 export type RubricSummary = { claimed: number; scored: number; waiting: number; retrying: number; failed: number };
 
+/**
+ * Which judge prompt to use: the judging setting `judge_prompt_version` (changed in Admin, Judging,
+ * no deploy needed), then the JUDGE_PROMPT_VERSION environment variable if the database has no such
+ * setting yet, then v1. Anything other than 1 or 2 means v1.
+ */
+export async function judgePromptVersion(db: SupabaseClient, env: Record<string, string | undefined> = process.env): Promise<1 | 2> {
+  const { data, error } = await db.from("judging_settings").select("judge_prompt_version").maybeSingle<{ judge_prompt_version: number }>();
+  const raw = !error && data ? data.judge_prompt_version : Number(env.JUDGE_PROMPT_VERSION);
+  return raw === 2 ? 2 : 1;
+}
+
 export async function processRubricBatch(db: SupabaseClient, deps: EngineDeps, limit = 10): Promise<RubricSummary> {
   const summary: RubricSummary = { claimed: 0, scored: 0, waiting: 0, retrying: 0, failed: 0 };
+  const promptVersion = await judgePromptVersion(db);
   const { data, error } = await db.rpc("claim_rubric_batch", { p_limit: limit });
   if (error) throw new Error(`Could not claim AI rubric jobs: ${error.message}`);
   for (const job of (data as JobRow[]) ?? []) {
@@ -119,7 +132,7 @@ export async function processRubricBatch(db: SupabaseClient, deps: EngineDeps, l
       else summary.waiting += 1;
     };
     try {
-      const { data: row, error: loadError } = await db.from("dispatches").select("id, body, kind, parent_id, campaign:campaigns(title, category)").eq("id", job.dispatch_id).single();
+      const { data: row, error: loadError } = await db.from("dispatches").select("id, body, kind, parent_id, sources, campaign:campaigns(title, category)").eq("id", job.dispatch_id).single();
       if (loadError || !row) throw new Error(loadError?.message ?? "Dispatch not found");
       const d = row as unknown as DispatchRow & { parent_id: string | null };
       d.parent = null;
@@ -134,6 +147,8 @@ export async function processRubricBatch(db: SupabaseClient, deps: EngineDeps, l
         kind: d.kind,
         campaign: { title: d.campaign?.title ?? "", category: d.campaign?.category ?? "" },
         parentBody: parentVisible ? d.parent!.body : null,
+        sources: Array.isArray(d.sources) ? d.sources : [],
+        promptVersion,
       });
       if (!result.ok) {
         if (WAIT_REASONS.includes(result.why)) await release(`AI unavailable: ${result.why}`, 60, false);
@@ -155,6 +170,9 @@ export async function processRubricBatch(db: SupabaseClient, deps: EngineDeps, l
           steelman_detected: s.steelman.present,
           steelman_confidence: Math.round(s.steelman.confidence * 100) / 100,
           steelman_note: s.steelman.note,
+          // Prompt v2 only; null for v1 (and the database tolerates a missing key).
+          // The schema already limits this to three strings; the database check (at most 3) is the last line of defence.
+          unverified_claims: Array.isArray(s.unverified_claims) ? s.unverified_claims.filter((c) => typeof c === "string").slice(0, 3) : null,
           output: s,
           input_tokens: result.record.inputTokens,
           output_tokens: result.record.outputTokens,

@@ -3,6 +3,11 @@
 //   EMAIL_TRANSPORT=mailpit (or MAILPIT_URL set):    the local test inbox, never real people
 // Anything missing fails safely: nothing is sent and the reason is logged.
 
+import { createPacer, pacedRequest } from "./pacing";
+
+// One pacer for the whole server process: keeps Resend requests to about 5 a second.
+const resendPacer = createPacer();
+
 export type OutgoingEmail = {
   to: string;
   subject: string;
@@ -39,12 +44,14 @@ export function resolveTransport(env: Record<string, string | undefined> = proce
       kind: "resend",
       from,
       async send(email) {
-        const res = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json", "Idempotency-Key": email.idempotencyKey },
-          body: JSON.stringify({ from, to: [email.to], subject: email.subject, text: email.text, html: email.html, headers: headersFor(email) }),
-          signal: AbortSignal.timeout(15_000),
-        });
+        const res = await pacedRequest(resendPacer, () =>
+          fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json", "Idempotency-Key": email.idempotencyKey },
+            body: JSON.stringify({ from, to: [email.to], subject: email.subject, text: email.text, html: email.html, headers: headersFor(email) }),
+            signal: AbortSignal.timeout(15_000),
+          }),
+        );
         const body = (await res.json().catch(() => ({}))) as { id?: string; message?: string; name?: string };
         if (!res.ok || !body.id) throw new Error(`Resend ${res.status}: ${body.name ?? ""} ${body.message ?? ""}`.trim());
         return body.id;

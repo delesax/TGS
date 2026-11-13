@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { buildCspReportOnly } from "./src/lib/csp";
 
 const securityHeaders = [
   // One year, this host only (no includeSubDomains, no preload): browsers ignore it over plain http, so local development is unaffected.
@@ -7,6 +8,9 @@ const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+  // Report-only: nothing is blocked. Violations are sent to /api/csp-report (directive and host only).
+  { key: "Content-Security-Policy-Report-Only", value: buildCspReportOnly(process.env.NEXT_PUBLIC_SUPABASE_URL) },
+  { key: "Reporting-Endpoints", value: 'csp="/api/csp-report"' },
 ];
 
 const nextConfig: NextConfig = {

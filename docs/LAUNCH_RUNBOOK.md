@@ -1,0 +1,81 @@
+# Launch runbook: invite-only soft launch, 1 December 2026
+
+Written 13 November 2026 for the owner. Free plans only (Vercel Hobby, Supabase free, Resend free, Anthropic with a $30 monthly cap). Nothing here needs a paid service. Decisions D1 to D8 are in `docs/SPRINT_7_PLAN.md`; the go or no-go list is `docs/GO_NO_GO.md`; if something goes wrong, `docs/INCIDENT_CHECKLIST.md`.
+
+## The plan in one paragraph
+About 100 members, invited in waves of 10 to 20. Each wave only after a clean day. App email is cut to essentials (on by default, global cap 60 a day) so Resend's free quota has headroom for Supabase's own sign-up and reset emails. You take a database dump by hand before every migration and weekly (decision D7). If anything looks wrong you flip a kill switch first and investigate second.
+
+## Owner actions (things only you can do)
+Nothing below has been done by Claude. Tick them off in order; none needs a code change.
+
+**Before any migration or release**
+1. Merge order and hosted migrations: apply to hosted in timestamp order with a dry run first (`supabase db push --dry-run --include-all` must list exactly the files you expect). Batch 2b adds `20261113000700_judge_prompt_v2.sql`. Migrations go first, then the merge, because the new code reads the new columns. Each migration is additive, so the code already live keeps working in between.
+2. Take a dump immediately before applying (`bash scripts/backup-dump.sh`, see `docs/BACKUP_RESTORE.md`).
+
+**Supabase dashboard (hosted project)**
+3. Authentication, Rate Limits (decision made 13 Nov): sign-ups and sign-ins 150 per 5 minutes, token verifications 100 per 5 minutes. Reason: every Auth call comes from Vercel's shared addresses, so the per-address defaults would count the whole membership as one visitor. Check the values saved, and write them in `docs/CLAUDE_LOG.md`.
+4. Authentication, Email Templates: Confirm sign up and Reset password saved with the wording in `docs/legal/AUTH_EMAIL_FOOTER.md`. Authentication, URL Configuration: Site URL and redirect URLs are the live address only.
+5. Vault secrets present: `email_processor_url`, `email_processor_secret`, `moderation_processor_url`, `moderation_processor_secret`, `judging_processor_url`, `judging_processor_secret` (see `docs/LAUNCH_EMAIL_SETUP.md`). The three secrets are fresh random strings of 40 or more characters, the same values as the Vercel variables `EMAIL_PROCESSOR_SECRET`, `MODERATION_PROCESSOR_SECRET`, `JUDGING_PROCESSOR_SECRET`.
+
+**Vercel**
+6. Production variables set: `ANTHROPIC_API_KEY`, the three processor secrets, `RESEND_API_KEY`, `EMAIL_FROM` (on `updates.thegrandstrategist.com`), `NEXT_PUBLIC_SITE_URL`, the three Supabase variables. Never paste any of them into chat.
+7. Note the current Production deployment (the one to roll back to). Confirm the project is on Hobby and understand that Hobby is for non-commercial use (decision D1: accepted for the pilot, no sponsors or payments until the company account takes over).
+
+**Anthropic and Resend**
+8. Anthropic console: monthly limit $30, notify at $10 (decision D8). Resend: domain verified, and read the free quota (about 100 a day at the time of writing; check the pricing page again before launch).
+
+**Admin**
+9. Admin, Settings: `email_essentials_only` is on and the global daily email cap is 60. A second admin account exists. Account deletion stays off.
+
+## Day by day
+
+### T minus 1 day
+- Dump: `bash scripts/backup-dump.sh`. Copy the three files off the laptop. Check the printed counts for users and profiles look right.
+- Open `/api/health` on the live site: `{"ok":true}`.
+- Admin, Health (`/admin/health`): queues empty, every job has run recently, AI calls today near zero.
+- Admin, Judging: the judge prompt version reads 2 (or 1 if you chose the fall-back; see "Judge prompt" below).
+- Try the three processor addresses without the secret (for example with `curl -X POST` and no header): each must answer 401.
+- Do one real sign-up, confirmation, sign-in and password reset with a spare address.
+- Announce nothing.
+
+### Launch day (T)
+1. Create the first 10 to 20 invites (`npm run invite:create`, or Admin). Prefer binding an invite to an email address where you know it (decision D3b).
+2. For the first two hours look every 15 minutes at: Admin, Health; Admin, Signals; `/admin/audit`; the Supabase and Vercel dashboards for errors.
+3. Email: if the day's app email is over 80% of the Resend figure, flip emails off (Admin, Settings, switches). They stay queued and send on resume.
+4. AI: if calls used pass 80% of the daily cap before evening, tell members judging will be slower. Judging stops at 80% by design and resumes the next UK day.
+5. Next wave only after a clean day: no 5xx you cannot explain, queues drained, no unresolved Signals you would act on.
+
+### Invite waves
+10 to 20 a wave, about 100 in total. If a Campaign closes with many Dispatches, remember the AI cap: with the default cap of 1,000 calls a day a close of 1,500 Dispatches judges about 800 on day one and the rest on day two (measured in `docs/LOAD_TEST_RESULTS.md`). Either raise the cap in Admin, Settings, or tell members to expect a day's delay.
+
+## Kill switches (no deploy, effective at once, each writes an audit entry with your reason)
+Admin, Settings, "Site switches" (database function `set_site_switches`):
+
+| Switch | Effect | Members read |
+| --- | --- | --- |
+| Posting paused | New Dispatches refused; reading stays open | "Posting is paused for a short while. You can still read everything. Please check back soon." |
+| Sign-ups paused | New accounts refused, including direct calls to the sign-up service | "Sign-ups are paused for a short while. Please try again later." |
+| Emails paused | Nothing is claimed from the email queue; it waits and sends on resume | (nothing shown) |
+| AI off (`ai_enabled`) | Screening falls back as set in Settings (normal Campaigns post unscreened and flagged; sensitive Campaigns are held) | (nothing shown) |
+
+Email essentials and the global cap are a separate form (`set_email_controls`). A banner on the site shows while a switch is on.
+
+## Judge prompt
+Version 2 is the default after the real evaluation (see `docs/SPRINT_7_PLAN.md`, W7). v2 adds a list of claims the model cannot check, shown to judges and admins as "Check before relying". It never changes a score. To go back to v1 with no deploy: Admin, Judging, "Judge prompt version", choose 1 and give a reason (database function `set_judge_prompt_version`). The next processor run uses it.
+
+## Rolling back
+- **Code**: Vercel dashboard, Deployments, the previous Ready deployment, Promote to Production (Instant Rollback; confirm it is offered on Hobby when you first look). Note the deployment you leave.
+- **Database**: never rolled back. Every migration is additive; roll forward with a new migration, and flip a kill switch before any risky change.
+- **Data lost or damaged**: restore from the latest dump into a scratch project first (`docs/BACKUP_RESTORE.md`).
+
+## Reading the health page, the event log and CSP reports
+- `/admin/health` shows queue depths and ages, last run of each scheduled job, AI calls used today. A queue that only grows means its processor is not being called: check the Vault secrets and the Vercel variable of the same name.
+- `system_events` is our own log (kept 30 days): counts and short codes, never names, addresses, IPs or text. Admin, Health lists recent rows.
+- **CSP reports.** Every page sends a `Content-Security-Policy-Report-Only` header, so nothing is blocked. When a browser sees something a stricter policy would block, it posts a report to `/api/csp-report`, which stores one `system_events` row: kind `csp_report`, code = the directive (for example `img-src`), detail host = the blocked host, or a word such as `inline` or `eval`. No page address, query string or page content is stored. The route is limited (60 a 10 minutes per caller, 600 an hour overall). To read: Admin, Health, "Recent events" (the latest 50, so a busy page can push other events out of view); for a count by directive and host use the Supabase SQL editor `select code, detail->>'host' as host, count(*) from public.system_events where kind = 'csp_report' group by 1, 2 order by 3 desc;`. Expect `inline` for script-src and style-src (Next.js adds inline code; 'unsafe-inline' is in the policy, so those do not report). A host you do not recognise on `script-src` or `connect-src` is worth a look. Plan: after a quiet week with no unexplained hosts, enforce (a later change, not part of this launch).
+
+## Known limits (free plans)
+- Resend free is the first thing to break (about 100 emails a day). App email is essentials only and capped at 60 a day.
+- Anthropic: $30 a month; about $0.12 a member a month at the assumed use.
+- Supabase free: no backups (hence the dumps), the project pauses after about a week without activity (open the site or the dashboard the week before launch), 500 MB database.
+- Vercel Hobby is non-commercial (D1).
+- Local load tests passed (`docs/LOAD_TEST_RESULTS.md`), but they do not cover Supabase Auth's own limits, Resend, real model calls or browser traffic.

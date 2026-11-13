@@ -201,3 +201,15 @@ export async function saveJudgingSettings(_prev: FormState, fd: FormData): Promi
   revalidatePath("/admin/judging");
   return { success: "Saved. The change is in the audit log." };
 }
+
+/** Switch the judge between prompt v1 and v2 (no deploy). The database checks the role and writes the audit entry. */
+export async function setJudgePromptVersion(_prev: FormState, fd: FormData): Promise<FormState> {
+  if (!(await admin())) return { formError: "Only admins can do this." };
+  const parsed = z.object({ version: z.coerce.number().int().min(1).max(2), reason: z.string().trim().min(1, "Give a reason.").max(500) }).safeParse({ version: fd.get("version"), reason: fd.get("reason") });
+  if (!parsed.success) return { formError: "Choose version 1 or 2 and give a reason." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_judge_prompt_version", { p_version: parsed.data.version, p_reason: parsed.data.reason });
+  if (error) return problem(error.message, "We could not change the judge prompt version.");
+  revalidatePath("/admin/judging");
+  return { success: "Saved. The next scoring run uses it. The change is in the audit log." };
+}
