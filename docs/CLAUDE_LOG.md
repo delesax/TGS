@@ -13,13 +13,13 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 | `rule7-rubric-publish` | **Merged to `main` (with the log entry, PR #34, 13 Nov).** Rule 7: publish the rubric, scheduling requires it, rubric shown on the Campaign page | see `git log origin/main` | `20261113000800` applied to hosted by the owner from their own terminal (13 Nov) |
 | `launch-owner-actions` | **Merged to `main` as PR #33 (13 Nov).** Owner actions before the first invite wave in the runbook and go/no-go | see `git log origin/main` | n/a |
 | `main` also has legal-hardening | **Merged to `main` as PR #22 (13 Nov); its six migrations were applied to hosted on 13 Nov** (`20261107000100` to `000600`). The `legal-hardening` and `merge-legal-hardening` branches were deleted | see `git log origin/main` | Applied |
-| Launch setup (owner-reported 13 Nov; Claude did not see these) | Reset password and Confirm sign up templates and redirect URLs done. Judging Vault secrets and `JUDGING_PROCESSOR_SECRET` done, all six Vault secrets exist. Auth rate limits raised (owner to confirm exact values). First hosted dump taken and encrypted by the owner. Member post test complete | n/a | n/a |
+| Launch setup (owner-reported 13 Nov; Claude did not see these) | Reset password and Confirm sign up templates and redirect URLs done. Judging Vault secrets and `JUDGING_PROCESSOR_SECRET` done, all six Vault secrets exist. Auth rate limits raised: owner's dashboard screenshot shows sign-ups and sign-ins 150, token verifications 100, token refreshes 150 per 5 minutes (reload to confirm saved). First hosted dump taken and encrypted by the owner. Member post test complete | n/a | n/a |
 
 Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were removed on 13 Nov). Local Supabase is shared by whatever runs from `TGS/`.
 
 ## Open for the owner
 
-- **Remaining owner actions before the first invite wave** (batches 1, 2a, 2b and rule 7 are merged and applied; the Auth limits, dump, templates, Vault secrets and member post test are reported done, see Current state): the rest of `docs/LAUNCH_RUNBOOK.md` (Vercel variables, Anthropic and Resend limits, re-read the free-plan limits, second admin, move provider accounts into the company) and the rest of `docs/GO_NO_GO.md`. Confirm the exact Auth rate limit values so this log can record them (raised, owner to confirm; target 150/150/100 per 5 minutes).
+- **Remaining owner actions before the first invite wave** (batches 1, 2a, 2b and rule 7 are merged and applied; the Auth limits, dump, templates, Vault secrets and member post test are reported done, see Current state): the rest of `docs/LAUNCH_RUNBOOK.md` (Vercel variables, Anthropic and Resend limits, re-read the free-plan limits, second admin, move provider accounts into the company) and the rest of `docs/GO_NO_GO.md`. Reload Authentication, Rate Limits once to confirm the 150/150/100 values were saved, and decide the Auth email limit: the screenshot shows **30 emails an hour** for the whole project, which Supabase's own confirmation and reset emails count against, so one invite wave of 20 to 30 sign-ups in an hour could hit it (Resend's own free quota is separate).
 - **Campaign 1: publish and schedule.** Read `docs/campaigns/under-16-social-media-ban.md`, run its four SQL Editor queries, choose the title (or drop the summary's last line), confirm the close date, check the summary's facts on gov.uk, eSafety and the BMJ, then follow its click order: save as draft, confirm the weights version, publish the rubric (cannot be undone), then schedule for 1 December 2026. Scheduling a draft is refused until its rubric is published.
 - **The other 14 Campaigns need real summaries and rules** (all 15 are drafts, as the owner reported from the SQL Editor; not seen by Claude). Each needs its rubric published before it can be scheduled.
 - **The three flagged Campaigns** each carry an owner decision flag and cannot be scheduled until you clear it: `bank-of-england-rate-decision-november` (still timely?), `rosebank-after-jackdaw`, and `assisted-dying-or-fix-care-first` (sensitive: needs the real content note).
@@ -32,6 +32,12 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 - **Account deletion stays OFF.** Decide whether it also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-13 — Auth rate limit values recorded (branch `auth-limits-recorded`)
+
+- Docs only. The owner sent a screenshot of Authentication, Rate Limits: token refreshes 150, token verifications 100 and sign-ups and sign-ins 150 per 5 minutes per IP (the targets); emails 30 an hour, SMS 30 an hour, anonymous 30 an hour, Web3 30 per 5 minutes, minimum interval per user 60 seconds. This is the form as displayed: it does not prove the values were saved, so the owner should reload the page to confirm. `docs/GO_NO_GO.md` row 6 and the Current state row updated.
+- **Worth a decision:** the 30 emails an hour limit is Supabase's, for the whole project, and looks unchanged from the default. Confirmation and reset emails count against it, so a wave of 20 or more sign-ups in an hour, with resets, could hit it. Claude has not changed or tested anything; the dashboard setting is the owner's.
+- No hosted command run, nothing else changed.
 
 ### 2026-11-13 — Current state and Open for the owner brought up to date (branch `claude-log-state-refresh`)
 
