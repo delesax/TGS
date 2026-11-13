@@ -26,12 +26,12 @@ afterAll(async () => {
 });
 
 describe("settings", () => {
-  it("default to essentials only, a global cap of 60 a day, and the owner's four essential kinds", async () => {
+  it("default to essentials only, a global cap of 60 a day, and the owner's five essential kinds", async () => {
     const { data } = await admin.client.rpc("admin_community_settings").single();
     const s = data as Record<string, unknown>;
     expect(s.email_essentials_only).toBe(true);
     expect(s.email_global_daily_cap).toBe(60);
-    expect(s.email_essential_kinds).toEqual(["moderation_outcome", "verdict_published", "verdict_appeal_outcome", "judge_assigned"]);
+    expect(s.email_essential_kinds).toEqual(["moderation_outcome", "verdict_published", "verdict_appeal_outcome", "judge_assigned", "peer_voting_open"]);
     // The per-person cap that already existed is untouched.
     expect(s.email_daily_cap).toBe(6);
   });
@@ -46,10 +46,10 @@ describe("settings", () => {
 describe("what is queued", () => {
   it("queues essential kinds and does not queue the rest while essentials only is on", async () => {
     await clear();
-    for (const kind of ["verdict_published", "moderation_outcome", "verdict_appeal_outcome", "judge_assigned"]) expect((await enqueue(kind)).error).toBeNull();
-    for (const kind of ["reply", "campaign_opened", "campaign_round_changed", "campaign_closed", "campaign_closing_soon", "peer_voting_open"]) expect((await enqueue(kind)).error).toBeNull();
+    for (const kind of ["verdict_published", "moderation_outcome", "verdict_appeal_outcome", "judge_assigned", "peer_voting_open"]) expect((await enqueue(kind)).error).toBeNull();
+    for (const kind of ["reply", "campaign_opened", "campaign_round_changed", "campaign_closed", "campaign_closing_soon"]) expect((await enqueue(kind)).error).toBeNull();
     const kinds = (await rows()).map((r) => r.kind).sort();
-    expect(kinds).toEqual(["judge_assigned", "moderation_outcome", "verdict_appeal_outcome", "verdict_published"]);
+    expect(kinds).toEqual(["judge_assigned", "moderation_outcome", "peer_voting_open", "verdict_appeal_outcome", "verdict_published"]);
   });
 
   it("queues everything again when essentials only is switched off", async () => {
@@ -91,6 +91,21 @@ describe("what is sent", () => {
     expect(waiting).toHaveLength(1);
     expect(new Date(waiting[0].send_after).getTime()).toBeGreaterThan(Date.now() + 60_000);
     await settings({ email_global_daily_cap: 60 });
+  });
+
+  it("at the cap with essentials-only off, a due cut kind is skipped with the reason global_daily_cap (not left queued)", async () => {
+    await clear();
+    await settings({ email_essentials_only: false, email_global_daily_cap: 1 });
+    await enqueue("verdict_published");
+    const first = await service.rpc("claim_email_batch", { p_limit: 100 });
+    expect((first.data as unknown[]).length).toBe(1);
+    await settings({ email_essentials_only: false });
+    await enqueue("reply"); // a cut kind (not in email_essential_kinds), queued because essentials-only is off
+    const second = await service.rpc("claim_email_batch", { p_limit: 100 });
+    expect((second.data as unknown[]).length).toBe(0);
+    const skipped = (await rows()).filter((r) => r.status === "skipped");
+    expect(skipped.map((r) => [r.kind, r.last_error])).toEqual([["reply", "global_daily_cap"]]);
+    await settings({ email_essentials_only: true, email_global_daily_cap: 60 });
   });
 
   it("a cap of 0 sends nothing", async () => {

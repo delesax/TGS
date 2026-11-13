@@ -33,7 +33,7 @@ W4 voter eligibility (`20261113000300`), W5 integrity signals and the `/admin/si
 | `reply` | someone replies to your Dispatch (digest) | **Cut**: highest volume |
 | `campaign_opened`, `campaign_round_changed`, `campaign_closed` | Campaign events, to followers | **Cut**: visible on the site |
 | `campaign_closing_soon` | 24 hours before the close | **Cut** |
-| `peer_voting_open` | voting opens, to participants | **Cut** (borderline: it prompts voting; flip with one SQL update of `email_essential_kinds` if you want it back) |
+| `peer_voting_open` | voting opens, to participants | **Keep** (owner decision, 13 Nov: it prompts voting; it was borderline) |
 
 Sign-up confirmation and password reset are sent by Supabase, not queued by the app, and are not affected.
 

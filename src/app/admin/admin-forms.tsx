@@ -224,9 +224,9 @@ export function EmailControlsForm({ values }: { values: { email_essentials_only:
       <fieldset className="flex flex-col gap-4">
         <legend className="mb-2 text-2xl font-bold">App email</legend>
         <p className="text-lg text-muted-foreground">
-          Sign-up and password-reset emails come from Supabase and share the same free sending quota, so the app keeps its own email small. Essentials are moderation outcomes, Verdict published, appeal outcomes and judge assignments.
+          Sign-up and password-reset emails come from Supabase and share the same free sending quota, so the app keeps its own email small. Essentials are moderation outcomes, Verdict published, appeal outcomes, judge assignments and voting-open notices.
         </p>
-        <CheckboxField name="email_essentials_only" label="Essential emails only (replies, Campaign updates, closing-soon and voting-open emails are not sent)" defaultChecked={values.email_essentials_only} />
+        <CheckboxField name="email_essentials_only" label="Essential emails only (replies, Campaign updates and closing-soon emails are not sent)" defaultChecked={values.email_essentials_only} />
         <TextField name="email_global_daily_cap" label="Most app emails sent in one UK day" hint="Over the cap, other kinds are skipped and essential ones wait until after midnight." type="number" inputMode="numeric" defaultValue={String(values.email_global_daily_cap)} error={e.cap} />
         <TextField name="reason" id="email_controls_reason" label="Reason" hint="Required. Kept in the audit log." error={e.reason} required />
         <SubmitButton pending={pending} pendingLabel="Saving…">

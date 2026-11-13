@@ -16,9 +16,9 @@
 
 alter table public.invites
   add column invited_email text
-    check (invited_email is null or (invited_email = lower(invited_email) and char_length(invited_email) between 3 and 320));
+    check (invited_email is null or (invited_email = lower(btrim(invited_email)) and char_length(invited_email) between 3 and 320));
 
-comment on column public.invites.invited_email is 'Optional. When set, only this email address (lower case) can sign up with the code.';
+comment on column public.invites.invited_email is 'Optional. When set, only this email address (lower case, no surrounding spaces) can sign up with the code.';
 
 -- 'ok', 'invalid' (not found, revoked, expired or used up) or 'email_mismatch'.
 create or replace function public.invite_check(p_code text, p_email text)

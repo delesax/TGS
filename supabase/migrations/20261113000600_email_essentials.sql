@@ -8,9 +8,9 @@
 --   * email_essentials_only (default ON): only the kinds listed in
 --     email_essential_kinds are queued; the others are not queued at all;
 --   * email_essential_kinds: moderation_outcome, verdict_published,
---     verdict_appeal_outcome, judge_assigned. (Changing the list later is one
---     SQL update, no deploy.) Cut: reply, campaign_opened, campaign_round_changed,
---     campaign_closed, campaign_closing_soon, peer_voting_open;
+--     verdict_appeal_outcome, judge_assigned, peer_voting_open. (Changing the list
+--     later is one SQL update, no deploy.) Cut: reply, campaign_opened,
+--     campaign_round_changed, campaign_closed, campaign_closing_soon;
 --   * email_global_daily_cap (default 60): the most app emails sent in a UK day.
 -- Nothing is left queued forever: when the setting is switched on, queued mail of
 -- a cut kind is marked skipped the next time the processor runs; when the daily
@@ -23,10 +23,10 @@
 
 alter table public.community_settings
   add column email_essentials_only boolean not null default true,
-  add column email_essential_kinds text[] not null default array['moderation_outcome', 'verdict_published', 'verdict_appeal_outcome', 'judge_assigned'],
+  add column email_essential_kinds text[] not null default array['moderation_outcome', 'verdict_published', 'verdict_appeal_outcome', 'judge_assigned', 'peer_voting_open'],
   add column email_global_daily_cap integer not null default 60 check (email_global_daily_cap between 0 and 2000);
 
-create or replace function public.enqueue_email(p_user_id uuid, p_kind text, p_payload jsonb, p_dedupe_key text, p_send_after timestamptz default null)
+create or replace function public.enqueue_email(p_user_id uuid, p_kind text, p_payload jsonb, p_dedupe_key text, p_send_after timestamptz default now())
 returns void
 language plpgsql
 security definer

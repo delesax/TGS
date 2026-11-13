@@ -60,6 +60,13 @@ describe("an invite bound to an email address", () => {
     expect(bad.error).not.toBeNull();
   });
 
+  it("refuses an address with surrounding spaces, so a stored value always matches exactly", async () => {
+    for (const bad of [" padded@example.test", "padded@example.test ", " padded@example.test "]) {
+      const r = await service.from("invites").insert({ code: `TGS-BND-${randomUUID().slice(0, 8).toUpperCase()}`, max_uses: 1, invited_email: bad });
+      expect(r.error, JSON.stringify(bad)).not.toBeNull();
+    }
+  });
+
   it("does not bypass the sign-up kill switch", async () => {
     const wanted = fresh("paused");
     const invite = await makeInvite({ invited_email: wanted });
