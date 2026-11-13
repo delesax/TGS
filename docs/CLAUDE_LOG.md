@@ -46,6 +46,7 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 - **Catalog verification** (function overloads, SECURITY DEFINER/INVOKER, search_path, anon and authenticated execute, `RUBRIC_NOT_PUBLISHED` in `save_campaign`, Campaign counts by status, `rubric_published_at`) was run by the owner in the Supabase dashboard SQL Editor. I did not run it and have not seen the results.
 - **What I did check:** before the apply, the branch was rebased onto `origin/main` (batch 2b merged), CHANGELOG and `tests/rls/sprint7-grants.test.ts` conflicts resolved keeping both sides, migration unchanged, then typecheck and lint clean, 354 unit, 361 RLS, 55 Playwright passing, force-with-lease push. After the apply, `/api/health`, `/`, `/login`, `/signup`, `/campaigns` and `/leaderboard` on the live site all returned 200 with no error markers in the body.
 - Nothing merged. The rule 7 PR is for the owner to merge. No settings changed, no rubric published, nothing scheduled.
+- **Afterwards (owner):** PR #34 (this entry plus the rule 7 commit) and PR #35 (Current state and Open for the owner refresh) were merged to `main` on 13 Nov. `main` is at `0ab55a6`. Nothing pending on hosted as far as Claude knows.
 
 ### 2026-11-13 — Batch 2b migration applied; rule 7 branch; owner actions; branch clean-up
 
