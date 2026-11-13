@@ -4,6 +4,11 @@ Branch `sprint-7-hardening`, cut from `origin/main` (`15b14c6`). **This is a rea
 
 Parked, not touched here: `legal-hardening` work, `src/lib/legal.ts`, the PLACEHOLDER strings in `src/lib/judging/notices.ts`, account deletion (stays off).
 
+## Phase B progress (updated 13 November)
+
+Batch 1 is built on branch `sprint-7-phase-b`: **W1** kill switches, **W2** rate limiter and event log, **W3** open redirect, **W6** health route and page, **W8** injection corpus, **W11** HSTS (CSP left for later), **W12** patch upgrades. Two migrations (`20261113000100`, `20261113000200`), local only, not applied to hosted. One change from the plan: per-IP limits are generous (sign-in 100 per 10 minutes, sign-up 60 per hour, reset 30 per hour) because a pilot class shares one address; the sharp limits are per email and per user.
+**Still to do:** W4 (needs D3), W5 (D4), W7 (D5), W9, W10 (D3b), W13 (D7), W14, CSP report-only. D1, D2, D6 and D8 are still open.
+
 ## How this was checked, and what was not
 
 Checked by reading the code and migrations on `origin/main`, running small read-only scripts (a scan of every migration for SECURITY DEFINER functions, a test of `safeNextPath`, `npm audit`, `npm outdated`), and reading the real schema. Function and column names below are quoted from the migrations.
