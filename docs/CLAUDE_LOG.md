@@ -10,7 +10,6 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 | --- | --- | --- | --- |
 | `main` | Sprints 1–4 and **Sprint 5 merged (PRs #6 to #8, 12 Nov), ratified gold set and logs merged (PR #10)**, launch email docs | see `git log origin/main` | Sprint 4 migrations applied; **Sprint 5 migrations applied 12 Nov** (`20261111000100`, `20261111000200`) |
 | `sprint-5-judging` | **Fully merged to `main` (PR #6 code, PR #7 log).** Nothing left on the branch | see `git log` | Migrations applied to hosted (see `main`) |
-| `header-signout-wrap` | **Pushed 12 Nov, PR for the owner to open and merge** (https://github.com/delesax/TGS/compare/main...header-signout-wrap). Header fix and Playwright check; no migrations | see `git log origin/header-signout-wrap` | — |
 | `legal-hardening` | Built and **pushed 12 Nov** (local is 1 log commit ahead of origin), no PR yet (owns legal pages, account deletion, DEMO.md); six migrations written, not applied | see `git log origin/legal-hardening` | Nothing applied |
 | `sprint-4-audit-handle` | On origin, no PR; one migration `20261104000500_audit_no_handle.sql` (stops new handle writes in `decide_held_handle`; old rows untouched; main's onboarding still writes the handle, fixed only by legal-hardening) | `bc88132` | Nothing applied |
 | `launch-email-confirm-template` | Doc edits (Resend `updates` subdomain, 20i, DMARC optional) committed and **pushed 12 Nov**; owner to open PR | `968fdaf` | — |
@@ -30,6 +29,12 @@ Worktrees: `TGS/` (original checkout), `TGS-legal/` (legal-hardening), `TGS-spri
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-13 — Header fix merged
+
+- Owner merged PR #17 (`header-signout-wrap`): the admin header now keeps "Sign out" on one row from 1080px up; 375px unchanged. Fast-forwarded local `main`; removed the header branch row from "Current state".
+- Branches still on origin and not deleted (waiting for the owner's say-so): `header-signout-wrap` and `claude-log-admin-account` (both fully merged). Open work: `legal-hardening` and `sprint-4-audit-handle`. Hosted unchanged: Sprint 5 migrations applied; the other two sets not applied.
+- This log branch (`claude-log-pr17`) is pushed together with this entry for the owner to PR.
 
 ### 2026-11-12 — Branch housekeeping
 
