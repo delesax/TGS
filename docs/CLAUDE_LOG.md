@@ -8,7 +8,6 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 
 | Branch | State | Latest commit | Hosted |
 | --- | --- | --- | --- |
-| `sprint-7-batch-2a` | **Pushed, no PR**: Sprint 7 Phase B batch 2a (W4 voter eligibility, W5 integrity signals and `/admin/signals`, W10 invite binding, W15 email essentials). Four new migrations `20261113000300` to `000600`, **not applied to hosted**; safe order is migrations first, then merge | see `git log origin/sprint-7-batch-2a` | Not applied |
 | `main` | Sprints 1–4 and **Sprint 5 merged (PRs #6 to #8, 12 Nov), ratified gold set and logs merged (PR #10)**, launch email docs | see `git log origin/main` | All migrations applied to hosted (Sprint 4, Sprint 5, legal-hardening and audit-handle, last on 13 Nov) |
 | `main` also has legal-hardening | **Merged to `main` as PR #22 (13 Nov); its six migrations were applied to hosted on 13 Nov** (`20261107000100` to `000600`). The `legal-hardening` and `merge-legal-hardening` branches were deleted | see `git log origin/main` | Applied |
 
@@ -16,7 +15,7 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 
 ## Open for the owner
 
-- Sprint 7 batch 2a: review the four migrations (SQL printed in the 13 Nov hand-over and in `supabase/migrations/20261113000300` to `000600`) before anything goes near hosted. Apply order: migrations first (dry run with `--include-all`, then your "go"), then merge the PR. Behaviour that starts at apply, and is intended: accounts under 48 hours old cannot vote, confirm or pick; non-essential app email stops being queued; judging settings can finally be saved from Admin (Sprint 5 bug fixed).
+- Sprint 7 batch 2a is live (merged as PR #29, migrations applied 13 Nov). Still to do in Sprint 7: W7 judge prompt v2 (approved), W9 local load tests, W13 backup procedure, W14 runbook and checklists, report-only CSP. Check Authentication, Rate Limits in the Supabase dashboard (all Auth calls come from Vercel's shared addresses, see the 13 Nov follow-up).
 - Sprint 7 Phase B batch 1 is live (merged as PR #27, migrations applied 13 Nov). Set the kill-switch wording you want in `src/lib/switches.ts` (D6). Still waiting on your answers to D1 to D8 for the rest of Phase B (W4, W5, W7, W10, W13 need D3, D4, D5, D3b, D7).
 - Legal (parked): the new rate limiter keeps a SHA-256 hash of IP and email addresses for up to two days; the privacy and retention wording needs a review.
 - Sprint 7: answer D1 to D8 in `docs/SPRINT_7_PLAN.md` (Vercel Hobby terms, email volume, minimum account age and invite binding, collusion policy, judge prompt v2, kill-switch wording, backups, Anthropic cap) before Phase B starts.
@@ -32,6 +31,14 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 - Decide whether account deletion also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-13 — Sprint 7 batch 2a applied to hosted
+
+- **PR #29 (`sprint-7-batch-2a`) was merged before its migrations were applied**, the opposite of the agreed order. Between the merge and the apply, the live admin judging page, the peer-vote page and `/admin/signals` would have errored and the new settings forms could not save; sign-up, posting and the existing pages were not affected (the sign-up form falls back to the old invite check). No peer voting was open in the pilot.
+- On the owner's "go": confirmed `main` has PR #29 and `32a719c`; a dry run with `--include-all` listed exactly `20261113000300`, `000400`, `000500` and `000600`; hosted before: the email outbox was empty and there were 15 Campaigns. `supabase db push --include-all` applied all four with no error (output filtered, no connection string printed).
+- Verified read-only on hosted: `judging_settings` defaults 48 hours, 3 confirmations and 24 hours; `invites.invited_email` exists with `invites_invited_email_check` using `lower(btrim(...))`; `community_settings` reads essentials-only true, five essential kinds including `peer_voting_open`, global daily cap 60 (per-person cap still 6), and all three switches off. All 13 functions from the four migrations are SECURITY DEFINER with `search_path` set; anon can execute none of them; signed-in users can execute `admin_integrity_signals`, `set_email_controls`, `cast_peer_vote`, `set_steelman_confirmation`, `pick_mind_changer` and the eight-argument `save_judging_settings`; the old five-argument version is gone (one overload, 8 arguments). `handle_new_user` contains `INVITE_EMAIL_MISMATCH` and keeps the reserved-count and public-record checks; the triggers on `auth.users` (`auth_users_refuse_when_paused`, `on_auth_user_created`, `on_auth_user_confirmed`, `before_auth_user_deleted`) are all enabled. A fresh dry run says the remote database is up to date.
+- Email processor: the outbox was empty before and after (about a minute after the apply, `email-kick` had run every minute and succeeded), so nothing was queued or skipped. Live site (public): `/api/health` 200 `{"ok":true}`; `/`, `/login`, `/signup`, `/campaigns`, `/leaderboard` return 200 with no error markers and no banner.
+- No setting was changed. Not checked: the admin pages on the live site (they need an admin sign-in). `sprint-7-batch-2a` is merged but not deleted. Every migration on `main` is now applied to hosted.
 
 ### 2026-11-13 — Sprint 7 Phase B, batch 2a (branch `sprint-7-batch-2a`)
 
