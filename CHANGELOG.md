@@ -1,5 +1,15 @@
 # Changelog
 
+## Header: "Sign out" no longer wraps at desktop widths (12 November 2026). Awaiting review
+
+Branch `header-signout-wrap`, cut from `main`. **No migrations, nothing applied to hosted, no new dependency.**
+
+- **Bug:** an admin has seven header links (Home, Campaigns, Leaderboard, Dossier, Admin, Account, Sign out). With the logo they need about 1,040px, but the header was capped at the same 896px as the page, so at every desktop width "Sign out" dropped onto a second row and pushed the search box down.
+- **Fix** (`src/components/site-header.tsx`): from the `lg` breakpoint (1024px) the header row and the search row use `max-w-6xl` instead of `max-w-4xl`, the logo no longer wraps or shrinks, and the search box stays 896px wide. Below 1024px nothing changed; at 375px the header measures the same as before (330px tall, logo at 14px, links from 77px).
+- **Trade-off:** from 1024px the header is wider than the page content below it, so the logo sits further left than the page text.
+- **Known limit:** the admin header needs about 1,040px, so at exactly 1024px "Sign out" still wraps as before. It fits from 1080px.
+- **Tests:** `tests/e2e/header.spec.ts` (5 Playwright tests): as an admin at 1080, 1280, 1440 and 1920px all seven links share one row, the search box sits directly below and the header stays under 150px tall; at 375px the logo stays above the links and nothing overflows. Before the fix the first three failed at 1280, 1440 and 1920px (Sign out 58px lower than the other links). Full suite: 30 Playwright, 372 unit tests, typecheck and lint clean.
+
 ## Password recovery (12 November 2026). Awaiting review
 
 Branch `forgot-password`, cut from `main`. **No migrations, nothing applied to hosted, no new dependency.** The owner must also add the "Reset password" email template and check the redirect URL in Supabase (steps 12 and 12b of `docs/LAUNCH_EMAIL_SETUP.md`).
