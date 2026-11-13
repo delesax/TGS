@@ -18,7 +18,15 @@ const MESSAGES: Record<string, string> = {
   OWN_DISPATCH: "You cannot do this for your own Dispatch.",
   NO_CREDITS: "You have used all your votes. Remove one to vote for another Dispatch.",
   PICKS_CLOSED: "Picks are not open for this Campaign.",
+  STEELMAN_LIMIT: "You have used all your steelman confirmations for this Campaign. Remove one to confirm another.",
 };
+
+/** Messages that need a number from the database error (its detail). */
+function withDetail(code: string | undefined, detail: string | null | undefined): string | null {
+  if (code === "ACCOUNT_TOO_NEW") return `Accounts must be at least ${detail || "48"} hours old before their votes, confirmations and picks count. Please come back a little later.`;
+  if (code === "STEELMAN_LIMIT") return `You can confirm at most ${detail || "3"} steelmen in one Campaign. Remove one to confirm another.`;
+  return null;
+}
 
 const input = z.object({ dispatchId: z.uuid(), slug: z.string().min(1).max(80) });
 
@@ -29,7 +37,7 @@ async function run(rpc: string, args: Record<string, unknown>, slug: string, don
   const { data, error } = await supabase.rpc(rpc, args);
   if (error) {
     const code = /^([A-Z_]+):/.exec(error.message)?.[1];
-    return { ok: false, error: (code && MESSAGES[code]) || "That did not work. Please try again." };
+    return { ok: false, error: withDetail(code, error.details) || (code && MESSAGES[code]) || "That did not work. Please try again." };
   }
   revalidatePath(`/campaigns/${slug}/vote`);
   return { ok: true, message: done(data) };

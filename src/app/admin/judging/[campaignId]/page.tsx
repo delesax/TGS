@@ -168,6 +168,12 @@ export default async function AdminCampaignJudgingPage({ params }: PageProps<"/a
               Version {draft.version}, computed {formatUkDateTime(draft.computed_at)} {draft.computed_by ? `by ${h(draft.computed_by)}` : "by the scheduler"}.
               {draft.rationale_ai_assisted ? ` Rationale worded with AI help (${draft.rationale_model}).` : ""}
             </p>
+            {!draft.needs_attention && draft.attention_reasons.length ? (
+              <div role="note" className="rounded-lg border-2 border-primary p-4">
+                <p className="text-lg font-bold">For review (does not block publishing)</p>
+                <AttentionList items={draft.attention_reasons} handles={handles} />
+              </div>
+            ) : null}
             {draft.needs_attention ? (
               <div role="note" className="rounded-lg border-2 border-destructive p-4">
                 <p className="text-lg font-bold">Needs attention before it can be published</p>

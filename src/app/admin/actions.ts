@@ -178,6 +178,25 @@ export async function setSiteSwitches(_prev: FormState, formData: FormData): Pro
   return { success: "Saved. The change is in the audit log, and the banner updates straight away." };
 }
 
+/** App email controls (migration 20261113000600): essentials only, and the global daily cap. The database checks the role and writes the audit entry. */
+export async function setEmailControls(_prev: FormState, formData: FormData): Promise<FormState> {
+  const denied = await adminOnly();
+  if (denied) return denied;
+  const parsed = z
+    .object({ cap: z.coerce.number().int("Use a whole number.").min(0, "Use 0 or more.").max(2000, "Use 2,000 or fewer."), reason: reasonField })
+    .safeParse({ cap: formData.get("email_global_daily_cap"), reason: String(formData.get("reason") ?? "") });
+  if (!parsed.success) return { formError: "Please check the highlighted answers.", formHint: "Nothing has been changed.", fieldErrors: fieldErrors(parsed.error) };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_email_controls", {
+    p_essentials_only: formData.get("email_essentials_only") === "on",
+    p_global_daily_cap: parsed.data.cap,
+    p_reason: parsed.data.reason,
+  });
+  if (error) return dbProblem(error, "We could not change the email controls.");
+  revalidatePath("/admin/settings");
+  return { success: "Saved. The change is in the audit log." };
+}
+
 const reactionSchema = z.object({
   key: z.string().regex(/^[a-z_]{2,30}$/),
   label: z.string().trim().min(1, "Give the reaction a label.").max(30, "Keep the label to 30 characters or fewer."),

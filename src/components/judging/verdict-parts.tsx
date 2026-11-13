@@ -152,6 +152,7 @@ export function AttentionList({ items, handles }: { items: Attention[]; handles:
     <ul className="flex list-disc flex-col gap-2 pl-6 text-lg">
       {items.map((a, i) => (
         <li key={i}>
+          {a.info ? <span className="font-semibold">For review: </span> : null}
           {a.detail}
           {a.user_id ? (
             <>

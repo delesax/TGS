@@ -43,7 +43,12 @@ export type JudgingSettings = {
   steelman_bonus_per_dispatch: number;
   steelman_min_confirmations: number;
   steelman_ai_min_confidence: number;
+  /** Hours a before-to-after position change must span to earn mind-change credit (default 24). */
+  min_position_span_hours?: number;
 };
+
+/** One flag from the database function integrity_signals(); read-only, for humans. */
+export type IntegritySignal = { code: string; campaign_id?: string; users: string[]; detail: string };
 
 export type JudgingInputs = {
   dispatches: { id: string; author_id: string; kind: DispatchKind; created_at: string }[];
@@ -55,13 +60,15 @@ export type JudgingInputs = {
   reputation: Record<string, number>;
   ai: ({ dispatch_id: string; steelman_detected: boolean; steelman_confidence: number } & Criteria)[];
   steelman: { dispatch_id: string; user_id: string }[];
-  positions: { user_id: string; before: Position | null; after: Position | null }[];
+  positions: { user_id: string; before: Position | null; after: Position | null; before_at?: string | null; after_at?: string | null }[];
   picks: { user_id: string; dispatch_id: string }[];
   /** Authors who took part in an earlier Campaign: not newcomers. */
   prior_participants: string[];
   rubric_jobs: { pending: number; failed: number };
   peer_window_open: boolean;
   settings: JudgingSettings;
+  /** Flags for human review (never changes a score). Absent on older databases. */
+  integrity?: IntegritySignal[];
 };
 
 export type Component = "panel" | "peer" | "ai_rubric" | "mind_change";
@@ -79,9 +86,14 @@ export type AttentionCode =
   | "ai_failed"
   | "ai_missing"
   | "no_mind_change"
-  | "unresolved_tie";
+  | "unresolved_tie"
+  | "integrity_signals";
 
-export type Attention = { code: AttentionCode; detail: string; user_id?: string; component?: Component };
+/**
+ * `info` items are listed for the admin but do not block publishing: they are
+ * flags for a human to look at (integrity signals), not problems to fix.
+ */
+export type Attention = { code: AttentionCode; detail: string; user_id?: string; component?: Component; info?: boolean };
 
 export type StrategistScore = {
   user_id: string;
@@ -275,14 +287,31 @@ export function blend(inputs: JudgingInputs, weights: Weights | null): BlendResu
   };
 
   // Mind-change: picks by people whose position moved, credited to the author.
-  const moved = new Map(inputs.positions.map((p) => [p.user_id, movement(p.before, p.after)]));
+  // A pick counts only if the change took at least min_position_span_hours between
+  // the recorded before and after (so a position set and flipped in one go earns
+  // nothing), and it is weighted like a peer vote: reputation-weighted, capped at a
+  // multiple of the median picker, so a ring of new accounts cannot swamp it.
+  const spanMs = (inputs.settings.min_position_span_hours ?? 24) * 3_600_000;
+  const moved = new Map(
+    inputs.positions.map((p) => {
+      const span = p.before_at && p.after_at ? new Date(p.after_at).getTime() - new Date(p.before_at).getTime() : Number.POSITIVE_INFINITY;
+      return [p.user_id, span >= spanMs ? movement(p.before, p.after) : 0] as const;
+    }),
+  );
   const hasPositions = inputs.positions.some((p) => p.before && p.after);
-  const mindCredits = new Map<string, number>();
-  for (const pick of inputs.picks) {
+  const pickers = inputs.picks.filter((pick) => {
     const d = eligible.get(pick.dispatch_id);
-    const m = moved.get(pick.user_id) ?? 0;
-    if (!d || d.author_id === pick.user_id || m === 0) continue;
-    mindCredits.set(d.author_id, (mindCredits.get(d.author_id) ?? 0) + m);
+    return d && d.author_id !== pick.user_id && (moved.get(pick.user_id) ?? 0) > 0;
+  });
+  const pickWeight = voterWeights(
+    pickers.map((p) => p.user_id),
+    inputs.reputation,
+    inputs.settings.reputation_cap_multiple,
+  );
+  const mindCredits = new Map<string, number>();
+  for (const pick of pickers) {
+    const d = eligible.get(pick.dispatch_id)!;
+    mindCredits.set(d.author_id, (mindCredits.get(d.author_id) ?? 0) + (moved.get(pick.user_id) ?? 0) * (pickWeight.get(pick.user_id) ?? 1));
   }
 
   // Dispatch scores (for awards and the breakdown).
@@ -379,6 +408,21 @@ export function blend(inputs: JudgingInputs, weights: Weights | null): BlendResu
   const { ranked, topTie } = rank(strategists);
   if (topTie) attention.push({ code: "unresolved_tie", detail: "Two or more Strategists are level at the top after every tie-break. An admin must decide." });
   const winner = !topTie && ranked[0]?.rank === 1 ? ranked[0] : null;
+
+  // Integrity signals: flags for a person to look at. They are listed on the draft
+  // but never block publishing and never change a score or a weight.
+  const signals = inputs.integrity ?? [];
+  if (signals.length) {
+    const counts = new Map<string, number>();
+    for (const s of signals) counts.set(s.code, (counts.get(s.code) ?? 0) + 1);
+    const involved = new Set(signals.flatMap((s) => s.users));
+    const summary = [...counts].map(([code, n]) => `${code.replace(/_/g, " ")} x${n}`).join(", ");
+    attention.push({
+      code: "integrity_signals",
+      info: true,
+      detail: `${signals.length} integrity signal${signals.length === 1 ? "" : "s"} for a person to review (${summary}), involving ${involved.size} Strategist${involved.size === 1 ? "" : "s"}. See Admin, Signals. Nothing has changed any score.`,
+    });
+  }
 
   return {
     weights: w,

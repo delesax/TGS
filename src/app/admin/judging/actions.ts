@@ -175,9 +175,17 @@ const hours = z.coerce.number().int();
 export async function saveJudgingSettings(_prev: FormState, fd: FormData): Promise<FormState> {
   if (!(await admin())) return { formError: "Only admins can do this." };
   const parsed = z
-    .object({ peer: hours.min(1).max(720), judging: hours.min(1).max(1440), credits: hours.min(1).max(50), appeal: hours.min(1).max(60) })
-    .safeParse({ peer: fd.get("peer_window_hours"), judging: fd.get("judging_window_hours"), credits: fd.get("peer_vote_credits"), appeal: fd.get("appeal_window_days") });
-  if (!parsed.success) return { formError: "Check the numbers: peer window 1-720 hours, judging window 1-1440 hours, 1-50 votes, 1-60 days." };
+    .object({
+      peer: hours.min(1).max(720),
+      judging: hours.min(1).max(1440),
+      credits: hours.min(1).max(50),
+      appeal: hours.min(1).max(60),
+      minAge: hours.min(0).max(720),
+      maxSteelman: hours.min(1).max(20),
+      spanHours: hours.min(0).max(720),
+    })
+    .safeParse({ peer: fd.get("peer_window_hours"), judging: fd.get("judging_window_hours"), credits: fd.get("peer_vote_credits"), appeal: fd.get("appeal_window_days"), minAge: fd.get("min_voter_account_age_hours"), maxSteelman: fd.get("max_steelman_confirmations"), spanHours: fd.get("min_position_span_hours") });
+  if (!parsed.success) return { formError: "Check the numbers: peer window 1-720 hours, judging window 1-1440 hours, 1-50 votes, 1-60 days, account age 0-720 hours, 1-20 steelman confirmations, position span 0-720 hours." };
   const supabase = await createClient();
   const { error } = await supabase.rpc("save_judging_settings", {
     p_peer_window_hours: parsed.data.peer,
@@ -185,6 +193,9 @@ export async function saveJudgingSettings(_prev: FormState, fd: FormData): Promi
     p_peer_vote_credits: parsed.data.credits,
     p_appeal_window_days: parsed.data.appeal,
     p_ai_rationale_wording: fd.get("ai_rationale_wording") === "on",
+    p_min_voter_account_age_hours: parsed.data.minAge,
+    p_max_steelman_confirmations: parsed.data.maxSteelman,
+    p_min_position_span_hours: parsed.data.spanHours,
   });
   if (error) return problem(error.message, "We could not save the settings.");
   revalidatePath("/admin/judging");

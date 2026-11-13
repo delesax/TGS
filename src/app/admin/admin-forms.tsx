@@ -5,7 +5,7 @@ import { useActionState } from "react";
 import { ActionForm, CheckboxField, FormMessage, SubmitButton, TextAreaField, TextField, type FormState } from "@/components/form";
 import { Label } from "@/components/ui/label";
 import { useDecisionLog } from "./decision-log";
-import { decideHandle, moderateDispatch, resolveFlag, saveJudgingWeights, saveReactionType, saveSettings, setPostingMute, setSiteSwitches, type SettingsValues } from "./actions";
+import { decideHandle, moderateDispatch, resolveFlag, saveJudgingWeights, saveReactionType, saveSettings, setEmailControls, setPostingMute, setSiteSwitches, type SettingsValues } from "./actions";
 
 type Choice = { value: string; label: string; hint?: string };
 
@@ -206,9 +206,31 @@ export function SwitchesForm({ values }: { values: { posting_paused: boolean; si
         <CheckboxField name="posting_paused" label="Pause posting (nobody can post a new Dispatch; reading, reacting and voting carry on)" defaultChecked={values.posting_paused} />
         <CheckboxField name="signups_paused" label="Pause sign-ups (no new accounts, even with a valid invite)" defaultChecked={values.signups_paused} />
         <CheckboxField name="emails_paused" label="Pause emails (they wait in the queue and go out when you untick this)" defaultChecked={values.emails_paused} />
-        <TextField name="reason" label="Reason" hint="Required. Kept in the audit log." error={e.reason} required />
+        <TextField name="reason" id="switches_reason" label="Reason" hint="Required. Kept in the audit log." error={e.reason} required />
         <SubmitButton pending={pending} pendingLabel="Saving…">
           Save switches
+        </SubmitButton>
+      </fieldset>
+    </ActionForm>
+  );
+}
+
+export function EmailControlsForm({ values }: { values: { email_essentials_only: boolean; email_global_daily_cap: number } }) {
+  const [state, run, pending] = useActionState(setEmailControls, {} as FormState);
+  const e = state.fieldErrors ?? {};
+  return (
+    <ActionForm action={run} aria-label="Email controls">
+      <FormMessage state={state} />
+      <fieldset className="flex flex-col gap-4">
+        <legend className="mb-2 text-2xl font-bold">App email</legend>
+        <p className="text-lg text-muted-foreground">
+          Sign-up and password-reset emails come from Supabase and share the same free sending quota, so the app keeps its own email small. Essentials are moderation outcomes, Verdict published, appeal outcomes and judge assignments.
+        </p>
+        <CheckboxField name="email_essentials_only" label="Essential emails only (replies, Campaign updates, closing-soon and voting-open emails are not sent)" defaultChecked={values.email_essentials_only} />
+        <TextField name="email_global_daily_cap" label="Most app emails sent in one UK day" hint="Over the cap, other kinds are skipped and essential ones wait until after midnight." type="number" inputMode="numeric" defaultValue={String(values.email_global_daily_cap)} error={e.cap} />
+        <TextField name="reason" id="email_controls_reason" label="Reason" hint="Required. Kept in the audit log." error={e.reason} required />
+        <SubmitButton pending={pending} pendingLabel="Saving…">
+          Save email controls
         </SubmitButton>
       </fieldset>
     </ActionForm>

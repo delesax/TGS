@@ -79,6 +79,8 @@ async function ensureUsers(admin: SupabaseClient): Promise<Map<string, string>> 
     }
     const { error } = await admin.from("profiles").update({ handle, handle_set_at: new Date().toISOString(), bio: "Test user created by seed:judging." }).eq("id", id);
     if (error) throw error;
+    // Votes, steelman confirmations and picks need an account at least 48 hours old (Sprint 7), so the test users are made three days old.
+    await admin.from("profiles").update({ created_at: new Date(Date.now() - 3 * 86_400_000).toISOString() }).eq("id", id);
     // After the legal-hardening merge, positions need consent. Ignored if the column does not exist yet.
     await admin.from("profiles").update({ positions_consent_at: new Date().toISOString(), positions_consent_version: "seed" }).eq("id", id);
     ids.set(handle, id);

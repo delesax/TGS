@@ -272,7 +272,7 @@ export function describeDispatchError(error: { message?: string; details?: strin
     case "MUTED":
       return { code, message: "Posting is paused for your account.", hint: "A moderator has paused your posting. The reason is shown on the Campaign page. You can still read and react." };
     case "POSTING_PAUSED":
-      return { code, message: "Posting is paused for a short while.", hint: "You can still read, react and vote. Your text is kept here; try again later." };
+      return { code, message: "Posting is paused for a short while.", hint: "You can still read everything. Please check back soon. Your text is kept here." };
     case "EDIT_WINDOW_OVER":
       return { code, message: `Dispatches can be edited for ${Math.round((detail || 300) / 60)} minutes after posting.`, hint: "That time has passed. You can post a new Dispatch, or withdraw this one." };
     case "OWN_DISPATCH":

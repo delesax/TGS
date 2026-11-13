@@ -352,3 +352,77 @@ describe("awards and rationale", () => {
     expect(templateRationale(r, "Should X?")).toMatch(/No Grand Strategist can be named yet[\s\S]*No peer votes were cast/);
   });
 });
+
+describe("mind-change picks (Sprint 7)", () => {
+  const T0 = "2026-11-01T00:00:00Z";
+  const DAY_LATER = "2026-11-02T01:00:00Z";
+  const HOUR_LATER = "2026-11-01T01:00:00Z";
+  const mind = (r: ReturnType<typeof blend>, id: string) => r.strategists.find((x) => x.user_id === id)!.raw.mind_credits;
+
+  it("gives no credit when the position change spans less than a day, and full credit when it spans a day", () => {
+    const quick = blend(
+      inputs({ positions: [{ user_id: V[0], before: "for", after: "against", before_at: T0, after_at: HOUR_LATER }], picks: [{ user_id: V[0], dispatch_id: "da" }] }),
+      DEFAULT_WEIGHTS,
+    );
+    expect(mind(quick, A)).toBe(0);
+    const slow = blend(
+      inputs({ positions: [{ user_id: V[0], before: "for", after: "against", before_at: T0, after_at: DAY_LATER }], picks: [{ user_id: V[0], dispatch_id: "da" }] }),
+      DEFAULT_WEIGHTS,
+    );
+    expect(mind(slow, A)).toBe(1);
+  });
+
+  it("uses the span setting (not a constant) and treats missing times as satisfied", () => {
+    const base = { user_id: V[0], before: "for" as const, after: "against" as const };
+    const picks = [{ user_id: V[0], dispatch_id: "da" }];
+    const strict = blend(inputs({ positions: [{ ...base, before_at: T0, after_at: DAY_LATER }], picks, settings: { ...SETTINGS, min_position_span_hours: 48 } }), DEFAULT_WEIGHTS);
+    expect(mind(strict, A)).toBe(0);
+    const off = blend(inputs({ positions: [{ ...base, before_at: T0, after_at: T0 }], picks, settings: { ...SETTINGS, min_position_span_hours: 0 } }), DEFAULT_WEIGHTS);
+    expect(mind(off, A)).toBe(1);
+    const missing = blend(inputs({ positions: [base], picks }), DEFAULT_WEIGHTS);
+    expect(mind(missing, A)).toBe(1);
+  });
+
+  it("weights each pick like a peer vote: a reputable picker counts more than a newcomer, capped at the multiple", () => {
+    const pos = (u: string) => ({ user_id: u, before: "for" as const, after: "against" as const, before_at: T0, after_at: DAY_LATER });
+    const r = blend(
+      inputs({
+        positions: [pos(V[0]), pos(V[1]), pos(V[2])],
+        picks: [
+          { user_id: V[0], dispatch_id: "da" },
+          { user_id: V[1], dispatch_id: "db" },
+          { user_id: V[2], dispatch_id: "db" },
+        ],
+        reputation: { [V[0]]: 7 },
+      }),
+      DEFAULT_WEIGHTS,
+    );
+    // V[0] has 7 points: weight 1 + log2(8) = 4, capped at 3 x the median picker (median weight 1) = 3.
+    expect(mind(r, A)).toBeCloseTo(3);
+    expect(mind(r, B)).toBeCloseTo(2);
+  });
+});
+
+describe("integrity signals (Sprint 7)", () => {
+  const signal = { code: "mutual_votes", users: [B, C], detail: "Each voted for a Dispatch written by the other" };
+
+  it("are listed for review but never block publishing and never change a score", () => {
+    const plain = blend(inputs(), DEFAULT_WEIGHTS);
+    const flagged = blend(inputs({ integrity: [signal, { ...signal, code: "burst_votes", users: [B] }] }), DEFAULT_WEIGHTS);
+    const item = flagged.attention.find((a) => a.code === "integrity_signals");
+    expect(item?.info).toBe(true);
+    expect(item?.detail).toMatch(/2 integrity signals/);
+    expect(item?.detail).toMatch(/involving 2 Strategists/);
+    expect(item?.detail).toMatch(/Nothing has changed any score/);
+    // Scores, ranks and winner are identical with and without the signals.
+    expect(flagged.strategists.map((x) => [x.user_id, x.final, x.rank])).toEqual(plain.strategists.map((x) => [x.user_id, x.final, x.rank]));
+    expect(flagged.winner_id).toBe(plain.winner_id);
+    // Only info items: the draft would not need attention for them.
+    expect(flagged.attention.filter((a) => !a.info)).toEqual(plain.attention);
+  });
+
+  it("add nothing when there are none or when the database does not send them", () => {
+    expect(blend(inputs({ integrity: [] }), DEFAULT_WEIGHTS).attention.find((a) => a.code === "integrity_signals")).toBeUndefined();
+    expect(blend(inputs(), DEFAULT_WEIGHTS).attention.find((a) => a.code === "integrity_signals")).toBeUndefined();
+  });
+});

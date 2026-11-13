@@ -91,13 +91,16 @@ export type JudgingSettingsRow = {
   steelman_bonus_max: number;
   steelman_min_confirmations: number;
   reputation_cap_multiple: number;
+  min_voter_account_age_hours: number;
+  max_steelman_confirmations: number;
+  min_position_span_hours: number;
 };
 
 export async function getJudgingSettings(): Promise<JudgingSettingsRow> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("judging_settings")
-    .select("peer_window_hours, judging_window_hours, peer_vote_credits, appeal_window_days, ai_rationale_wording, steelman_bonus_max, steelman_min_confirmations, reputation_cap_multiple")
+    .select("peer_window_hours, judging_window_hours, peer_vote_credits, appeal_window_days, ai_rationale_wording, steelman_bonus_max, steelman_min_confirmations, reputation_cap_multiple, min_voter_account_age_hours, max_steelman_confirmations, min_position_span_hours")
     .single();
   if (error || !data) throw new Error("Could not load the judging settings");
   return data as JudgingSettingsRow;
