@@ -33,6 +33,14 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 
 ## Entries
 
+### 2026-11-13 — Owner's edited rules text merged (PR #46)
+
+- Docs only. PR #46 put the owner's edited rules text into section 3 of `docs/campaigns/under-16-social-media-ban.md` (1,414 characters, replacing Claude's longer 2,044-character draft), with a short note checking it against the code. The branch was rebased onto `main` after PRs #44 and #45 first; no conflicts.
+- **Checked and accurate:** the three length limits, the 10-Dispatch cap across the whole Campaign in an open arena, 30 seconds, 5 minutes, the public none, assisted or generated declaration, held items hidden until a person checks them, screening never deleting and only an admin removing, the 48-hour account age and 24-hour position span for picks, picks open while the Campaign runs or in the peer window, and the server clock.
+- **Left out compared with Claude's draft** (members learn these from the forms): a handle and a recorded position are needed before posting; an Argument cannot contain links, a Rebuttal must answer another Dispatch, Evidence needs a source; the three public AI labels; one pick per Campaign.
+- **Two wording notes in the brief:** "your recorded position must have changed over at least 24 hours" reads as a condition for picking, but the code only makes the pick count when the before and after records are 24 hours apart (`src/lib/judging/blend.ts:290-304`; consider "for your pick to count, ..."); and the sentence about "in this round" is rarely needed because open-arena members read "here" (`dispatch-section.tsx:93-96, 111`), so it may be dropped.
+- **Still open:** run queries C and E to confirm the live limits and pick conditions (all numbers are code defaults); settle the Campaign 1 title and close date; check the summary's facts on gov.uk, eSafety and the BMJ; the Admin form click-through. Nothing applied to hosted, no hosted command run.
+
 ### 2026-11-13 — Corrections to the Campaign 1 brief and this log (branch `docs-correct-cap-claims`)
 
 - Docs only. Two things Claude had said about the code were wrong, in `docs/campaigns/under-16-social-media-ban.md` (mismatches 7 and 8 and one table row, merged in PR #43) and in the PR #43 entry here; both now corrected in place.
