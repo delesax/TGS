@@ -62,7 +62,7 @@ export default async function LeaderboardPage({ searchParams }: PageProps<"/lead
           ))}
         </ol>
       ) : (
-        <EmptyState title="No Verdicts yet">
+        <EmptyState as="h2" title="No Verdicts yet">
           {category ? `No ${CATEGORY_LABELS[category]} Campaign has a published Verdict yet.` : "The leaderboard fills in as Verdicts are published."}{" "}
           <Link href="/campaigns" className="font-semibold text-primary underline">
             See Campaigns

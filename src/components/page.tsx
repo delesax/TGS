@@ -23,10 +23,10 @@ export function Page({
 }
 
 /** Shown when a list has nothing in it yet: say why, and what to do next. */
-export function EmptyState({ title, children, action }: { title: string; children: React.ReactNode; action?: React.ReactNode }) {
+export function EmptyState({ title, children, action, as: Heading = "h3" }: { title: string; children: React.ReactNode; action?: React.ReactNode; as?: "h2" | "h3" }) {
   return (
     <div className="flex flex-col items-start gap-2 rounded-[12px] bg-muted/70 px-5 py-4">
-      <h3 className="text-lg">{title}</h3>
+      <Heading className="text-lg">{title}</Heading>
       <div className="max-w-[65ch] text-base text-muted-foreground">{children}</div>
       {action}
     </div>
