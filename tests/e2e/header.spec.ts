@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { loadTestEnv } from "../test-env";
-import { expectNoHorizontalOverflow } from "./helpers";
+import { expectNoHorizontalOverflow, openMenu } from "./helpers";
 
 const env = loadTestEnv();
 const service = createClient(env.supabaseUrl, env.serviceKey, { auth: { persistSession: false } });
@@ -43,6 +43,8 @@ test.describe("Site header", () => {
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
     await expect(page).not.toHaveURL(/\/login/);
     await page.goto("/");
+    // Below 1024px the links are inside the Menu panel.
+    if (width < 1024) await openMenu(page);
     await expect(page.getByRole("link", { name: "Admin", exact: true })).toBeVisible();
     return page;
   }
@@ -69,13 +71,21 @@ test.describe("Site header", () => {
     });
   }
 
-  test("at 375px the layout is unchanged: logo above the links, links wrap, nothing overflows", async ({ browser }) => {
+  test("at 375px the links sit in a Menu panel: the header stays short, the open panel overlays and nothing overflows", async ({ browser }) => {
     const page = await signedInAt(browser, 375, 812);
-    const logo = (await page.getByRole("link", { name: "The Grand Strategist" }).first().boundingBox())!;
-    const home = (await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Home" }).boundingBox())!;
-    expect(home.y).toBeGreaterThanOrEqual(logo.y + logo.height);
-    const header = (await page.getByRole("banner").boundingBox())!;
-    console.log(`HEADER375 height=${Math.round(header.height)} logoY=${Math.round(logo.y)} homeY=${Math.round(home.y)}`);
+    // signedInAt left the menu open: seven destinations, none wrapped into the header.
+    const nav = page.getByRole("navigation", { name: "Main" });
+    await expect(nav.locator("a, button")).toHaveCount(7);
+    const open = (await page.getByRole("banner").boundingBox())!;
+    const panel = (await page.locator("#mobile-menu").boundingBox())!;
+    expect(panel.x).toBeGreaterThanOrEqual(0);
+    expect(panel.x + panel.width).toBeLessThanOrEqual(375);
+    await expectNoHorizontalOverflow(page);
+    await page.keyboard.press("Escape");
+    const closed = (await page.getByRole("banner").boundingBox())!;
+    expect(closed.height).toBeLessThan(150);
+    // Opening the panel overlays the page; it does not make the header taller.
+    expect(open.height).toBe(closed.height);
     await expectNoHorizontalOverflow(page);
     await page.context().close();
   });

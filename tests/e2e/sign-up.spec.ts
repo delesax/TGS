@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { expect, test } from "@playwright/test";
 import { loadTestEnv } from "../test-env";
+import { openMenu } from "./helpers";
 
 const env = loadTestEnv();
 const service = createClient(env.supabaseUrl, env.serviceKey, { auth: { persistSession: false } });
@@ -98,7 +99,7 @@ test.describe("Sign-up with an invite code", () => {
     await expect(page.getByRole("heading", { name: "No awards yet" })).toBeVisible();
 
     // Persistent header: Account page, then a clear way back home.
-    await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Account" }).click();
+    await (await openMenu(page)).getByRole("link", { name: "Account" }).click();
     await expect(page.getByRole("heading", { level: 1, name: "Your account" })).toBeVisible();
     await page.getByRole("link", { name: "Back to home" }).click();
     await expect(page).toHaveURL(/\/$/);

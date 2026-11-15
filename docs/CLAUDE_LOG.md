@@ -41,6 +41,12 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 
 ## Entries
 
+### 2026-11-15 — Mobile menu (branch `ui/mobile-nav`, from `ui/brand-reskin`, DO NOT MERGE)
+
+- **Header only; no database, auth, Supabase or Vercel change.** Below 1024px the header links are replaced by a "Menu" button (`src/components/mobile-nav.tsx`) that opens a panel under the header; logged-out visitors keep "Sign in" visible beside it, and logged-in members' Account, Admin and Sign out are in the panel (Account does not fit beside the logo at 320px). From 1024px up nothing changed. Seven admin links no longer wrap. Behaviour: aria-expanded and aria-controls, closes on Escape (focus returns to the button), on choosing a link, on a route change and on a press outside; focus moves into the panel on open; links 54px tall; no animation.
+- **Stacked logo built here:** the "pending" stacked compact logo was not in the repo, so I made one (`lockup-01-stacked`, GRAND over STRATEGIST) in `docs/brand/` and `public/brand/lockup-stacked.svg`; replace that one file if you have a different version. The compact one-line lockup is no longer used in the app. At 320px the logo shrinks to about 95px wide beside Sign in and Menu.
+- **Tests:** new `tests/e2e/mobile-nav.spec.ts` (14 tests); mobile-width tests in `header`, `dispatches`, `campaigns`, `sign-up` and `passkey` specs now open the menu first (`openMenu` in `tests/e2e/helpers.ts`). 69 of 69 Playwright, 354 unit, lint and typecheck clean.
+
 ### 2026-11-15 — Brand re-skin 2A (branch `ui/brand-reskin`, draft PR, DO NOT MERGE)
 
 - **Token re-skin only; no layout, copy, routing, auth, posting, judging or admin logic changed.** Brand palette as CSS variables in `src/app/globals.css` for light and dark (dark follows the device setting, no toggle); new tokens `destructive-soft`, `success-soft`, `gold`, `gold-text`, `gold-mark`. Header uses the Apex lockups from `public/brand/` (full from lg, compact below; link name "The Grand Strategist"). Favicon, apple-touch icon, manifest icons and a light/dark `themeColor` pair replaced; `public/sw.js` `VERSION` bumped to v2 so phones pick up the icons. Seven hard-coded alert colours swapped for tokens; email templates recoloured inline (17 values stay hard-coded on purpose, email clients cannot use CSS variables).

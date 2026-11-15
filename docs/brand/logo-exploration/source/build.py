@@ -347,6 +347,27 @@ def wm_compact():
     return m
 
 
+def wm_stacked():
+    """GRAND over STRATEGIST, both lines the same width, for very narrow headers."""
+    m = Mark()
+    size = 48
+    _, (x0, _y0, x1, _y1) = measure("sserif", "STRATEGIST", size, 0.05)
+    target = x1 - x0
+    lo, hi = 0.0, 1.0
+    for _ in range(40):  # find the tracking that makes GRAND as wide as STRATEGIST
+        mid = (lo + hi) / 2
+        _, (a, _b, c, _d) = measure("sserif", "GRAND", size, mid)
+        if c - a < target:
+            lo = mid
+        else:
+            hi = mid
+    _, (gx0, gy0, _gx1, _gy1) = measure("sserif", "GRAND", size, lo)
+    cap = -gy0
+    text(m, "sserif", "GRAND", size, x0 - gx0, 0, tracking=lo)
+    text(m, "sserif", "STRATEGIST", size, 0, cap * 1.62, tracking=0.05)
+    return m
+
+
 def wm_tgs():
     m = Mark()
     size = 104
@@ -415,6 +436,8 @@ LOCKUPS = [
      "Bearing G + Spaced caps: the modern pairing, cleanest in a narrow header."),
     ("lockup-03", "icon-02", "wordmark-01", icon_apex, wm_editorial, 1.25, 0.38,
      "Apex + Editorial serif: the warmer, more literary pairing."),
+    ("lockup-01-stacked", "icon-02", "wordmark-03 (two lines)", icon_apex, wm_stacked, 1.12, 0.4,
+     "FINAL, stacked. Apex + GRAND over STRATEGIST, for the narrowest phone headers (320px)."),
     ("lockup-01-compact", "icon-02", "wordmark-03 (one line)", icon_apex, wm_compact, 1.7, 0.45,
      "FINAL, compact. Apex + GRAND STRATEGIST on one line, for 375px phone headers."),
 ]
@@ -530,6 +553,7 @@ def main():
 
     web_dir = os.path.join(os.path.dirname(OUT), "web")
     write(os.path.join(web_dir, "lockup-full.svg"), web_svg(lockup(icon_apex, wm_tier, 1.42, 0.55), "The Grand Strategist"))
+    write(os.path.join(web_dir, "lockup-stacked.svg"), web_svg(lockup(icon_apex, wm_stacked, 1.12, 0.4), "The Grand Strategist"))
     write(os.path.join(web_dir, "lockup-compact.svg"), web_svg(lockup(icon_apex, wm_compact, 1.7, 0.45), "The Grand Strategist"))
     fav_dir = os.path.join(os.path.dirname(OUT), "favicon")
     for name, svg in favicon_svgs().items():

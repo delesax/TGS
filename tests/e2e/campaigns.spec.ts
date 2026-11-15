@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { expect, test, type Page } from "@playwright/test";
 import { toUkInputValue } from "../../src/lib/campaigns";
 import { loadTestEnv } from "../test-env";
-import { expectNoHorizontalOverflow } from "./helpers";
+import { expectNoHorizontalOverflow, openMenu } from "./helpers";
 
 const env = loadTestEnv();
 const service = createClient(env.supabaseUrl, env.serviceKey, { auth: { persistSession: false } });
@@ -55,7 +55,7 @@ test("an admin creates a Campaign; a Strategist sees it, records a before positi
   // --- Admin ---
   const adminPage = await (await browser.newContext({ viewport: { width: 375, height: 812 } })).newPage();
   await signIn(adminPage, adminEmail);
-  await adminPage.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Campaigns" }).click();
+  await (await openMenu(adminPage)).getByRole("link", { name: "Campaigns" }).click();
   await adminPage.getByRole("link", { name: "Create a Campaign" }).click();
   await expect(adminPage.getByRole("heading", { level: 1, name: "Create a Campaign" })).toBeVisible();
 
@@ -105,7 +105,7 @@ test("an admin creates a Campaign; a Strategist sees it, records a before positi
   // --- Strategist ---
   const page = await (await browser.newContext({ viewport: { width: 375, height: 812 } })).newPage();
   await signIn(page, strategistEmail);
-  await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Campaigns" }).click();
+  await (await openMenu(page)).getByRole("link", { name: "Campaigns" }).click();
   const soon = page.getByRole("region", { name: "Opening soon" });
   await soon.getByRole("link", { name: "Should e2e tests run on every change?" }).click();
 
