@@ -13,7 +13,8 @@
 //                moved, as a share of the top Strategist's (top = 100)
 //   2. blended = sum(weight x component) / 100, with the weights snapshotted
 //      from the Campaign's judging_weights version (or an admin override).
-//   3. final = blended + steelman bonus (at most +5).
+//   3. final = blended + steelman bonus (at most +5), then capped at 100 so that "out of 100" is always true.
+//      The bonus itself is still recorded in full; only the final score is capped.
 // A component with weight above zero that has no data is NOT reweighted away:
 // the Strategist's final score is left empty and the draft needs an admin.
 
@@ -399,7 +400,7 @@ export function blend(inputs: JudgingInputs, weights: Weights | null): BlendResu
       steelman_bonus: bonus,
       steelman_dispatches: steelmanDispatches,
       blended,
-      final: blended === null ? null : round2(blended + bonus),
+      final: blended === null ? null : Math.min(100, round2(blended + bonus)),
       first_dispatch_at: mine.map((d) => d.created_at).sort()[0],
       newcomer: !priors.has(user_id),
     };

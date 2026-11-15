@@ -19,6 +19,8 @@ const B = uid(2);
 const C = uid(3);
 const V = [uid(11), uid(12), uid(13), uid(14)];
 const c = (n: number): Criteria => ({ logic: n, evidence: n, originality: n, responsiveness: n });
+/** What the final score would be with no cap. */
+const blended_plus_bonus = (s: StrategistScore) => Math.round((s.blended! + s.steelman_bonus) * 100) / 100;
 
 /** Three Strategists, one Dispatch each, every component present. A is best on panel and AI. */
 function inputs(overrides: Partial<JudgingInputs> = {}): JudgingInputs {
@@ -261,6 +263,49 @@ describe("steelman bonus", () => {
 
     const peersOnly = blend(inputs({ steelman: confirmedByOthers }), DEFAULT_WEIGHTS).strategists.find((s) => s.user_id === C)!;
     expect(peersOnly.steelman_bonus).toBe(0);
+  });
+
+  it("never takes the final score above 100, but still records the bonus in full", () => {
+    const aiTop = inputs().ai.map((a) => (a.dispatch_id === "da" ? { ...a, ...c(5), steelman_detected: true, steelman_confidence: 0.9 } : a));
+    const confirmed = [
+      { dispatch_id: "da", user_id: B },
+      { dispatch_id: "da", user_id: C },
+    ];
+    // Panel, peer, AI and mind-change all at 100 for A, so blended is 100 before the bonus.
+    const a = blend(inputs({ ai: aiTop, steelman: confirmed }), DEFAULT_WEIGHTS).strategists.find((s) => s.user_id === A)!;
+    expect(a.blended).toBe(100);
+    expect(a.steelman_bonus).toBe(2.5);
+    expect(a.final).toBe(100);
+    expect(blended_plus_bonus(a)).toBe(102.5);
+  });
+
+  it("caps at 100 only when the sum goes over: a lower sum is left alone", () => {
+    const ai = inputs().ai.map((a) => (a.dispatch_id === "dc" ? { ...a, steelman_detected: true, steelman_confidence: 0.9 } : a));
+    const confirmed = [
+      { dispatch_id: "dc", user_id: A },
+      { dispatch_id: "dc", user_id: B },
+    ];
+    const cc = blend(inputs({ ai, steelman: confirmed }), DEFAULT_WEIGHTS).strategists.find((s) => s.user_id === C)!;
+    expect(cc.final).toBe(cc.blended! + 2.5);
+    expect(cc.final!).toBeLessThan(100);
+  });
+
+  it("makes a Strategist who passes 100 only because of the bonus level with one who is already on 100", () => {
+    const panelOnly: Weights = { version: 9, panel: 100, peer: 0, ai_rubric: 0, mind_change: 0, source: "campaign" };
+    // B: ten judges, nine give 5 on everything and one gives 5, 5, 5, 4, so about 99.4 before the bonus.
+    const judgesForB = Array.from({ length: 10 }, (_, i) => ({ dispatch_id: "db", judge_id: `j${i + 1}`, ...(i === 9 ? { logic: 5, evidence: 5, originality: 5, responsiveness: 4 } : c(5)) }));
+    const panel = [{ dispatch_id: "da", judge_id: "j1", ...c(5) }, ...judgesForB, { dispatch_id: "dc", judge_id: "j1", ...c(2) }];
+    const ai = inputs().ai.map((a) => (a.dispatch_id === "db" ? { ...a, steelman_detected: true, steelman_confidence: 0.9 } : a));
+    const confirmed = [
+      { dispatch_id: "db", user_id: A },
+      { dispatch_id: "db", user_id: C },
+    ];
+    const r = blend(inputs({ panel, ai, steelman: confirmed, judges: { assigned: 10, submitted: 10 } }), panelOnly);
+    const a = r.strategists.find((s) => s.user_id === A)!;
+    const b = r.strategists.find((s) => s.user_id === B)!;
+    expect(blended_plus_bonus(b)).toBeGreaterThan(100); // without the cap B would have beaten A
+    expect(a.final).toBe(100);
+    expect(b.final).toBe(100);
   });
 
   it("cannot be self-awarded: the author's own confirmation does not count", () => {
