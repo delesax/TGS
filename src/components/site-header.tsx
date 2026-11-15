@@ -26,10 +26,10 @@ export async function SiteHeader() {
       >
         Skip to main content
       </a>
-      <div className="mx-auto flex max-w-4xl items-center justify-between gap-2 px-[12px] py-[8px] lg:max-w-6xl lg:px-4 lg:py-3">
-        <Link href="/" className="flex min-h-[44px] min-w-0 shrink items-center no-underline lg:min-h-12 lg:shrink-0 lg:whitespace-nowrap">
-          {/* The same two-tier lockup at every width; on narrow phones it shrinks to fit beside the Menu button. */}
-          <Image src="/brand/lockup-full.svg" alt="The Grand Strategist" width={295} height={48} priority unoptimized className="block h-[40px] w-auto max-w-full object-contain object-left lg:h-[34px] xl:h-[54px]" />
+      <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-x-2 gap-y-0 px-[12px] py-[3px] lg:max-w-6xl lg:flex-nowrap lg:gap-2 lg:px-4 lg:py-3">
+        <Link href="/" className="flex min-h-[46px] max-w-full min-w-0 shrink items-center no-underline lg:min-h-12 lg:shrink-0 lg:whitespace-nowrap">
+          {/* The same two-tier lockup at every width: 46px tall (about 282px wide) below lg, so it fits a 320px screen. */}
+          <Image src="/brand/lockup-full.svg" alt="The Grand Strategist" width={295} height={48} priority unoptimized className="block h-[46px] w-auto max-w-full object-contain object-left lg:h-[34px] xl:h-[54px]" />
         </Link>
         <nav aria-label="Main" className="hidden lg:block">
           <ul className="-mx-2 flex flex-wrap items-center gap-x-1 gap-y-1">
@@ -73,7 +73,12 @@ export async function SiteHeader() {
             )}
           </ul>
         </nav>
-        <div className="flex shrink-0 items-center gap-1 lg:hidden">
+        <div className="ml-auto flex shrink-0 items-center gap-1 lg:hidden">
+          {viewer ? null : (
+            <NavLink href="/login" className="min-h-[44px] shrink-0 px-[8px] text-[18px] lg:hidden">
+              Sign in
+            </NavLink>
+          )}
           <MobileNav>
             <nav aria-label="Main">
               <ul className="flex flex-col gap-1 p-2">
@@ -116,13 +121,8 @@ export async function SiteHeader() {
           </MobileNav>
         </div>
       </div>
-      <div className="mx-auto flex max-w-4xl items-center gap-2 px-4 pb-3 lg:max-w-6xl">
-        {viewer ? null : (
-          <NavLink href="/login" className="min-h-[44px] shrink-0 px-[8px] text-[18px] lg:hidden">
-            Sign in
-          </NavLink>
-        )}
-        <form role="search" action="/search" className="flex min-w-0 flex-1 gap-2 lg:max-w-4xl">
+      <div className="mx-auto max-w-4xl px-[12px] pb-[4px] lg:max-w-6xl lg:px-4 lg:pb-3">
+        <form role="search" action="/search" className="flex gap-2 lg:max-w-4xl">
           <label htmlFor="site-search" className="sr-only">
             Search Campaigns, Dispatches and Strategists
           </label>
@@ -133,11 +133,11 @@ export async function SiteHeader() {
             enterKeyHint="search"
             maxLength={200}
             placeholder="Search"
-            className="min-h-12 w-full min-w-0 rounded-md border-2 border-input bg-background px-3 text-lg placeholder:text-muted-foreground focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="min-h-[44px] w-full min-w-0 rounded-md border-2 border-input lg:min-h-12 bg-background px-3 text-lg placeholder:text-muted-foreground focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring"
           />
           <button
             type="submit"
-            className="inline-flex min-h-12 min-w-12 shrink-0 items-center justify-center gap-2 rounded-md bg-primary px-3 text-lg font-semibold text-primary-foreground focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="inline-flex min-h-[44px] min-w-[44px] shrink-0 lg:min-h-12 lg:min-w-12 items-center justify-center gap-2 rounded-md bg-primary px-3 text-lg font-semibold text-primary-foreground focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring"
           >
             <Search aria-hidden className="size-5" />
             <span className="sr-only sm:not-sr-only">Search</span>

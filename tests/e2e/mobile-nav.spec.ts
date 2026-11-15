@@ -93,6 +93,28 @@ test.describe("Mobile menu", () => {
     });
   }
 
+  for (const width of [320, 360, 375, 414, 768]) {
+    test(`the same full lockup shows at ${width}px: fully on screen, wide enough to read, and Sign in and Menu fit`, async ({ browser }) => {
+      const context = await browser.newContext({ baseURL: env.siteUrl, viewport: { width, height: 800 } });
+      const page = await context.newPage();
+      await page.goto("/");
+      const logo = page.getByRole("banner").getByRole("link", { name: "The Grand Strategist" }).getByRole("img");
+      await expect(logo).toHaveAttribute("src", /lockup-full\.svg/);
+      const box = (await logo.boundingBox())!;
+      expect(box.x).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width).toBeLessThanOrEqual(width);
+      // About 282px wide: "THE" and the rules stay legible. At 320px nothing may shrink it below 270px.
+      expect(box.width).toBeGreaterThanOrEqual(270);
+      const signIn = (await page.getByRole("banner").getByRole("link", { name: "Sign in" }).boundingBox())!;
+      const menu = (await menuButton(page).boundingBox())!;
+      expect(signIn.x + signIn.width).toBeLessThanOrEqual(menu.x);
+      expect(menu.x + menu.width).toBeLessThanOrEqual(width);
+      expect(signIn.height).toBeGreaterThanOrEqual(44);
+      expect(menu.height).toBeGreaterThanOrEqual(44);
+      await context.close();
+    });
+  }
+
   test.describe("signed in as an admin", () => {
     const email = `e2e-mobilenav-${randomUUID()}@example.test`;
     let userId = "";
