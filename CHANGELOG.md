@@ -1,5 +1,17 @@
 # Changelog
 
+## Invites and "ask to join" (16 November 2026). Awaiting review
+
+Branch `invites-join-requests`. **One new migration, `20261116000100_join_requests_invites.sql`, tested on local Supabase only, not applied to hosted. Deploy order: migration first, then the code** (the migration is additive; the code on main keeps working until the new code lands).
+
+- **Admin, Invites** (`/admin/invites`): approve selected requests or pasted addresses (up to 50 at a time), with the email or without it (links shown once, never stored), reject, revoke, re-issue (revokes the old code). Every action is audit-logged with ids and counts only (no email address, no code). A per-attempt key makes a double submit make one batch.
+- **Codes:** 20 random characters (about 99 bits), made in the app, stored only as a SHA-256 hash, bound to one email address (matched in lower case at sign-up), single use, expiring 7 days after the email is sent. Older plaintext codes keep working; `handle_new_user`, `invite_check` and `invite_is_usable` now match either.
+- **Delivery:** invitations go through the existing email queue (which can now hold mail for an address with no account). The screen shows the budget (app cap 60, invite limit 25, the provider's 100 a day less an estimate of Supabase's sign-up emails) and holds any invite over today's room for the next UK days, in order, instead of dropping it. The code sits in the queue row only until the email is sent, then is cleared.
+- **Public form** (`/join`, linked from sign-up): email plus an optional 200-character note, honeypot, three rate limits (5 an hour per place, 3 a day per address, 300 a day overall), no acknowledgement email, and one answer whether the address is new, already asked, rejected or already a member.
+- **Housekeeping:** `join-requests-purge` (daily, 03:31): pending requests expire after 30 days; rejected, revoked, expired and joined ones are deleted 30 days after the decision. It is deliberately not a `retention-*` job, so the legal retention table, `docs/legal/RETENTION.md` and the privacy policy are untouched; **the privacy policy needs a row for join requests before the form goes public** (parked legal item).
+- **Defaults chosen** where the owner had not answered: hashed codes for new invites only; a rejected person cannot ask again until their row is purged at 30 days; invite email limit 25 a day; provider limit 100; the admin note on a request is never shown to the invitee; no disposable-address blocking; no cap on total members.
+- **Tests:** 16 new unit tests, 21 RLS tests (`tests/rls/join-requests.test.ts`), 8 Playwright journeys (`tests/e2e/join-invites.spec.ts`, also run in the Linux Playwright image with `CI=true`). `tests/rls/email-essentials.test.ts` now expects six essential kinds (invite added).
+
 ## Sprint 7 Phase B, batch 2b: judge prompt v2, load tests, backups, launch documents, CSP (13 November 2026). Awaiting review
 
 Branch `sprint-7-batch-2b`, cut from `main`. **One new migration, tested on local Supabase only, not applied to hosted.** Nothing was written to hosted. Legal files, `src/lib/legal.ts` and the placeholder strings untouched. Plan: `docs/SPRINT_7_PLAN.md`.

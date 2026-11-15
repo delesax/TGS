@@ -19,6 +19,12 @@ export default async function SignUpPage({ searchParams }: PageProps<"/signup">)
     >
       <SignUpForm initialCode={typeof code === "string" ? code : ""} />
       <p className="text-lg">
+        No invite yet?{" "}
+        <Link href="/join" className="font-semibold text-primary underline">
+          Ask to join
+        </Link>
+      </p>
+      <p className="text-lg">
         Already have an account?{" "}
         <Link href="/login" className="font-semibold text-primary underline">
           Sign in

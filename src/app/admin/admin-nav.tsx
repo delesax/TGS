@@ -6,6 +6,7 @@ const SECTIONS = [
   { href: "/admin/campaigns", label: "Campaigns" },
   { href: "/admin/moderation", label: "Moderation" },
   { href: "/admin/users", label: "Users" },
+  { href: "/admin/invites", label: "Invites" },
   { href: "/admin/privacy-requests", label: "Privacy requests" },
   { href: "/admin/settings", label: "Settings" },
   { href: "/admin/judging", label: "Judging" },
