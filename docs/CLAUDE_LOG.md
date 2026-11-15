@@ -34,11 +34,17 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 
 ## Entries
 
+### 2026-11-15 — Campaign 1 record merged (PRs #48 and #49)
+
+- Docs only. PR #48 recorded Campaign 1 as published and scheduled (owner-reported, from the owner's screenshots; not seen by Claude) in `docs/GO_NO_GO.md` row 21 and this log. PR #49 corrected `docs/GO_NO_GO.md` row 15. `main` is at `d81a0e3`; no remote branch has unmerged work.
+- **Still open, unchanged:** confirm the saved Campaign 1 rules (1,398 characters) and summary (1,340) are what you intended, since both differ from the text in the brief; check the summary's facts on gov.uk, eSafety and the BMJ; queries C and E for the live limits; the 14 other Campaigns' summaries and rules; the three flagged Campaigns; the PLACEHOLDER strings; the judge prompt and AI cap decisions; the legal items; the Auth limits saved check and the 30-emails-an-hour decision.
+- No hosted command run, nothing else changed.
+
 ### 2026-11-15 — Campaign 1 published and scheduled (owner-reported)
 
 - Docs only. The owner reports, from their own screenshots of `/admin/audit` and the public Campaign page on 15 Nov (Claude has not seen the screenshots and ran nothing against hosted), that `under-16-social-media-ban` is published and scheduled: rubric published 13:57 UTC with judging weights version 2 (panel 40, peer 25, AI rubric 25, mind-change 10); rules saved at 1,398 characters; summary 1,340 characters; opens 1 December 2026 00:00 UTC, closes 8 December 2026 00:00 UTC. `docs/GO_NO_GO.md` row 21 and the Current state and Open for the owner sections updated.
 - **Two differences to confirm:** the owner's edited rules text in the brief is 1,414 characters and the saved rules are 1,398 (perhaps line-break handling, or a small edit); the brief's proposed summary was 923 characters and the saved summary is 1,340, so the summary was changed or extended and no longer matches the text in the brief. Neither is a problem in itself, but the brief is no longer the record of what is live.
-- **Still open, unchanged:** the 14 other Campaigns' summaries and rules, the three flagged Campaigns, the PLACEHOLDER strings, the judge prompt decision (v2 versus v1), the AI cap, the legal items, and the earlier owner checks. Not updated: `docs/GO_NO_GO.md` row 15 still says all 15 topics are drafts.
+- **Still open, unchanged:** the 14 other Campaigns' summaries and rules, the three flagged Campaigns, the PLACEHOLDER strings, the judge prompt decision (v2 versus v1), the AI cap, the legal items, and the earlier owner checks. `docs/GO_NO_GO.md` row 15 (all 15 topics drafts) was corrected afterwards in PR #49: Campaign 1 scheduled, the other 14 still drafts as far as Claude knows, row still Open.
 
 ### 2026-11-13 — Owner's edited rules text merged (PR #46)
 
