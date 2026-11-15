@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { getViewer } from "@/lib/auth";
@@ -25,8 +26,10 @@ export async function SiteHeader() {
         Skip to main content
       </a>
       <div className="mx-auto flex max-w-4xl flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between lg:max-w-6xl">
-        <Link href="/" className="flex min-h-12 shrink-0 items-center font-serif text-xl font-bold text-primary no-underline lg:whitespace-nowrap">
-          The Grand Strategist
+        <Link href="/" className="flex min-h-12 shrink-0 items-center no-underline lg:whitespace-nowrap">
+          {/* Compact lockup below lg, full two-tier lockup from lg up. Only the visible one is in the accessibility tree. */}
+          <Image src="/brand/lockup-compact.svg" alt="The Grand Strategist" width={295} height={36} priority unoptimized className="block h-[38px] w-auto max-w-full lg:hidden" />
+          <Image src="/brand/lockup-full.svg" alt="The Grand Strategist" width={295} height={48} priority unoptimized className="hidden h-[34px] w-auto lg:block xl:h-[54px]" />
         </Link>
         <nav aria-label="Main">
           <ul className="-mx-2 flex flex-wrap items-center gap-x-1 gap-y-1">

@@ -472,6 +472,29 @@ def favicon_svgs():
     return out
 
 
+# ---------------------------------------------------------------- web lockups (theme-adaptive)
+
+def web_svg(mark, title):
+    """Lockup SVG that follows the browser theme (works inside <img>): navy and gold on light,
+    paper and Burnished Gold on dark. Numbers are rounded to 1 decimal to keep the file small."""
+    import re
+    VARIANTS["_web"] = {"ink": "#000001", "accent": "#000002", "accentText": "#000003", "bg": PAPER}
+    svg = render(mark, "_web", pad=0.1, title=title)
+    del VARIANTS["_web"]
+    svg = svg.replace('fill="#000001"', 'class="i"').replace('fill="#000002"', 'class="a"').replace('fill="#000003"', 'class="t"')
+    svg = svg.replace('stroke="#000001"', 'class="si"')
+
+    def r1(m):
+        return re.sub(r"-?\d+\.\d+", lambda n: ("%.1f" % float(n.group())).rstrip("0").rstrip("."), m.group(0))
+
+    svg = re.sub(r' d="[^"]*"', r1, svg)
+    svg = re.sub(r"<g transform=\"[^\"]*\"", lambda m: re.sub(r"-?\d+\.\d+", lambda n: "%.2f" % float(n.group()), m.group(0)), svg)
+    css = ("<style>.i{fill:%s}.a{fill:%s}.t{fill:%s}.si{stroke:%s}"
+           "@media (prefers-color-scheme:dark){.i{fill:%s}.a{fill:%s}.t{fill:%s}.si{stroke:%s}}</style>"
+           % (INK, GOLD_MARK, GOLD_DEEP, INK, PAPER, GOLD, GOLD, PAPER))
+    return svg.replace("</title>", "</title>" + css, 1)
+
+
 # ---------------------------------------------------------------- write files
 
 def write(path, s):
@@ -505,6 +528,9 @@ def main():
             out_svgs[(key, v)] = svg
             write(os.path.join(OUT, "lockups", "%s-%s.svg" % (key, v)), svg)
 
+    web_dir = os.path.join(os.path.dirname(OUT), "web")
+    write(os.path.join(web_dir, "lockup-full.svg"), web_svg(lockup(icon_apex, wm_tier, 1.42, 0.55), "The Grand Strategist"))
+    write(os.path.join(web_dir, "lockup-compact.svg"), web_svg(lockup(icon_apex, wm_compact, 1.7, 0.45), "The Grand Strategist"))
     fav_dir = os.path.join(os.path.dirname(OUT), "favicon")
     for name, svg in favicon_svgs().items():
         write(os.path.join(fav_dir if name == "favicon.svg" else os.path.join(HERE, "favicon-src"), name), svg)

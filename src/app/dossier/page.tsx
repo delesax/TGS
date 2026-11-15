@@ -61,7 +61,7 @@ export default async function DossierPage({ searchParams }: PageProps<"/dossier"
   return (
     <Page title="Your Dossier" intro="Your permanent record of Dispatches, awards and titles.">
       {welcome ? (
-        <p role="status" className="rounded-lg border-2 border-success bg-[#ecfdf3] p-4 text-lg text-success">
+        <p role="status" className="rounded-lg border-2 border-success bg-success-soft p-4 text-lg text-success">
           Welcome, @{p.handle}. Your account is ready.
         </p>
       ) : null}

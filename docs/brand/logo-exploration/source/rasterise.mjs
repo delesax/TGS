@@ -1,6 +1,6 @@
 // Renders the favicon PNGs from the SVG masters in favicon-src/ using sharp.
 // Usage: node rasterise.mjs /path/to/node_modules/sharp
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";

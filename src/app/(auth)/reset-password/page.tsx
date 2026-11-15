@@ -19,7 +19,7 @@ export default async function ResetPasswordPage() {
   if (!recovering) {
     return (
       <Page narrow title="This link has expired">
-        <p role="alert" className="rounded-lg border-2 border-destructive bg-[#fef3f2] p-4 text-lg text-destructive">
+        <p role="alert" className="rounded-lg border-2 border-destructive bg-destructive-soft p-4 text-lg text-destructive">
           This password reset link has expired or has already been used. Each link works once and lasts a short time.
         </p>
         <p className="text-lg">

@@ -2,30 +2,69 @@
 @import "tw-animate-css";
 
 /*
- * TGS design tokens (shadcn/ui naming). Light theme only for the pilot: high
- * contrast, 18px base text and 48px minimum tap targets for older readers.
- * All text/background pairs below meet WCAG 2.2 AA (most meet AAA).
+ * TGS design tokens (shadcn/ui naming). Brand palette: Deep Ink Navy, Warm
+ * Paper, Night Navy and Burnished Gold (see docs/brand/logo-exploration/README.md).
+ * Light by default; the dark set follows the device setting (no toggle for the
+ * pilot). 18px base text and 48px minimum tap targets for older readers.
+ * Contrast (WCAG 2.2, ratios in the comment after each pair): every text pair
+ * meets AA, most meet AAA. Burnished Gold (--gold) is an accent for graphics and
+ * for text on navy only; on light backgrounds use --gold-text (Deep Gold).
  */
 :root {
+  color-scheme: light dark;
   --radius: 0.625rem;
-  --background: #ffffff;
-  --foreground: #111827; /* 17.7:1 on white */
+  --background: #f7f5f0; /* Paper */
+  --foreground: #0b1f3a; /* Ink: 15.2:1 on Paper */
   --card: #ffffff;
-  --card-foreground: #111827;
-  --muted: #f3f4f6;
-  --muted-foreground: #374151; /* 9.5:1 on muted */
-  --primary: #1e3a5f; /* deep navy, 11.5:1 with white text */
-  --primary-foreground: #ffffff;
-  --secondary: #e8eef6;
-  --secondary-foreground: #1e3a5f;
-  --accent: #fdf3d7;
-  --accent-foreground: #5c4300;
-  --destructive: #b42318; /* 6.4:1 on white */
-  --destructive-foreground: #ffffff;
-  --success: #166534;
-  --border: #9ca3af;
-  --input: #4b5563; /* 3:1+ boundary for form controls */
-  --ring: #b45309; /* amber focus ring, visible on white and navy */
+  --card-foreground: #0b1f3a; /* 16.5:1 */
+  --muted: #efece4;
+  --muted-foreground: #4a5a70; /* Slate: 6.5:1 on Paper, 6.0:1 on muted */
+  --primary: #0b1f3a;
+  --primary-foreground: #ffffff; /* 16.5:1 */
+  --secondary: #e3e8ef;
+  --secondary-foreground: #0b1f3a; /* 13.4:1 */
+  --accent: #f4ebd0; /* pale gold tint, used for notices */
+  --accent-foreground: #4a3600; /* 9.7:1 on accent */
+  --destructive: #b42318; /* 6.0:1 on Paper */
+  --destructive-foreground: #ffffff; /* 6.6:1 */
+  --destructive-soft: #fdecea; /* error box fill; destructive text 5.8:1 */
+  --success: #166534; /* 6.5:1 on Paper */
+  --success-soft: #e6f2e8; /* success box fill; success text 6.2:1 */
+  --border: #8e96a3; /* 2.7:1 on Paper, 3.0:1 on white */
+  --input: #4a5a70; /* 6.5:1 */
+  --ring: #886b29; /* Deep Gold focus ring: 4.6:1 on Paper, 5.0:1 on white */
+  /* Gold tokens: accent only */
+  --gold: #c8a24a; /* Burnished Gold: fills and graphics; never text on light */
+  --gold-text: #886b29; /* Deep Gold: gold text and borders on light, 4.6:1 */
+  --gold-mark: #ad8935; /* Mark Gold: gold inside graphics on light, 3.0:1 */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #060f1d; /* Night */
+    --foreground: #f7f5f0; /* 17.6:1 */
+    --card: #0b1f3a; /* Ink */
+    --card-foreground: #f7f5f0; /* 15.2:1 */
+    --muted: #0f2038;
+    --muted-foreground: #a7b2c4; /* Mist: 9.0:1 on Night, 7.6:1 on muted */
+    --primary: #f7f5f0; /* buttons are Paper on Night */
+    --primary-foreground: #0b1f3a; /* 15.2:1 */
+    --secondary: #14284a;
+    --secondary-foreground: #f7f5f0; /* 13.5:1 */
+    --accent: #2a2412;
+    --accent-foreground: #e8d5a0; /* 10.6:1 on accent */
+    --destructive: #f97066; /* 6.9:1 on Night */
+    --destructive-foreground: #060f1d; /* 6.9:1 */
+    --destructive-soft: #3a1614; /* destructive text 5.8:1 */
+    --success: #4ade80; /* 11.0:1 on Night */
+    --success-soft: #0f2a1a; /* success text 8.8:1 */
+    --border: #5a6b85; /* 3.5:1 on Night, 3.1:1 on card */
+    --input: #8391a8; /* 6.0:1 on Night */
+    --ring: #c8a24a; /* Burnished Gold focus ring: 8.0:1 on Night */
+    --gold: #c8a24a;
+    --gold-text: #c8a24a; /* 8.0:1 on Night, 6.9:1 on Ink */
+    --gold-mark: #c8a24a;
+  }
 }
 
 @theme inline {
@@ -43,7 +82,12 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-soft: var(--destructive-soft);
   --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-gold: var(--gold);
+  --color-gold-text: var(--gold-text);
+  --color-gold-mark: var(--gold-mark);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);

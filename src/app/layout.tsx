@@ -24,14 +24,23 @@ export const metadata: Metadata = {
   },
   description: "A time-boxed arena for structured reasoning. The best argument before the deadline wins.",
   applicationName: "The Grand Strategist",
-  icons: { icon: "/icons/icon-192.png", apple: "/icons/apple-touch-icon.png" },
+  icons: {
+    icon: [
+      { url: "/icons/favicon.svg", type: "image/svg+xml" },
+      { url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: "/icons/apple-touch-icon.png",
+  },
   appleWebApp: { capable: true, title: "TGS", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#1e3a5f",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f7f5f0" },
+    { media: "(prefers-color-scheme: dark)", color: "#060f1d" },
+  ],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

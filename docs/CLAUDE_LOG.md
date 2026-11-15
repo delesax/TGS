@@ -17,6 +17,7 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 | Campaign 1 (owner-reported 15 Nov from the owner's screenshots of `/admin/audit` and the public Campaign page; Claude has not seen them) | `under-16-social-media-ban` is **published and scheduled**: rubric published 13:57 UTC with judging weights version 2 (panel 40, peer 25, AI rubric 25, mind-change 10); rules saved at 1,398 characters; summary 1,340 characters; opens 1 December 2026 00:00 UTC, closes 8 December 2026 00:00 UTC | n/a | Written by the owner through the admin form |
 | Campaign slots on hosted (owner-reported 15 Nov from a SQL Editor listing; Claude has not seen it) | Consecutive weekly slots from 1 Dec: `under-16-social-media-ban` 1-8 Dec (scheduled), `in-person-exams-ai-cheating` 8-15 Dec, `lifelong-learning-loans-age-60` 15-22 Dec, `bank-of-england-rate-decision-november` 22-29 Dec, `ai-data-centres-priority-grid-connections` 29 Dec-5 Jan, and so on. All except Campaign 1 are drafts, and `test-please-ignore` is a draft. `vat-on-private-school-fees` is not on hosted yet | n/a | Drafts only, except Campaign 1 |
 | `ui/logo-exploration` (15 Nov) | **Pushed, no PR, not for merging yet.** Logo exploration under `docs/brand/logo-exploration/`; nothing applied to the app | see `git log origin/ui/logo-exploration` | n/a |
+| `ui/brand-reskin` (15 Nov) | **Draft PR, DO NOT MERGE until approved.** Token re-skin: palette, header logo, favicons, manifest, emails, sw.js version. 55/55 e2e pass | see `git log origin/ui/brand-reskin` | n/a |
 | `ui/logo-exploration` (15 Nov) | **Pushed (see `git log origin/ui/logo-exploration`), no PR, not for merging yet.** Logo exploration under `docs/brand/logo-exploration/`; nothing applied to the app | see `git log origin/ui/logo-exploration` | n/a |
 
 Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were removed on 13 Nov). Local Supabase is shared by whatever runs from `TGS/`.
@@ -39,6 +40,13 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 - **Account deletion stays OFF.** Decide whether it also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-15 — Brand re-skin 2A (branch `ui/brand-reskin`, draft PR, DO NOT MERGE)
+
+- **Token re-skin only; no layout, copy, routing, auth, posting, judging or admin logic changed.** Brand palette as CSS variables in `src/app/globals.css` for light and dark (dark follows the device setting, no toggle); new tokens `destructive-soft`, `success-soft`, `gold`, `gold-text`, `gold-mark`. Header uses the Apex lockups from `public/brand/` (full from lg, compact below; link name "The Grand Strategist"). Favicon, apple-touch icon, manifest icons and a light/dark `themeColor` pair replaced; `public/sw.js` `VERSION` bumped to v2 so phones pick up the icons. Seven hard-coded alert colours swapped for tokens; email templates recoloured inline (17 values stay hard-coded on purpose, email clients cannot use CSS variables).
+- **Checked (local Supabase only):** 52 page states (home, sign-in, error state, sign-up, Campaign, composer, Dossier, five admin pages) in light and dark at 375px and 1280px: no text below AA except a transient "Signing in…" disabled button the audit mis-parsed (hand-computed 4.5:1 light, 6.2:1 dark). Focus ring 4.6:1 on Paper, 8.0:1 on Night. Lint clean, typecheck clean, 354 unit tests pass, 55 of 55 Playwright tests pass. `test:rls` has 2 failures that are not from this work: `tests/rls/launch-topics-load.test.ts` expects 15 topics and the bank now has 16 (PR #51 updated the unit test only).
+- **Slip, corrected:** the first Playwright run failed the 1080px admin header test because the full lockup was too wide in the lg band; the logo is now 34px tall in the lg band and 54px from xl. Screenshots: `docs/brand/reskin-screenshots/`.
+- **Local setup:** Docker Desktop was started to run local Supabase (existing containers); `.env.test.local` generated in the worktree `../TGS-brand` (gitignored). Hosted Supabase, Vercel settings and `.env.local` untouched.
 
 ### 2026-11-15 — Logo exploration and brand files (branch `ui/logo-exploration`)
 
