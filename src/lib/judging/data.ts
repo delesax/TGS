@@ -136,3 +136,39 @@ export async function getEligibleDispatches(campaignId: string): Promise<Judging
 export function handleOf(d: { author: { handle: string | null; deleted_at: string | null } | null }): string {
   return d.author?.handle && !d.author.deleted_at ? `@${d.author.handle}` : "A former Strategist";
 }
+
+export type WinningCase = { text: string; aiAssisted: boolean; dispatchId: string | null };
+
+/**
+ * The approved "winning case" summary for a published Verdict, or null. Read on its own and never throws: if the new columns are
+ * not in the database yet (the deploy order slipped), or anything else goes wrong, the Verdict page simply shows no summary.
+ * The Dispatch link is returned only while that Dispatch is still visible to this reader.
+ */
+export async function getWinningCase(verdictId: string): Promise<WinningCase | null> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("verdicts")
+      .select("winner_summary, winner_summary_ai_assisted, winner_summary_dispatch_id, winner_summary_approved_at")
+      .eq("id", verdictId)
+      .maybeSingle();
+    if (error || !data) return null;
+    const row = data as { winner_summary: string | null; winner_summary_ai_assisted: boolean | null; winner_summary_dispatch_id: string | null; winner_summary_approved_at: string | null };
+    if (!row.winner_summary?.trim() || !row.winner_summary_approved_at) return null;
+    let dispatchId: string | null = null;
+    if (row.winner_summary_dispatch_id) {
+      const { data: d } = await supabase
+        .from("dispatches")
+        .select("id")
+        .eq("id", row.winner_summary_dispatch_id)
+        .eq("moderation_status", "visible")
+        .is("withdrawn_at", null)
+        .is("hidden_at", null)
+        .maybeSingle();
+      dispatchId = d ? (d.id as string) : null;
+    }
+    return { text: row.winner_summary, aiAssisted: Boolean(row.winner_summary_ai_assisted), dispatchId };
+  } catch {
+    return null;
+  }
+}

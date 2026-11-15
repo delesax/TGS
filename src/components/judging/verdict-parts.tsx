@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { bonusCapped, type Attention, type ProposedAward, type StrategistScore, type Weights } from "@/lib/judging/blend";
 import { COMPONENT_ORDER } from "@/lib/judging/data";
+import { cleanOverrideReason } from "@/lib/judging/winning-case";
 import { AWARD_LABELS, COMPONENT_LABELS, rationaleParts } from "@/lib/judging/rationale";
 
 // Pieces shared by the public Verdict page and the admin review. Server
@@ -37,7 +38,7 @@ export function WeightsLine({ weights }: { weights: Weights }) {
     <p className="text-base text-muted-foreground">
       Weights used: panel {weights.panel}%, peer votes {weights.peer}%, AI rubric {weights.ai_rubric}%, mind-change {weights.mind_change}%.{" "}
       {weights.source === "override" ? (
-        <span>Set by an admin for this Verdict{weights.reason ? `: ${weights.reason}` : ""}.</span>
+        <span>Set by an admin for this Verdict{cleanOverrideReason(weights.reason) ? `: ${cleanOverrideReason(weights.reason)}` : ""}.</span>
       ) : (
         <span>These are the weights the Campaign opened with (version {weights.version}).</span>
       )}
