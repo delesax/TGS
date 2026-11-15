@@ -26,12 +26,12 @@ afterAll(async () => {
 });
 
 describe("settings", () => {
-  it("default to essentials only, a global cap of 60 a day, and the owner's five essential kinds", async () => {
+  it("default to essentials only, a global cap of 60 a day, and the owner's five essential kinds plus invitations", async () => {
     const { data } = await admin.client.rpc("admin_community_settings").single();
     const s = data as Record<string, unknown>;
     expect(s.email_essentials_only).toBe(true);
     expect(s.email_global_daily_cap).toBe(60);
-    expect(s.email_essential_kinds).toEqual(["moderation_outcome", "verdict_published", "verdict_appeal_outcome", "judge_assigned", "peer_voting_open"]);
+    expect(s.email_essential_kinds).toEqual(["moderation_outcome", "verdict_published", "verdict_appeal_outcome", "judge_assigned", "peer_voting_open", "invite"]);
     // The per-person cap that already existed is untouched.
     expect(s.email_daily_cap).toBe(6);
   });

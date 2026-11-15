@@ -3,12 +3,54 @@ import { publicEnv } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getSwitches } from "@/lib/switches";
 import { MAX_ATTEMPTS, idempotencyKey, planDelivery, retryDelayMinutes, type OutboxRow, type PlannedMessage, type RecipientInfo } from "./plan";
+import { inviteEmail, type InvitePayload } from "./invite-email";
 import { isJudgingKind, judgingEmail, type JudgingPayload } from "./judging-templates";
 import { campaignEmail, moderationEmail, replyDigest, type CampaignPayload, type ModerationPayload, type ReplyItem } from "./templates";
 import { resolveTransport, type Transport } from "./transport";
 
 // The one server-side email module. Reads the outbox, decides what to send,
 // sends through the configured transport and records the outcome on each row.
+
+/** An invitation waiting to go to an address that has no account yet (kind "invite"). */
+type InviteRow = { id: number; user_id: null; kind: "invite"; to_email: string; payload: Record<string, unknown>; attempts: number };
+
+/**
+ * Sends the invitations in a claimed batch. The code lives in the queue row only until the email is out: once it is sent,
+ * or given up on, the payload keeps just the invite id.
+ */
+async function sendInvites(db: ReturnType<typeof createAdminClient>, transport: Exclude<Transport, { kind: "misconfigured" }>, site: string, rows: InviteRow[], now: number, summary: ProcessSummary) {
+  for (const row of rows) {
+    const payload = row.payload as unknown as InvitePayload;
+    const keep = { invite_id: payload.invite_id };
+    if (!payload.code) {
+      await db.from("email_outbox").update({ status: "skipped", locked_at: null, last_error: "no code", payload: keep }).eq("id", row.id);
+      summary.skipped += 1;
+      continue;
+    }
+    const email = inviteEmail(site, payload);
+    try {
+      const messageId = await transport.send({ to: row.to_email, subject: email.subject, text: email.text, html: email.html, idempotencyKey: `tgs-invite-${row.id}` });
+      await db.from("email_outbox").update({ status: "sent", sent_at: new Date().toISOString(), message_id: messageId, locked_at: null, last_error: null, payload: keep }).eq("id", row.id);
+      summary.sent += 1;
+    } catch (e) {
+      const reason = (e instanceof Error ? e.message : String(e)).slice(0, 500);
+      console.error("Invite email failed", reason);
+      const giveUp = row.attempts >= MAX_ATTEMPTS;
+      await db
+        .from("email_outbox")
+        .update({
+          status: giveUp ? "failed" : "queued",
+          locked_at: null,
+          last_error: reason,
+          send_after: new Date(now + retryDelayMinutes(row.attempts) * 60_000).toISOString(),
+          ...(giveUp ? { payload: keep } : {}),
+        })
+        .eq("id", row.id);
+      if (giveUp) summary.failed += 1;
+      else summary.retrying += 1;
+    }
+  }
+}
 
 export type ProcessSummary = { claimed: number; sent: number; skipped: number; deferred: number; retrying: number; failed: number; error?: string };
 
@@ -35,8 +77,14 @@ export async function processOutbox({ limit = 100, transport = resolveTransport(
   const site = publicEnv().NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
   const { data: claimed, error } = await db.rpc("claim_email_batch", { p_limit: limit });
   if (error) throw new Error(`Could not claim emails: ${error.message}`);
-  const rows = (claimed as OutboxRow[]) ?? [];
-  summary.claimed = rows.length;
+  const claimedRows = (claimed as (OutboxRow | InviteRow)[]) ?? [];
+  summary.claimed = claimedRows.length;
+  if (!claimedRows.length) return summary;
+  const now = Date.now();
+  // Invitations go to addresses with no account, so they skip the member planning below.
+  const inviteRows = claimedRows.filter((r): r is InviteRow => r.user_id === null);
+  const rows = claimedRows.filter((r): r is OutboxRow => r.user_id !== null);
+  if (inviteRows.length) await sendInvites(db, transport, site, inviteRows, now, summary);
   if (!rows.length) return summary;
 
   const userIds = [...new Set(rows.map((r) => r.user_id))];
@@ -55,7 +103,6 @@ export async function processOutbox({ limit = 100, transport = resolveTransport(
       .filter((d) => d.withdrawn_at || d.hidden_at || d.moderation_status !== "visible")
       .map((d) => d.id),
   );
-  const now = Date.now();
 
   for (const userId of userIds) {
     const recipient = byUser.get(userId);

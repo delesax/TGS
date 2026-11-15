@@ -118,8 +118,8 @@ export type TransactionalEmail = { subject: string; text: string; html: string }
  * the acknowledgement of a privacy request. It is not a subscription, so there is
  * no stop link, but it says why it was sent and carries the company block.
  */
-export function transactionalEmail(subject: string, paragraphs: string[], why: string): TransactionalEmail {
-  const text = [...paragraphs.flatMap((p) => [p, ""]), "--", why, "", "Sent by The Grand Strategist.", ...companyBlockLines()].join("\n");
+export function transactionalEmail(subject: string, paragraphs: string[], why: string, link?: { label: string; href: string }): TransactionalEmail {
+  const text = [...paragraphs.flatMap((p) => [p, ""]), ...(link ? [`${link.label}: ${link.href}`, ""] : []), "--", why, "", "Sent by The Grand Strategist.", ...companyBlockLines()].join("\n");
   const p = (v: string) => `<p style="margin:0 0 16px;font-size:18px;line-height:1.5;color:#0b1f3a">${escapeHtml(v)}</p>`;
   const html = `<!doctype html>
 <html lang="en-GB">
@@ -128,6 +128,7 @@ export function transactionalEmail(subject: string, paragraphs: string[], why: s
 <div role="article" aria-label="${escapeHtml(subject)}" lang="en-GB" style="max-width:600px;margin:0 auto;padding:24px 16px;font-family:Arial,Helvetica,sans-serif">
 <p style="margin:0 0 24px;font-size:20px;font-weight:bold;color:#0b1f3a">The Grand Strategist</p>
 ${paragraphs.map(p).join("\n")}
+${link ? `<p style="margin:0 0 16px;font-size:18px;line-height:1.5"><a href="${escapeHtml(link.href)}" style="color:#0b1f3a;font-weight:bold;text-decoration:underline">${escapeHtml(link.label)}</a></p>` : ""}
 <hr style="border:none;border-top:1px solid #d9d4c7;margin:24px 0">
 <p style="margin:0 0 8px;font-size:16px;line-height:1.5;color:#4a5a70">${escapeHtml(why)}</p>
 ${companyFooterHtml()}
