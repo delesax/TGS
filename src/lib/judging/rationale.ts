@@ -1,4 +1,4 @@
-import type { Attention, BlendResult, Component, ProposedAward } from "./blend";
+import { bonusCapped, type Attention, type BlendResult, type Component, type ProposedAward } from "./blend";
 
 // The Verdict's plain-English rationale, written from the component scores.
 // Strategists appear as @{user:<id>} tokens, never as handles: the page shows
@@ -43,7 +43,11 @@ export function templateRationale(result: BlendResult, campaignTitle: string): s
     .map((c) => `${COMPONENT_LABELS[c]} ${n(winner.components[c] ?? 0)}`);
   const lines = [
     `${token(winner.user_id)} is the Grand Strategist for “${campaignTitle}”, with a final score of ${n(winner.final!)} out of 100${
-      winner.steelman_bonus > 0 ? `, including a steelman bonus of ${n(winner.steelman_bonus)}` : ""
+      bonusCapped(winner)
+        ? ` (scores are capped at 100; a steelman bonus of ${n(winner.steelman_bonus)} was earned)`
+        : winner.steelman_bonus > 0
+          ? `, including a steelman bonus of ${n(winner.steelman_bonus)}`
+          : ""
     }.`,
     `Their scores out of 100: ${parts.join(", ")}.`,
   ];

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Attention, ProposedAward, StrategistScore, Weights } from "@/lib/judging/blend";
+import { bonusCapped, type Attention, type ProposedAward, type StrategistScore, type Weights } from "@/lib/judging/blend";
 import { COMPONENT_ORDER } from "@/lib/judging/data";
 import { AWARD_LABELS, COMPONENT_LABELS, rationaleParts } from "@/lib/judging/rationale";
 
@@ -73,6 +73,7 @@ export function Breakdown({ scores, handles, caption }: { scores: StrategistScor
               <dd className="text-right">{s.steelman_bonus ? `+${fmt(s.steelman_bonus)}` : "0"}</dd>
               <dt className="font-bold">Final</dt>
               <dd className="text-right font-bold">{fmt(s.final)}</dd>
+              {bonusCapped(s) ? <dt className="col-span-2 text-base text-muted-foreground">Capped at 100.</dt> : null}
             </dl>
           </li>
         ))}
@@ -114,7 +115,10 @@ export function Breakdown({ scores, handles, caption }: { scores: StrategistScor
                 </td>
               ))}
               <td className="p-3">{s.steelman_bonus ? `+${fmt(s.steelman_bonus)}` : "0"}</td>
-              <td className="p-3 font-bold">{fmt(s.final)}</td>
+              <td className="p-3 font-bold">
+                {fmt(s.final)}
+                {bonusCapped(s) ? <span className="block text-base font-normal text-muted-foreground">Capped at 100</span> : null}
+              </td>
             </tr>
           ))}
         </tbody>

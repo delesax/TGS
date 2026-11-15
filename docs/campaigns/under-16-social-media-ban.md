@@ -88,7 +88,7 @@ Length: 1,444 characters of the 10,000 allowed.
 
 **This is the owner's edited version (pasted 13 Nov), replacing Claude's longer draft.** Checked against the code again:
 - Accurate: the three length limits, the 10-Dispatch cap counting the whole Campaign in an open arena, 30 seconds, 5 minutes, the none, assisted or generated declaration shown publicly, held items hidden until a person checks them, screening never deleting and only an admin removing, 48 hours, taking part, the 24-hour span, the open or peer-window timing, and the server clock.
-- Left out compared with the earlier draft, which members then learn only from the forms: that a handle and a recorded position are needed before posting (the position needs their agreement); that an Argument cannot contain links, a Rebuttal must answer another Dispatch and Evidence needs a source; the three public AI labels; and one pick per Campaign. None of these makes the text wrong.
+- Left out compared with the earlier draft, which members then learn only from the forms: that a handle is needed before posting (a recorded position is optional, needs the member's agreement and is not needed to post); that an Argument cannot contain links, a Rebuttal must answer another Dispatch and Evidence needs a source; the three public AI labels; and one pick per Campaign. None of these makes the text wrong.
 - The sentence about "in this round" is true but rarely needed: in an open arena members read "You can post N more here" and "You have posted N Dispatches here" (`dispatch-section.tsx:93-96, 111`); "in this round" appears only in the server error text (`src/lib/dispatches.ts:247-250`) if the database refuses a post. You may drop that sentence.
 - Wording point, applied 15 Nov 2026: the "Changing your mind" paragraph now reads as the owner's reviewer corrected it, with "For your pick to count, your recorded position must have changed over at least 24 hours" and the 72-hour peer-voting window stated. The owner is saving the same paragraph in the live Campaign 1 rules in Admin; until then the live rules may differ.
 - The numbers (1,500, 1,000, 600, 10, 30 seconds, 5 minutes, 48 and 24 hours) are code defaults: confirm with queries C and E before pasting.
@@ -97,7 +97,7 @@ Checked against the repo:
 
 | Rule text | Source |
 | --- | --- |
-| Handle, then a position, needed to post | `post_dispatch` raises `NOT_ONBOARDED` and `POSITION_REQUIRED: record your position first` (`20261103000200_dispatches_discussion.sql`, redefined in `20261107000200_positions_consent.sql`) |
+| A handle is needed to post; a recorded position is not | `post_dispatch` raises `NOT_ONBOARDED: choose a handle before posting`. The older `POSITION_REQUIRED` check (`20261103000200_dispatches_discussion.sql`) was removed in `20261107000200_positions_consent.sql`, which no longer reads a position (corrected 15 Nov 2026) |
 | Position optional, needs agreement | consent checkbox "I agree to you recording my position on Campaigns." (`position-form.tsx`); `has_positions_consent` (`20261107000200`) |
 | Kind rules (no links in an Argument, a Rebuttal answers another Dispatch, Evidence needs a source) | `KIND_LABELS` in `src/lib/dispatches.ts` |
 | 1,500 / 1,000 / 600 characters, 10 Dispatches, 30 seconds, 5 minutes | defaults in `src/lib/dispatches.ts` and `community_settings`; **live values: query C** |
