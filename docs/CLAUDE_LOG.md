@@ -44,6 +44,11 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 
 ## Entries
 
+### 2026-11-16 — Header lockup: larger-THE version adopted (branch `ui/header-the-lockup`)
+
+- Owner chose the larger-THE lockup. `docs/brand/lockup-01-header.svg` is now `public/brand/lockup-full.svg` (the header is the only place it is used; mobile and desktop share it; footer has none). Accessible name, #62 clamp sizing, footer and mobile header unchanged. `public/sw.js` cache `tgs-shell-v2` to `tgs-shell-v3` so returning visitors get the new file. The light, dark and mono versions stay in `docs/brand/`.
+- Header states (logged out, member, admin) x 1024, 1100, 1280, 1440, 1728 x four text sizes: 60 states, no overlap, no wrapping, no sideways scroll. Header height unchanged (65px at 1024, 70 at 1280, 73 from 1440).
+- `docs/brand/header-logo-compare.png` regenerated with the full name visible in the 3x zoom.
 ### 2026-11-16 — Invites and "ask to join" built (branch `invites-join-requests`, not applied to hosted)
 
 **Seen by Claude (local only; no hosted command, no env file, no model call):**
