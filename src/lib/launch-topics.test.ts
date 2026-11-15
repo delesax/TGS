@@ -7,7 +7,7 @@ const rows = buildTopicRows(file, "2026-12-01");
 
 describe("launch topics file", () => {
   it("validates against the schema limits", () => {
-    expect(file.topics).toHaveLength(15);
+    expect(file.topics).toHaveLength(16);
     for (const t of file.topics) {
       expect(t.title.length).toBeGreaterThanOrEqual(5);
       expect(t.title.length).toBeLessThanOrEqual(160);
@@ -15,10 +15,10 @@ describe("launch topics file", () => {
     }
   });
 
-  it("has three topics in each of the five categories", () => {
+  it("has three topics in each category, and four in education (vat-on-private-school-fees was added as the Bank of England replacement)", () => {
     const counts: Record<string, number> = {};
     for (const t of file.topics) counts[t.category] = (counts[t.category] ?? 0) + 1;
-    expect(Object.values(counts)).toEqual([3, 3, 3, 3, 3]);
+    expect(counts).toEqual({ financial_services: 3, energy: 3, technology: 3, education: 4, health_social_care: 3 });
   });
 });
 
