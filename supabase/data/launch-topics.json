@@ -1,5 +1,5 @@
 {
-  "_about": "Fifteen launch Campaign topics from the TGS Launch Topic Bank (Nov 2026). Loaded as DRAFT only. Facts were checked on or around 1 November 2026 and must be refreshed before each topic opens.",
+  "_about": "Sixteen launch Campaign topics: fifteen from the TGS Launch Topic Bank (Nov 2026) plus vat-on-private-school-fees, added 15 Nov 2026 as the replacement for the Bank of England slot. Loaded as DRAFT only. Facts were checked on or around 1 November 2026 and must be refreshed before each topic opens.",
   "waves": {
     "1": "Run first (pilot weeks 1 to 4)",
     "2": "Run second, once moderation and judging are proven",
@@ -24,7 +24,24 @@
       ],
       "is_sensitive": false,
       "opinion_not_advice": true,
-      "public_summary": "As of [opening date], Bank Rate is [x]% and CPI inflation is [y]%. The Bank's target is 2%. [One sentence on the latest decision and vote.]"
+      "public_summary": "As of [opening date], Bank Rate is [x]% and CPI inflation is [y]%. The Bank's target is 2%. [One sentence on the latest decision and vote.]",
+      "admin_notes": "Superseded for the 22 Dec 2026 slot by vat-on-private-school-fees. Kept as a hidden draft; do not delete."
+    },
+    {
+      "slug": "vat-on-private-school-fees",
+      "title": "Should VAT on private school fees stay?",
+      "category": "education",
+      "format": "open_arena",
+      "suggested_format": "Open arena.",
+      "wave": 2,
+      "summary": "20% VAT on private school fees since 1 January 2025; Supreme Court hearing listed for 1 and 2 December 2026. Facts checked 15 Nov 2026. The public text is in public_summary.",
+      "argument_for": "Private schooling is a choice, the tax closes a loophole, and no mass move into state schools has followed.",
+      "argument_against": "Families are being priced out, schools are closing, and the Treasury loses money if enough pupils move to the state sector.",
+      "sources": [],
+      "is_sensitive": false,
+      "opinion_not_advice": false,
+      "public_summary": "Since 1 January 2025, private school fees across the UK have carried 20% VAT, ending a long-standing exemption. Labour promised the change in its 2024 manifesto. The government says it will raise more than £1.8 billion a year by 2029-30 for state schools, which educate 94% of children. Court challenges have failed so far: the Court of Appeal rejected them in February 2026, and the Supreme Court is listed to hear an appeal on 1 and 2 December 2026.\n\nSupporters say private schooling is a choice, the tax closes a loophole, and no mass move into state schools has followed. Critics say families are being priced out, schools are closing, and the Treasury loses money if enough pupils move to the state sector.\n\nThe numbers are disputed. The Department for Education counts 560,300 pupils in England's independent schools in January 2026, down 3.8% in a year and the second fall running; it adds that rolls are falling across all schools. The Independent Schools Council puts the fall at about 30,000 pupils since VAT began, against a government forecast of about 37,000 in the long run. The DfE says more private schools opened than closed in 2025. The ISC says 57 mainstream private schools closed that year, against about 42 in a typical year.",
+      "admin_notes": "Facts checked 15 Nov 2026. Planned: opens 22 Dec 2026 00:00 UTC, closes 29 Dec 2026 00:00 UTC (the owner's replacement for the Bank of England slot; the bank has no date fields, so set the dates in Admin, Campaigns). Re-check before opening: Supreme Court hearing 1-2 Dec 2026 (UKSC/2026/0045 and 0056); if a judgment is handed down before 22 Dec, update the legal sentence in the summary. Rules (generic open arena) and the field checklist: docs/campaigns/vat-on-private-school-fees.md. Sources not yet added: add the gov.uk, DfE and ISC pages the summary relies on."
     },
     {
       "slug": "bank-surcharge-energy-bill-support",
