@@ -28,9 +28,8 @@ export async function SiteHeader() {
       </a>
       <div className="mx-auto flex max-w-4xl items-center justify-between gap-2 px-[12px] py-[8px] lg:max-w-6xl lg:px-4 lg:py-3">
         <Link href="/" className="flex min-h-[44px] min-w-0 shrink items-center no-underline lg:min-h-12 lg:shrink-0 lg:whitespace-nowrap">
-          {/* Stacked lockup below lg (shrinks to fit narrow phones), full two-tier lockup from lg up. Only the visible one is in the accessibility tree. */}
-          <Image src="/brand/lockup-stacked.svg" alt="The Grand Strategist" width={152} height={40} priority unoptimized className="block h-[40px] w-auto max-w-full object-contain object-left lg:hidden" />
-          <Image src="/brand/lockup-full.svg" alt="The Grand Strategist" width={295} height={48} priority unoptimized className="hidden h-[34px] w-auto lg:block xl:h-[54px]" />
+          {/* The same two-tier lockup at every width; on narrow phones it shrinks to fit beside the Menu button. */}
+          <Image src="/brand/lockup-full.svg" alt="The Grand Strategist" width={295} height={48} priority unoptimized className="block h-[40px] w-auto max-w-full object-contain object-left lg:h-[34px] xl:h-[54px]" />
         </Link>
         <nav aria-label="Main" className="hidden lg:block">
           <ul className="-mx-2 flex flex-wrap items-center gap-x-1 gap-y-1">
@@ -75,11 +74,6 @@ export async function SiteHeader() {
           </ul>
         </nav>
         <div className="flex shrink-0 items-center gap-1 lg:hidden">
-          {viewer ? null : (
-            <NavLink href="/login" className="min-h-[44px] px-[8px] text-[18px]">
-              Sign in
-            </NavLink>
-          )}
           <MobileNav>
             <nav aria-label="Main">
               <ul className="flex flex-col gap-1 p-2">
@@ -122,8 +116,13 @@ export async function SiteHeader() {
           </MobileNav>
         </div>
       </div>
-      <div className="mx-auto max-w-4xl px-4 pb-3 lg:max-w-6xl">
-        <form role="search" action="/search" className="flex gap-2 lg:max-w-4xl">
+      <div className="mx-auto flex max-w-4xl items-center gap-2 px-4 pb-3 lg:max-w-6xl">
+        {viewer ? null : (
+          <NavLink href="/login" className="min-h-[44px] shrink-0 px-[8px] text-[18px] lg:hidden">
+            Sign in
+          </NavLink>
+        )}
+        <form role="search" action="/search" className="flex min-w-0 flex-1 gap-2 lg:max-w-4xl">
           <label htmlFor="site-search" className="sr-only">
             Search Campaigns, Dispatches and Strategists
           </label>
