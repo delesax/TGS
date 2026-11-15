@@ -47,7 +47,7 @@ export function PositionForm({
           {POSITIONS.map((p) => (
             <label
               key={p}
-              className="flex min-h-14 cursor-pointer items-center gap-3 rounded-lg border-2 border-border px-4 text-lg font-semibold has-[:checked]:border-primary has-[:checked]:bg-muted has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-ring"
+              className="option-card items-center text-base font-semibold"
             >
               <input type="radio" name="position" value={p} defaultChecked={current === p} className="size-6 accent-primary" />
               {POSITION_LABELS[p]}
@@ -56,7 +56,7 @@ export function PositionForm({
         </div>
       </fieldset>
       {!consented ? (
-        <div className="flex flex-col gap-3 rounded-lg border-2 border-accent-foreground bg-accent p-4 text-lg text-accent-foreground">
+        <div className="flex flex-col gap-3 rounded-lg border border-accent-foreground/50 bg-accent p-4 text-lg text-accent-foreground">
           <p>
             Recording your position is optional. It shows your view on a public issue, which UK law treats as sensitive. We keep it private and use it
             only to measure how minds change. Anyone outside our moderation team sees only anonymous totals. You can withdraw at any time by clearing

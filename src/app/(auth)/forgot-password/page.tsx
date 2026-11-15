@@ -11,7 +11,7 @@ export default async function ForgotPasswordPage({ searchParams }: PageProps<"/f
   return (
     <Page narrow title="Forgot your password?" intro="Enter the email address you signed up with. If it has an account, we will email you a link to choose a new password.">
       {error === "expired" ? (
-        <p role="alert" className="rounded-lg border-2 border-destructive bg-destructive-soft p-4 text-lg text-destructive">
+        <p role="alert" className="rounded-lg border border-destructive bg-destructive-soft p-4 text-lg text-destructive">
           That reset link has expired or has already been used. Each link works once and lasts a short time. Ask for a new one below.
         </p>
       ) : null}

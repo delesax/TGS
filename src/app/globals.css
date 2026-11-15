@@ -5,7 +5,8 @@
  * TGS design tokens (shadcn/ui naming). Brand palette: Deep Ink Navy, Warm
  * Paper, Night Navy and Burnished Gold (see docs/brand/logo-exploration/README.md).
  * Light by default; the dark set follows the device setting (no toggle for the
- * pilot). 18px base text and 48px minimum tap targets for older readers.
+ * pilot). 17px Default text (Small 15, Medium 19 and Large 22px from the header's Text control) and
+ * tap targets of at least 44px for older readers.
  * Contrast (WCAG 2.2, ratios in the comment after each pair): every text pair
  * meets AA, most meet AAA. Burnished Gold (--gold) is an accent for graphics and
  * for text on navy only; on light backgrounds use --gold-text (Deep Gold).
@@ -40,13 +41,15 @@
   /* Surfaces: page (--background) < card (--card) < raised (--raised, popovers and the featured card) */
   --raised: #ffffff;
   --hairline: rgb(11 31 58 / 0.12); /* decorative card edge; controls keep --input / --border (3:1) */
+  --control: #76808f; /* control borders: 3.3:1 to 4.0:1 on Paper, white, muted and secondary */
   --shadow-card: 0 1px 2px rgb(11 31 58 / 0.05), 0 10px 28px -16px rgb(11 31 58 / 0.22);
   --shadow-raised: 0 2px 4px rgb(11 31 58 / 0.06), 0 22px 48px -20px rgb(11 31 58 / 0.32);
   --on-gold: #060f1d; /* text on a gold button: 8.0:1 */
   --gold-edge: #886b29; /* edge of a gold button on light backgrounds: 4.6:1 on Paper */
   --glow-blue: rgb(40 90 170 / 0.1);
   --glow-gold: rgb(200 162 74 / 0.14);
-  --motif: rgb(11 31 58 / 0.07);
+  --motif: #0b1f3a;
+  --motif-opacity: 0.07;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -76,12 +79,14 @@
     --gold-mark: #c8a24a;
     --raised: #0f2744;
     --hairline: rgb(247 245 240 / 0.1);
+    --control: #66789a; /* 3.3:1 to 4.3:1 on Night, card, muted and secondary */
     --shadow-card: 0 0 0 1px rgb(247 245 240 / 0.03), 0 14px 32px -18px rgb(0 0 0 / 0.7);
     --shadow-raised: 0 0 0 1px rgb(247 245 240 / 0.05), 0 26px 56px -22px rgb(0 0 0 / 0.85);
     --gold-edge: #c8a24a;
     --glow-blue: rgb(60 110 210 / 0.24);
     --glow-gold: rgb(200 162 74 / 0.1);
-    --motif: rgb(167 178 196 / 0.1);
+    --motif: #f7f5f0;
+    --motif-opacity: 0.09;
   }
 }
 
@@ -137,6 +142,7 @@ html[data-font="lora"] {
   --color-gold: var(--gold);
   --color-gold-text: var(--gold-text);
   --color-gold-mark: var(--gold-mark);
+  --color-control: var(--control);
   --color-raised: var(--raised);
   --color-hairline: var(--hairline);
   --color-on-gold: var(--on-gold);
@@ -171,10 +177,38 @@ html[data-font="lora"] {
   }
   h1,
   h2,
-  h3 {
-    @apply font-serif font-semibold tracking-tight text-foreground;
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-serif font-semibold text-foreground;
     text-wrap: balance;
     overflow-wrap: anywhere; /* a long handle or word wraps instead of pushing the page sideways at large sizes */
+  }
+  /* The type scale lives here so every page inherits it: pages should not set heading size, weight or tracking. */
+  h1 {
+    font-size: clamp(1.75rem, 1.35rem + 1.5vw, 2.4rem);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+  }
+  h2 {
+    font-size: 1.5rem;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+  }
+  h3 {
+    font-size: 1.25rem;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+  h4 {
+    font-size: 1.1rem;
+    line-height: 1.3;
+  }
+  h5,
+  h6 {
+    font-size: 1rem;
+    line-height: 1.35;
   }
   a {
     @apply underline-offset-4;
@@ -202,12 +236,7 @@ html[data-font="lora"] {
  * hover/focus/menu transitions and one gentle fade-up on the home hero, and all of it
  * is switched off under prefers-reduced-motion (see the media block at the end).
  */
-h1.font-bold,
-h2.font-bold,
-h3.font-bold {
-  font-weight: 600;
-}
-
+@layer components {
 .surface-card {
   background: var(--card);
   border: 1px solid var(--hairline);
@@ -286,5 +315,166 @@ h3.font-bold {
       opacity: 1;
       transform: none;
     }
+  }
+}
+
+/* Form controls: 1px border at 3:1, 10px radius, 46px tall, a clear hover, visible focus ring (the global :focus-visible). */
+.field {
+  display: block;
+  width: 100%;
+  min-height: 46px;
+  padding: 0.5rem 0.875rem;
+  border: 1px solid var(--control);
+  border-radius: 10px;
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 1rem;
+  line-height: 1.5;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease;
+}
+.field::placeholder {
+  color: var(--muted-foreground);
+}
+.field:hover:not(:disabled) {
+  border-color: var(--foreground);
+}
+.field:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.field[aria-invalid="true"] {
+  border-color: var(--destructive);
+}
+textarea.field {
+  min-height: 7rem;
+  padding-block: 0.75rem;
+}
+
+/* Option cards (radio and checkbox choices): tinted surface, strong edge and a check icon when selected, so colour is never the only signal. */
+.option-card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-height: 44px;
+  padding: 0.625rem 2.5rem 0.625rem 0.875rem;
+  border: 1px solid var(--control);
+  border-radius: 10px;
+  background: var(--background);
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+.option-card:hover {
+  border-color: var(--foreground);
+  background: var(--muted);
+}
+.option-card:has(:checked) {
+  border-color: var(--primary);
+  background: var(--secondary);
+}
+.option-card:has(:checked)::after {
+  content: "";
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  background: var(--primary);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.option-card:has(:focus-visible) {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+}
+.option-card:has(:disabled) {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Help text and counters: quiet and muted. */
+.help {
+  color: var(--muted-foreground);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+/* Skeletons: a soft shimmer that is static under prefers-reduced-motion. */
+.skeleton {
+  border-radius: 10px;
+  background: var(--muted);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .skeleton {
+    background-image: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.35), transparent);
+    background-size: 200% 100%;
+    background-repeat: no-repeat;
+    animation: skeleton-shimmer 1.6s ease-in-out infinite;
+  }
+  @keyframes skeleton-shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -100% 0;
+    }
+  }
+}
+
+/* Admin data tables: hairline row dividers, sticky header, tight rows. Still dense and plain. */
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.95rem;
+}
+.data-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--hairline);
+  background: var(--card);
+  color: var(--muted-foreground);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-align: left;
+  text-transform: uppercase;
+}
+.data-table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--hairline);
+  vertical-align: top;
+}
+.data-table tbody tr:hover td {
+  background: var(--muted);
+}
+
+  /* Admin record lists: one surface, hairline dividers between dense rows. */
+  .admin-list {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    background: var(--card);
+  }
+  .admin-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--hairline);
+  }
+  .admin-row:first-child {
+    border-top: 0;
+  }
+  .admin-row:hover {
+    background: color-mix(in srgb, var(--muted) 55%, transparent);
   }
 }

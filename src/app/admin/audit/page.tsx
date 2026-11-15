@@ -22,25 +22,25 @@ export default async function AuditPage({ searchParams }: PageProps<"/admin/audi
   const shown = rows.slice(0, PER_PAGE);
   const query = (extra: Record<string, string>) =>
     new URLSearchParams({ ...Object.fromEntries(Object.entries(filters).filter(([, v]) => v)), ...extra }).toString();
-  const input = "min-h-12 w-full min-w-0 rounded-md border-2 border-input bg-background px-3 text-lg";
+  const input = "field min-w-0";
 
   return (
     <Page title="Audit log" intro="Every recorded action, newest first. Entries cannot be changed or removed, even by admins.">
       <AdminNav current="/admin/audit" />
       <form className="grid gap-3 sm:grid-cols-2" action="/admin/audit" aria-label="Filter the audit log">
-        <label className="flex flex-col gap-1 text-lg font-semibold">
+        <label className="flex flex-col gap-1 text-base font-semibold">
           Who (handle, or “system”)
           <input name="actor" defaultValue={filters.actor} className={input} autoCapitalize="off" />
         </label>
-        <label className="flex flex-col gap-1 text-lg font-semibold">
+        <label className="flex flex-col gap-1 text-base font-semibold">
           Action starts with
           <input name="action" defaultValue={filters.action} placeholder="for example moderation." className={input} autoCapitalize="off" />
         </label>
-        <label className="flex flex-col gap-1 text-lg font-semibold">
+        <label className="flex flex-col gap-1 text-base font-semibold">
           From
           <input name="from" type="date" defaultValue={filters.from} className={input} />
         </label>
-        <label className="flex flex-col gap-1 text-lg font-semibold">
+        <label className="flex flex-col gap-1 text-base font-semibold">
           To
           <input name="to" type="date" defaultValue={filters.to} className={input} />
         </label>
@@ -56,11 +56,11 @@ export default async function AuditPage({ searchParams }: PageProps<"/admin/audi
           </Button>
         </div>
       </form>
-      {unknownActor ? <p role="alert" className="text-lg font-semibold text-destructive">No Strategist has the handle @{filters.actor}.</p> : null}
+      {unknownActor ? <p role="alert" className="text-base font-semibold text-destructive">No Strategist has the handle @{filters.actor}.</p> : null}
       {shown.length ? (
-        <ol className="flex flex-col gap-2">
+        <ol className="admin-list">
           {shown.map((r) => (
-            <li key={r.id} className="flex flex-col gap-1 rounded-lg border border-border p-3 text-base">
+            <li key={r.id} className="admin-row text-base">
               <p className="font-semibold">
                 {r.action} · {formatUkShort(r.created_at)}
               </p>
@@ -82,12 +82,12 @@ export default async function AuditPage({ searchParams }: PageProps<"/admin/audi
       )}
       <nav aria-label="Pages" className="flex gap-3">
         {page > 1 ? (
-          <Link href={`/admin/audit?${query({ page: String(page - 1) })}`} className="inline-flex min-h-12 items-center text-lg font-semibold text-primary underline">
+          <Link href={`/admin/audit?${query({ page: String(page - 1) })}`} className="inline-flex min-h-12 items-center text-base font-semibold text-primary underline">
             Newer
           </Link>
         ) : null}
         {rows.length > PER_PAGE ? (
-          <Link href={`/admin/audit?${query({ page: String(page + 1) })}`} className="inline-flex min-h-12 items-center text-lg font-semibold text-primary underline">
+          <Link href={`/admin/audit?${query({ page: String(page + 1) })}`} className="inline-flex min-h-12 items-center text-base font-semibold text-primary underline">
             Older
           </Link>
         ) : null}

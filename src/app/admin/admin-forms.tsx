@@ -78,7 +78,7 @@ function DecisionFormBody({
         Saved. See “Just decided” above.
       </p>
     ) : (
-      <p role="status" className="rounded-lg border-2 border-success bg-success/10 p-3 text-lg font-semibold">
+      <p role="status" className="rounded-lg border border-success bg-success/10 p-3 text-base font-semibold">
         {state.success} <span className="font-normal">Reload the page to update the list.</span>
       </p>
     );
@@ -90,17 +90,17 @@ function DecisionFormBody({
         <input key={k} type="hidden" name={k} value={v} />
       ))}
       {warning ? (
-        <p role="note" className="rounded-lg border-2 border-destructive p-3 text-base font-semibold text-destructive">
+        <p role="note" className="rounded-lg border border-destructive p-3 text-base font-semibold text-destructive">
           {warning}
         </p>
       ) : null}
       {choices.length > 1 ? (
         <fieldset className="flex flex-col gap-1">
-          <legend className="mb-1 text-lg font-semibold">Decision</legend>
+          <legend className="mb-1 text-base font-semibold">Decision</legend>
           {errors.action ? <p className="text-base font-semibold text-destructive">{errors.action}</p> : null}
           {choices.map((c) => (
-            <label key={c.value} className="flex min-h-12 cursor-pointer items-start gap-3 py-1 text-lg">
-              <input type="radio" name="action" value={c.value} className="mt-1 size-6 shrink-0 accent-primary" />
+            <label key={c.value} className="flex min-h-12 cursor-pointer items-start gap-3 py-1 text-base">
+              <input type="radio" name="action" value={c.value} className="mt-1 size-5 shrink-0 accent-primary" />
               <span>
                 {c.label}
                 {c.hint ? <span className="block text-base text-muted-foreground">{c.hint}</span> : null}
@@ -181,7 +181,7 @@ function SelectSetting({ name, label, value, options, hint, error }: { name: str
       <Label htmlFor={name}>{label}</Label>
       {hint ? <p className="text-base text-muted-foreground">{hint}</p> : null}
       {error ? <p className="text-base font-semibold text-destructive">{error}</p> : null}
-      <select id={name} name={name} defaultValue={value} className="min-h-12 w-full rounded-md border-2 border-input bg-background px-3 text-lg">
+      <select id={name} name={name} defaultValue={value} className="field">
         {options.map(([v, t]) => (
           <option key={v} value={v}>
             {t}
@@ -198,9 +198,9 @@ export function SwitchesForm({ values }: { values: { posting_paused: boolean; si
   return (
     <ActionForm action={run} aria-label="Site switches">
       <FormMessage state={state} />
-      <fieldset className="flex flex-col gap-4 rounded-lg border-2 border-destructive p-4">
+      <fieldset className="flex flex-col gap-4 rounded-lg border border-destructive p-4">
         <legend className="px-2 text-2xl font-bold">Site switches</legend>
-        <p className="text-lg text-muted-foreground">
+        <p className="text-base text-muted-foreground">
           For an emergency or a busy launch hour. Takes effect at once, with no deploy. The AI switch is in the AI section below.
         </p>
         <CheckboxField name="posting_paused" label="Pause posting (nobody can post a new Dispatch; reading, reacting and voting carry on)" defaultChecked={values.posting_paused} />
@@ -223,7 +223,7 @@ export function EmailControlsForm({ values }: { values: { email_essentials_only:
       <FormMessage state={state} />
       <fieldset className="flex flex-col gap-4">
         <legend className="mb-2 text-2xl font-bold">App email</legend>
-        <p className="text-lg text-muted-foreground">
+        <p className="text-base text-muted-foreground">
           Sign-up and password-reset emails come from Supabase and share the same free sending quota, so the app keeps its own email small. Essentials are moderation outcomes, Verdict published, appeal outcomes, judge assignments and voting-open notices.
         </p>
         <CheckboxField name="email_essentials_only" label="Essential emails only (replies, Campaign updates and closing-soon emails are not sent)" defaultChecked={values.email_essentials_only} />
@@ -252,7 +252,7 @@ export function SettingsForm({ values, defaults }: { values: SettingsValues; def
       <FormMessage state={state} />
       <fieldset className="flex flex-col gap-4">
         <legend className="mb-2 text-2xl font-bold">AI</legend>
-        <div className="rounded-lg border-2 border-destructive p-3">
+        <div className="rounded-lg border border-destructive p-3">
           <CheckboxField name="ai_enabled" label="AI features on (untick to switch off screening, nudges and the coach at once)" defaultChecked={Boolean(values.ai_enabled)} />
         </div>
         <SelectSetting name="ai_fallback_normal" label="When the AI is off, down or over its cap: a Dispatch in a normal Campaign" value={String(values.ai_fallback_normal)} options={fallback} error={e.ai_fallback_normal} />
@@ -301,7 +301,7 @@ export function SettingsForm({ values, defaults }: { values: SettingsValues; def
 
       <fieldset className="flex flex-col gap-4">
         <legend className="mb-2 text-2xl font-bold">Accounts</legend>
-        <p role="note" className="rounded-lg border-2 border-accent-foreground bg-accent p-3 text-base text-accent-foreground">
+        <p role="note" className="rounded-lg border border-accent-foreground/50 bg-accent p-3 text-base text-accent-foreground">
           <strong>Owner decision:</strong> the delete-account wording is a DRAFT awaiting approval. Leave this off until it is approved.
         </p>
         <CheckboxField name="account_deletion_enabled" label="Let Strategists delete their own account" defaultChecked={Boolean(values.account_deletion_enabled)} />
@@ -318,7 +318,7 @@ export function ReactionTypeForm({ r }: { r: { key: string; label: string; descr
   const [state, run, pending] = useActionState(saveReactionType, {} as FormState);
   const e = state.fieldErrors ?? {};
   return (
-    <ActionForm action={run} aria-label={`Reaction ${r.label}`} className="gap-3 rounded-lg border border-border p-3">
+    <ActionForm action={run} aria-label={`Reaction ${r.label}`} className="gap-3 rounded-[10px] border border-hairline p-3">
       <FormMessage state={state} />
       <input type="hidden" name="key" value={r.key} />
       <TextField name="label" id={`label-${r.key}`} label="Label" defaultValue={r.label} maxLength={30} error={e.label} />
@@ -357,7 +357,7 @@ export function WeightsForm({ current }: { current: { panel: number; peer: numbe
       {field("peer", "Peer votes")}
       {field("ai_rubric", "AI rubric")}
       {field("mind_change", "Mind-change movement")}
-      <p role="status" className={total === 100 ? "text-lg font-semibold" : "text-lg font-semibold text-destructive"}>
+      <p role="status" className={total === 100 ? "text-base font-semibold" : "text-base font-semibold text-destructive"}>
         Total: {total}%{total === 100 ? "" : ". The weights must add up to 100."}
       </p>
       {e.total ? <p className="text-base font-semibold text-destructive">{e.total}</p> : null}

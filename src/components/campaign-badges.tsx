@@ -11,7 +11,7 @@ const STATUS_CLASS: Record<Status, string> = {
   draft: "bg-accent text-accent-foreground",
   scheduled: "border border-gold-text/40 bg-accent text-accent-foreground",
   open: "border border-success/40 bg-success-soft text-success",
-  closed: "border border-border bg-muted text-muted-foreground",
+  closed: "border border-hairline bg-muted text-muted-foreground",
 };
 
 // A dot as well as a word, so the status never depends on colour alone.
@@ -37,7 +37,7 @@ export function CampaignBadges({ status, category, format }: { status: Status; c
 
 export function OpinionNotAdvice() {
   return (
-    <p role="note" className="rounded-lg border-2 border-border bg-muted p-4 text-lg">
+    <p role="note" className="rounded-lg border border-hairline bg-muted p-4 text-lg">
       <strong>Opinion, not advice.</strong> Dispatches in this Campaign are personal views. They are not financial, medical or
       professional advice.
     </p>

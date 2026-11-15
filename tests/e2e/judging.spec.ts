@@ -146,6 +146,7 @@ test("a closed Campaign is judged, published with an audit trail, read by a visi
   await visitor.goto(`/campaigns/${slug}/verdict`);
   await expect(visitor.getByRole("heading", { name: "Grand Strategist" })).toBeVisible();
   await expect(visitor.getByRole("heading", { name: "Why" })).toBeVisible();
+  await expect(visitor.getByRole("heading", { name: "Runners-up" })).toBeVisible();
   await expect(visitor.getByRole("list", { name: "Scores by Strategist" })).toBeVisible();
   await expect(visitor.getByRole("link", { name: "Sign in to appeal" })).toBeVisible();
   await expectNoHorizontalOverflow(visitor);

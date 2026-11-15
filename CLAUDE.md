@@ -30,7 +30,7 @@ TGS is a time-boxed arena for structured reasoning. It rewards the best argument
 9. Each Dispatch carries an AI-use declaration (none, assisted, generated). Show it publicly. Pasted AI output without declaration is a moderation flag.
 10. Evaluate the AI judge against a human-scored gold set (seeded by the product owner) before launch; keep the test runnable (npm run eval:judge).
 11. Privacy by design (UK GDPR): collect the minimum, data export and delete-account built in, privacy policy and terms, consent for analytics. Users must be 18 or over for the pilot.
-12. Accessibility: WCAG 2.2 AA, keyboard navigable, readable type, high contrast. Many users are older adults, so large tap targets and plain wording.
+12. Accessibility: WCAG 2.2 AA, keyboard navigable, readable type, high contrast. Many users are older adults, so large tap targets (at least 44px) and plain wording. Default body text is 17px (Atkinson Hyperlegible); the "Text" control in the header lets anyone choose Small 15px, Medium 19px or Large 22px and any of eight free fonts, saved in the browser only. Layouts must hold at every size, down to 320px wide.
 13. Moderation: handles and Dispatches are screened. Block hate, harassment and impersonation. Sensitive Campaigns (e.g. assisted dying) need stricter settings and a content note. Financial and medical Campaigns are labelled as opinion, not advice.
 14. Do not build anything on the out-of-scope list: dating, recruitment, payments, voice/video, native apps, verified credentials, LTI, argument map. Keep the schema open to them but ship nothing.
 15. Ask me when a requirement is unclear. Do not guess on legal, payment or safety matters.

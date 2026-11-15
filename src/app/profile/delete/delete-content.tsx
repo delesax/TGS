@@ -36,7 +36,7 @@ export function DeletionOnContent({ handle, count, confirm }: { handle: string; 
   return (
     <>
       <section aria-labelledby="first-h" className="flex flex-col gap-3">
-        <h2 id="first-h" className="text-2xl font-bold">
+        <h2 id="first-h">
           1. Download your data first
         </h2>
         <p className="text-lg">Once your account is deleted we cannot give you a copy.</p>
@@ -47,7 +47,7 @@ export function DeletionOnContent({ handle, count, confirm }: { handle: string; 
         </Button>
       </section>
       <section aria-labelledby="what-h" className="flex flex-col gap-3">
-        <h2 id="what-h" className="text-2xl font-bold">
+        <h2 id="what-h">
           2. What happens
         </h2>
         <p className="text-lg font-semibold">Removed for good:</p>
@@ -77,7 +77,7 @@ export function DeletionOnContent({ handle, count, confirm }: { handle: string; 
         </ul>
       </section>
       <section aria-labelledby="confirm-h" className="flex flex-col gap-3">
-        <h2 id="confirm-h" className="text-2xl font-bold">
+        <h2 id="confirm-h">
           3. Confirm
         </h2>
         {confirm}

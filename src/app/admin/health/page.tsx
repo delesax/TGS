@@ -52,10 +52,10 @@ export default async function HealthPage() {
     <Page title="Health" intro={`Queues, today's AI use and the last run of each scheduled job. Checked ${when(h.checked_at)}. Reload for the latest.`}>
       <AdminNav current="/admin/health" />
       <section aria-labelledby="queues-h" className="flex flex-col gap-3">
-        <h2 id="queues-h" className="text-2xl font-bold">
+        <h2 id="queues-h">
           Queues and limits
         </h2>
-        <dl className="grid gap-3 text-lg sm:grid-cols-[16rem_1fr]">
+        <dl className="grid gap-3 text-base sm:grid-cols-[16rem_1fr]">
           {rows.map(([k, v]) => (
             <div key={k} className="contents">
               <dt className="font-semibold">{k}</dt>
@@ -65,10 +65,10 @@ export default async function HealthPage() {
         </dl>
       </section>
       <section aria-labelledby="jobs-h" className="flex flex-col gap-3">
-        <h2 id="jobs-h" className="text-2xl font-bold">
+        <h2 id="jobs-h">
           Scheduled jobs
         </h2>
-        <ul className="flex flex-col gap-2 text-lg">
+        <ul className="flex flex-col gap-2 text-base">
           {h.jobs.map((j) => (
             <li key={j.name}>
               <span className="font-semibold">{j.name}</span> ({j.schedule}){j.active ? "" : " (switched off)"}: last run {when(j.last_run)}, {j.last_status ?? "no run yet"}
@@ -77,12 +77,12 @@ export default async function HealthPage() {
         </ul>
       </section>
       <section aria-labelledby="events-h" className="flex flex-col gap-3">
-        <h2 id="events-h" className="text-2xl font-bold">
+        <h2 id="events-h">
           Recent events
         </h2>
-        <p className="text-lg text-muted-foreground">Our own incident record, kept 30 days. Counts and short codes only.</p>
+        <p className="text-base text-muted-foreground">Our own incident record, kept 30 days. Counts and short codes only.</p>
         {((events as EventRow[]) ?? []).length ? (
-          <ul className="flex flex-col gap-2 text-lg">
+          <ul className="flex flex-col gap-2 text-base">
             {((events as EventRow[]) ?? []).map((e) => (
               <li key={e.id}>
                 {when(e.created_at)}: {e.kind}
@@ -91,7 +91,7 @@ export default async function HealthPage() {
             ))}
           </ul>
         ) : (
-          <p className="text-lg">Nothing recorded.</p>
+          <p className="text-base">Nothing recorded.</p>
         )}
       </section>
     </Page>

@@ -28,7 +28,7 @@ export default async function JudgingListPage() {
           {list.map((a) => {
             const closed = a.campaign && (a.campaign.status === "closed" || Date.parse(a.campaign.ends_at) <= now);
             return (
-              <li key={a.campaign_id} className="flex flex-col gap-2 rounded-xl border border-border p-4">
+              <li key={a.campaign_id} className="flex flex-col gap-2 surface-card p-4">
                 <p className="text-xl font-semibold">{a.campaign?.title ?? "A Campaign"}</p>
                 <p className="text-lg">
                   {a.submitted_at

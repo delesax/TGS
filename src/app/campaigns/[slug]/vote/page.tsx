@@ -48,8 +48,8 @@ export default async function VotePage({ params }: PageProps<"/campaigns/[slug]/
 
   return (
     <Page title={`Vote: ${campaign.title}`} intro="Peer votes are one of the four parts of the Verdict. Vote for the Dispatches you found strongest, not the ones you agree with.">
-      <section aria-labelledby="how-h" className="flex flex-col gap-2 rounded-xl border border-border p-5 text-lg">
-        <h2 id="how-h" className="text-2xl font-bold">
+      <section aria-labelledby="how-h" className="flex flex-col gap-2 surface-card p-5 text-lg">
+        <h2 id="how-h">
           How it works
         </h2>
         <ul className="flex list-disc flex-col gap-1 pl-6">
@@ -78,14 +78,14 @@ export default async function VotePage({ params }: PageProps<"/campaigns/[slug]/
         <EmptyState title="No Dispatches to vote on">This Campaign has no visible Dispatches.</EmptyState>
       ) : (
         <section aria-labelledby="dispatches-h" className="flex flex-col gap-4">
-          <h2 id="dispatches-h" className="text-2xl font-bold">
+          <h2 id="dispatches-h">
             Dispatches ({dispatches.length})
           </h2>
           <ul className="flex flex-col gap-4">
             {dispatches.map((d) => {
               const mine = d.author_id === viewer.userId;
               return (
-                <li key={d.id} id={`dispatch-${d.id}`} className="flex flex-col gap-3 rounded-xl border border-border p-4">
+                <li key={d.id} id={`dispatch-${d.id}`} className="flex flex-col gap-3 surface-card p-4">
                   <div className="flex flex-wrap items-center gap-2 text-lg">
                     <span className="font-semibold">{handleOf(d)}</span>
                     <KindTag kind={d.kind} />

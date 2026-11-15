@@ -60,6 +60,8 @@ test.describe("Site header", () => {
       for (let i = 0; i < 7; i++) tops.push(Math.round((await items.nth(i).boundingBox())!.y));
       expect(Math.max(...tops) - Math.min(...tops), `link tops ${tops.join(", ")}`).toBeLessThanOrEqual(2);
 
+      // No link wraps onto a second line inside the row (each is one line tall).
+      for (let i = 0; i < 7; i++) expect((await items.nth(i).boundingBox())!.height, `nav item ${i}`).toBeLessThanOrEqual(48);
       // One slim row (64 to 72px) that stays in view; the search is in the same row.
       const header = (await page.getByRole("banner").boundingBox())!;
       expect(header.height).toBeLessThanOrEqual(72);

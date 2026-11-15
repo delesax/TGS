@@ -43,10 +43,10 @@ export default async function SettingsPage() {
       />
       <SettingsForm values={settings as SettingsValues} defaults={defaults} />
       <section aria-labelledby="reactions-h" className="flex flex-col gap-4">
-        <h2 id="reactions-h" className="text-2xl font-bold">
+        <h2 id="reactions-h">
           Reactions
         </h2>
-        <p className="text-lg text-muted-foreground">Reactions are information for Strategists only. They never count towards a Verdict.</p>
+        <p className="text-base text-muted-foreground">Reactions are information for Strategists only. They never count towards a Verdict.</p>
         {((reactions as { key: string; label: string; description: string; sort: number; active: boolean }[]) ?? []).map((r) => (
           <ReactionTypeForm key={r.key} r={r} />
         ))}

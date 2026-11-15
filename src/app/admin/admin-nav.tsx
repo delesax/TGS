@@ -25,7 +25,7 @@ export function AdminNav({ current }: { current: (typeof SECTIONS)[number]["href
               href={s.href}
               aria-current={s.href === current ? "page" : undefined}
               className={cn(
-                "inline-flex min-h-12 items-center rounded-md border-2 px-3 text-lg font-semibold",
+                "inline-flex min-h-12 items-center rounded-md border px-3 text-base font-semibold",
                 s.href === current ? "border-primary bg-primary text-primary-foreground" : "border-border hover:bg-muted",
               )}
             >

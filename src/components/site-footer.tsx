@@ -31,7 +31,7 @@ export function SiteFooter() {
             ))}
           </ul>
         </nav>
-        <address data-testid="company-block" className="flex flex-col gap-1 text-base not-italic text-muted-foreground [overflow-wrap:anywhere]">
+        <address data-testid="company-block" className="flex flex-col gap-1 text-base not-italic text-muted-foreground">
           <p className="font-semibold text-foreground">{LEGAL.companyName} · Invite-only pilot</p>
           <p>
             Registered in {LEGAL.jurisdiction}, company number <Fact k="companyNumber" />

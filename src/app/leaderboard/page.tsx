@@ -32,8 +32,8 @@ export default async function LeaderboardPage({ searchParams }: PageProps<"/lead
                 href={t.href}
                 aria-current={t.active ? "page" : undefined}
                 className={cn(
-                  "inline-flex min-h-12 items-center rounded-md border-2 px-3 text-lg font-semibold",
-                  t.active ? "border-primary bg-primary text-primary-foreground" : "border-border hover:bg-muted",
+                  "inline-flex min-h-11 items-center rounded-full border px-4 text-base font-semibold transition-colors duration-200 motion-reduce:transition-none",
+                  t.active ? "border-primary bg-primary text-primary-foreground" : "border-control hover:border-foreground hover:bg-muted",
                 )}
               >
                 {t.label}
@@ -45,15 +45,15 @@ export default async function LeaderboardPage({ searchParams }: PageProps<"/lead
       {rows.length ? (
         <ol className="flex flex-col gap-3">
           {rows.map((r, i) => (
-            <li key={r.user_id} className="flex flex-col gap-1 rounded-xl border border-border p-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-xl">
-                <span className="mr-2 font-bold">{i + 1}.</span>
-                <Link href={`/strategists/${r.handle}`} className="font-semibold text-primary underline">
+            <li key={r.user_id} className="surface-card soft-hover flex flex-col gap-1 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="font-serif text-xl">
+                <span className="mr-3 inline-block min-w-[1.75rem] text-base tabular-nums text-muted-foreground">{i + 1}</span>
+                <Link href={`/strategists/${r.handle}`} className="font-semibold text-foreground no-underline underline-offset-4 hover:underline focus-visible:underline">
                   @{r.handle}
                 </Link>
               </p>
-              <p className="text-lg">
-                <strong>
+              <p className="text-base text-muted-foreground">
+                <strong className="text-foreground">
                   {r.points} point{r.points === 1 ? "" : "s"}
                 </strong> · {r.titles} title{r.titles === 1 ? "" : "s"} · {r.awards} award{r.awards === 1 ? "" : "s"} · {r.campaigns} Campaign
                 {r.campaigns === 1 ? "" : "s"}

@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: "Check your email" };
 export default function ForgotPasswordSentPage() {
   return (
     <Page narrow title="Check your email">
-      <div className="flex items-start gap-4 rounded-xl border-2 border-primary bg-secondary p-5">
+      <div className="flex items-start gap-4 rounded-xl border border-primary/60 bg-secondary p-5">
         <MailCheck aria-hidden className="mt-1 size-8 shrink-0 text-primary" />
         <div className="flex flex-col gap-3 text-lg">
           <p>If that email address has an account, we have sent a link to choose a new password.</p>
@@ -18,7 +18,7 @@ export default function ForgotPasswordSentPage() {
         </div>
       </div>
       <div className="flex flex-col gap-2 text-lg">
-        <h2 className="text-2xl font-semibold">No email?</h2>
+        <h2>No email?</h2>
         <ul className="list-disc pl-6">
           <li>Wait a few minutes, then look in your spam or junk folder.</li>
           <li>Make sure you typed the address you signed up with.</li>

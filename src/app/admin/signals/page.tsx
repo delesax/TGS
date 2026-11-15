@@ -46,17 +46,17 @@ export default async function SignalsPage() {
     >
       <AdminNav current="/admin/signals" />
       {groups.length === 0 ? (
-        <p className="text-lg">No signals. Nothing in the last {report.days} days matches any of the patterns.</p>
+        <p className="text-base">No signals. Nothing in the last {report.days} days matches any of the patterns.</p>
       ) : (
         groups.map((g) => (
           <section key={g.code} aria-labelledby={`${g.code}-h`} className="flex flex-col gap-3">
-            <h2 id={`${g.code}-h`} className="text-2xl font-bold">
+            <h2 id={`${g.code}-h`}>
               {LABELS[g.code].title} ({g.items.length})
             </h2>
-            <p className="text-lg text-muted-foreground">{LABELS[g.code].meaning}</p>
-            <ul className="flex flex-col gap-2 text-lg">
+            <p className="text-base text-muted-foreground">{LABELS[g.code].meaning}</p>
+            <ul className="admin-list text-base">
               {g.items.map((s, i) => (
-                <li key={i} className="rounded-lg border-2 border-border p-3">
+                <li key={i} className="admin-row">
                   {s.users.map(who).join(", ")}
                   {s.campaign_id && report.campaigns[s.campaign_id] ? (
                     <>

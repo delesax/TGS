@@ -5,8 +5,8 @@ import { CampaignBadges } from "@/components/campaign-badges";
 import { Countdown } from "@/components/countdown";
 import { Button } from "@/components/ui/button";
 import { getViewer } from "@/lib/auth";
-import { getServerNow, listCampaigns } from "@/lib/campaign-data";
-import { formatUkDateTime, groupCampaigns, statusAt } from "@/lib/campaigns";
+import { getOwnerDecisionIds, getServerNow, listCampaigns } from "@/lib/campaign-data";
+import { formatUkDateTime, pickNextCampaign, statusAt } from "@/lib/campaigns";
 
 const steps = [
   { icon: Clock, title: "On the clock", text: "Every Campaign has a fixed deadline. Make your case before time runs out." },
@@ -17,9 +17,11 @@ const steps = [
 export default async function HomePage() {
   const [viewer, campaigns, now] = await Promise.all([getViewer(), listCampaigns(), getServerNow()]);
   const handle = viewer?.profile?.handle;
-  // The same public list the Campaigns page reads: the Campaign that closes soonest, else the one that opens next.
-  const groups = groupCampaigns(campaigns, now);
-  const next = groups.open[0] ?? groups.soon[0] ?? null;
+  // Rule: open or scheduled only (never a draft), not sensitive, no owner-decision flag; the open one closing soonest, else the
+  // scheduled one opening soonest. If the flag cannot be checked, show the quiet illustration instead (fail closed).
+  const candidates = campaigns.filter((c) => !c.is_sensitive && (c.status === "open" || c.status === "scheduled"));
+  const blocked = await getOwnerDecisionIds(candidates.map((c) => c.id));
+  const next = blocked ? pickNextCampaign(candidates, now, blocked) : null;
   const nextStatus = next ? statusAt(next, now) : null;
 
   return (

@@ -44,6 +44,13 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 
 ## Entries
 
+### 2026-11-15 — Phase D finishing pass (branch `ui/font-picker`, DO NOT MERGE)
+
+- **UI only; no database, migration, auth, routing or copy change, no new library.** Forms: `.field` and `.option-card` (1px control border at 3:1 or better, 10px radius, 44 to 46px tall, hover state, selected cards get a tinted surface, a strong edge and a CSS check icon). Headings: size, weight and tracking set once in `globals.css` (h1 to h6); per-heading overrides removed from 128 tags. Dispatch cards, Dossier, Leaderboard on `.surface-card` with hairlines. Verdict page rebuilt as the "Grand Strategist" moment (gold Apex node, name, runners-up from existing scores, rationale at 65ch; score table from 1024px up). Admin lists are dense rows with hairline dividers (`.admin-list`); the admin pages were card lists, not tables, so there is no sticky header. Apex motif brighter on dark with a faint gold glow on the apex node. Skeletons with shimmer for Leaderboard, Dossier, Campaign (with a Dispatch list) and the verdict page. Next Campaign card: open or scheduled only, not sensitive, no owner-decision flag (read on the server with the service client, ids only; fails closed), 7 unit tests. CLAUDE.md rule 12 now states 17px Default and 15/19/22px choices. The `fix-email-overflow-375` commit is included once (cherry-picked); the footer no longer carries its own copy of that wrapping.
+- **Checks on my own Supabase stack (project `tgs-ui`, ports 55xxx, port 3200):** 912 page states (6 widths x light/dark x 4 sizes x logged out, member, admin pages) and 144 verdict/leaderboard/Campaign loads: no sideways scroll; header under 150px (phones) and 72px (desktop). Contrast audit 56 states: no text below AA. Keyboard walkthrough OK. Lighthouse mobile (3 runs): Accessibility 100 on all four pages; Performance 94 to 96 except one cold verdict run at 89 (91 before). Lint, typecheck, 365 unit, 361 RLS on a freshly reset database, 98 Playwright pass.
+- **Test notes:** `test:rls` is order-dependent: `email-essentials.test.ts` fails if the Playwright suite has already run on the same database; reset first. Tests changed because they asserted old structure: desktop header (no link may wrap); `judging.spec` gained a Runners-up check.
+- **Placeholders ("[to be added]") visible on public pages, not edited:** see the report (company number, registered office, ICO number, effective date, and the `[Owner: ...]` and `[six years]` markers on the privacy, terms and delete pages).
+
 ### 2026-11-15 — CI red on main: the 375px email overflow (branch `fix-email-overflow-375`)
 
 **Seen by Claude itself (repo, Docker, git, public GitHub API; no hosted command, no env file):**

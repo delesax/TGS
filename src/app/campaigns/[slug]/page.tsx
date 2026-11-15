@@ -37,14 +37,14 @@ export default async function CampaignPage({ params }: PageProps<"/campaigns/[sl
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:py-12">
       {campaign.is_sensitive && campaign.content_note ? (
-        <section aria-label="Content note" className="rounded-xl border-2 border-accent-foreground bg-accent p-5 text-lg text-accent-foreground">
-          <h2 className="text-xl font-bold">Content note</h2>
+        <section aria-label="Content note" className="rounded-xl border border-accent-foreground/50 bg-accent p-5 text-lg text-accent-foreground">
+          <h2>Content note</h2>
           <p className="mt-2 whitespace-pre-line">{campaign.content_note}</p>
         </section>
       ) : null}
 
       {status === "draft" ? (
-        <p role="note" className="rounded-lg border-2 border-accent-foreground bg-accent p-4 text-lg text-accent-foreground">
+        <p role="note" className="rounded-lg border border-accent-foreground/50 bg-accent p-4 text-lg text-accent-foreground">
           <strong>Draft.</strong> Only admins can see this Campaign.{" "}
           <Link href={`/admin/campaigns/${campaign.id}`} className="font-semibold underline">
             Edit it
@@ -54,7 +54,7 @@ export default async function CampaignPage({ params }: PageProps<"/campaigns/[sl
       ) : null}
 
       <div className="flex flex-col gap-3">
-        <h1 className="text-3xl font-bold sm:text-4xl">{campaign.title}</h1>
+        <h1>{campaign.title}</h1>
         <CampaignBadges status={status} category={campaign.category} format={campaign.format} />
       </div>
 
@@ -100,7 +100,7 @@ export default async function CampaignPage({ params }: PageProps<"/campaigns/[sl
 
       {campaign.summary ? (
         <section className="flex flex-col gap-2">
-          <h2 className="text-2xl font-bold">The question</h2>
+          <h2>The question</h2>
           <p className="whitespace-pre-line text-lg">{campaign.summary}</p>
         </section>
       ) : null}
@@ -160,7 +160,7 @@ export default async function CampaignPage({ params }: PageProps<"/campaigns/[sl
 
       {campaign.rounds.length ? (
         <section className="flex flex-col gap-3" aria-labelledby="rounds-heading">
-          <h2 id="rounds-heading" className="text-2xl font-bold">
+          <h2 id="rounds-heading">
             Rounds and deadlines
           </h2>
           <ol className="flex flex-col gap-3">
@@ -171,7 +171,7 @@ export default async function CampaignPage({ params }: PageProps<"/campaigns/[sl
                 <li
                   key={r.position}
                   aria-current={isNow ? "step" : undefined}
-                  className={`rounded-lg border-2 p-4 text-lg ${isNow ? "border-primary bg-muted" : "border-border"}`}
+                  className={`rounded-lg border p-4 text-lg ${isNow ? "border-primary bg-muted" : "border-hairline"}`}
                 >
                   <p className="font-semibold">
                     Round {r.position}: {r.title} {isNow ? "(now)" : done ? "(finished)" : ""}
@@ -187,7 +187,7 @@ export default async function CampaignPage({ params }: PageProps<"/campaigns/[sl
 
       {campaign.rules ? (
         <section className="flex flex-col gap-2">
-          <h2 className="text-2xl font-bold">Rules</h2>
+          <h2>Rules</h2>
           <p className="whitespace-pre-line text-lg">{campaign.rules}</p>
         </section>
       ) : null}

@@ -37,32 +37,32 @@ export async function SiteHeader() {
         <nav aria-label="Main" className="hidden lg:block">
           <ul className="flex items-center gap-x-0.5">
             <li>
-              <NavLink href="/" className="lg:min-h-[42px] lg:px-[10px] lg:text-[16px]">Home</NavLink>
+              <NavLink href="/" className="lg:min-h-[42px] lg:px-[9px] lg:text-[16px] lg:whitespace-nowrap">Home</NavLink>
             </li>
             <li>
-              <NavLink href="/campaigns" className="lg:min-h-[42px] lg:px-[10px] lg:text-[16px]">Campaigns</NavLink>
+              <NavLink href="/campaigns" className="lg:min-h-[42px] lg:px-[9px] lg:text-[16px] lg:whitespace-nowrap">Campaigns</NavLink>
             </li>
             <li>
-              <NavLink href="/leaderboard" className="lg:min-h-[42px] lg:px-[10px] lg:text-[16px]">Leaderboard</NavLink>
+              <NavLink href="/leaderboard" className="lg:min-h-[42px] lg:px-[9px] lg:text-[16px] lg:whitespace-nowrap">Leaderboard</NavLink>
             </li>
             <li>
-              <NavLink href="/dossier" className="lg:min-h-[42px] lg:px-[10px] lg:text-[16px]">Dossier</NavLink>
+              <NavLink href="/dossier" className="lg:min-h-[42px] lg:px-[9px] lg:text-[16px] lg:whitespace-nowrap">Dossier</NavLink>
             </li>
             {viewer ? (
               <>
                 {viewer.isAdmin ? (
                   <li>
-                    <NavLink href="/admin" className="lg:min-h-[42px] lg:px-[10px] lg:text-[16px]">Admin</NavLink>
+                    <NavLink href="/admin" className="lg:min-h-[42px] lg:px-[9px] lg:text-[16px] lg:whitespace-nowrap">Admin</NavLink>
                   </li>
                 ) : null}
                 <li>
-                  <NavLink href="/profile" className="lg:min-h-[42px] lg:px-[10px] lg:text-[16px]">Account</NavLink>
+                  <NavLink href="/profile" className="lg:min-h-[42px] lg:px-[9px] lg:text-[16px] lg:whitespace-nowrap">Account</NavLink>
                 </li>
                 <li>
                   <form action={signOut} className="flex">
                     <button
                       type="submit"
-                      className="h-[42px] rounded-md px-[10px] text-[16px] font-semibold text-foreground underline underline-offset-4 hover:bg-muted"
+                      className="h-[42px] whitespace-nowrap rounded-md px-[9px] text-[16px] font-semibold text-foreground underline underline-offset-4 hover:bg-muted"
                     >
                       Sign out
                     </button>
@@ -71,7 +71,7 @@ export async function SiteHeader() {
               </>
             ) : (
               <li>
-                <NavLink href="/login" className="lg:min-h-[42px] lg:px-[10px] lg:text-[16px]">Sign in</NavLink>
+                <NavLink href="/login" className="lg:min-h-[42px] lg:px-[9px] lg:text-[16px] lg:whitespace-nowrap">Sign in</NavLink>
               </li>
             )}
           </ul>
@@ -151,7 +151,7 @@ export async function SiteHeader() {
             enterKeyHint="search"
             maxLength={200}
             placeholder="Search"
-            className="min-h-[44px] w-full min-w-0 rounded-md border-2 border-input lg:min-h-12 bg-background px-3 text-lg placeholder:text-muted-foreground focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring"
+            className="field min-h-[44px] min-w-0 py-[6px] text-[16px] leading-6"
           />
           <button
             type="submit"

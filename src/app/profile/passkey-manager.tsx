@@ -61,7 +61,7 @@ export function PasskeyManager({ passkeys, loadFailed }: { passkeys: PasskeySumm
       ) : (
         <ul className="flex flex-col gap-3" aria-label="Your passkeys">
           {passkeys.map((p) => (
-            <li key={p.id} className="flex flex-col gap-2 rounded-lg border border-border p-4 sm:flex-row sm:items-center sm:justify-between">
+            <li key={p.id} className="flex flex-col gap-2 rounded-[10px] border border-hairline p-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="font-semibold">{p.nickname || "Passkey"}</p>
                 <p className="text-base text-muted-foreground">

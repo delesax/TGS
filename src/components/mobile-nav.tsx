@@ -54,7 +54,7 @@ export function MobileNav({ children }: { children: React.ReactNode }) {
         aria-expanded={open}
         aria-controls="mobile-menu"
         onClick={() => (open ? close(false) : setOpenAt(pathname))}
-        className="inline-flex min-h-[44px] items-center gap-[6px] rounded-md border-2 border-primary bg-background px-[12px] text-[18px] font-semibold text-primary hover:bg-secondary aria-expanded:bg-secondary"
+        className="inline-flex min-h-[44px] items-center gap-[6px] rounded-md border border-primary/60 bg-background px-[12px] text-[18px] font-semibold text-primary hover:bg-secondary aria-expanded:bg-secondary"
       >
         {open ? <X aria-hidden className="size-[20px]" /> : <Menu aria-hidden className="size-[20px]" />}
         Menu

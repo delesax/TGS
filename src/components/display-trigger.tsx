@@ -19,7 +19,7 @@ export function DisplayTrigger({ variant }: { variant: "header" | "menu" }) {
       onClick={() => window.dispatchEvent(new Event(OPEN_DISPLAY_EVENT))}
       className={
         variant === "header"
-          ? `inline-flex h-10 items-center gap-1.5 rounded-[10px] px-[10px] text-[16px] ${common}`
+          ? `inline-flex h-10 items-center gap-1.5 whitespace-nowrap rounded-[10px] px-[10px] text-[16px] ${common}`
           : `flex min-h-12 w-full items-center gap-2 rounded-md px-3 text-lg ${common}`
       }
     >

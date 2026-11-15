@@ -18,16 +18,25 @@ const EDGES: [number, number][] = [
 export function ApexMotif({ className = "" }: { className?: string }) {
   return (
     <svg aria-hidden focusable="false" viewBox="0 0 560 380" className={`motif motif-drift ${className}`} fill="none">
-      <g stroke="currentColor" strokeWidth="1.2">
+      <defs>
+        <radialGradient id="motif-glow">
+          <stop offset="0" stopColor="#c8a24a" stopOpacity="0.9" />
+          <stop offset="1" stopColor="#c8a24a" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <g stroke="currentColor" strokeWidth="1.6" style={{ opacity: "var(--motif-opacity)" }}>
         {EDGES.map(([a, b]) => (
           <line key={`${a}-${b}`} x1={NODES[a][0]} y1={NODES[a][1]} x2={NODES[b][0]} y2={NODES[b][1]} />
         ))}
       </g>
-      <g fill="currentColor">
+      <g fill="currentColor" style={{ opacity: "var(--motif-opacity)" }}>
         {NODES.map(([x, y], i) => (
-          <circle key={i} cx={x} cy={y} r={i === 7 ? 6 : 3.5} />
+          <circle key={i} cx={x} cy={y} r={i === 7 ? 6 : 4.2} />
         ))}
       </g>
+      {/* The apex node picks up a faint gold glow (the svg's own opacity keeps this decorative and quiet). */}
+      <circle cx={NODES[7][0]} cy={NODES[7][1]} r="46" fill="url(#motif-glow)" opacity="0.28" />
+      <circle cx={NODES[7][0]} cy={NODES[7][1]} r="6.5" fill="#c8a24a" opacity="0.45" />
     </svg>
   );
 }

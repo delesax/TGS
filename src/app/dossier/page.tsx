@@ -61,13 +61,13 @@ export default async function DossierPage({ searchParams }: PageProps<"/dossier"
   return (
     <Page title="Your Dossier" intro="Your permanent record of Dispatches, awards and titles.">
       {welcome ? (
-        <p role="status" className="rounded-lg border-2 border-success bg-success-soft p-4 text-lg text-success">
+        <p role="status" className="rounded-lg border border-success bg-success-soft p-4 text-lg text-success">
           Welcome, @{p.handle}. Your account is ready.
         </p>
       ) : null}
 
-      <section aria-labelledby="dossier-who" className="rounded-xl border border-border p-5">
-        <h2 id="dossier-who" className="text-2xl font-semibold">
+      <section aria-labelledby="dossier-who" className="surface-card p-5 sm:p-6">
+        <h2 id="dossier-who">
           @{p.handle}
         </h2>
         {p.display_name ? <p className="text-lg">{p.display_name}</p> : null}
@@ -84,7 +84,7 @@ export default async function DossierPage({ searchParams }: PageProps<"/dossier"
       </section>
 
       {judging ? (
-        <p role="note" className="rounded-lg border-2 border-primary p-4 text-lg">
+        <p role="note" className="rounded-lg border border-primary/60 p-4 text-lg">
           You are on a judging panel.{" "}
           <Link href="/judging" className="font-semibold text-primary underline">
             Open your judging
@@ -95,14 +95,14 @@ export default async function DossierPage({ searchParams }: PageProps<"/dossier"
       <TitlesAndAwards awards={awards} own />
 
       <section aria-labelledby="dossier-dispatches" className="flex flex-col gap-3">
-        <h2 id="dossier-dispatches" className="flex items-center gap-2 text-2xl font-semibold">
+        <h2 id="dossier-dispatches" className="flex items-center gap-2">
           <FileText aria-hidden className="size-6 text-primary" /> Dispatches
         </h2>
         {groups.size || page > 1 ? (
           <div className="flex flex-col gap-6">
             {[...groups.values()].map((g) => (
               <section key={g.slug} aria-label={`Your Dispatches in ${g.title}`} className="flex flex-col gap-3">
-                <h3 className="text-xl font-semibold">
+                <h3>
                   <Link href={`/campaigns/${g.slug}`} className="text-primary underline underline-offset-2">
                     {g.title}
                   </Link>{" "}
@@ -124,12 +124,12 @@ export default async function DossierPage({ searchParams }: PageProps<"/dossier"
                 </p>
                 <div className="flex gap-4">
                   {page > 1 ? (
-                    <Link href={`/dossier?page=${page - 1}#dossier-dispatches`} className="inline-flex min-h-12 items-center text-lg font-semibold text-primary underline">
+                    <Link href={`/dossier?page=${page - 1}#dossier-dispatches`} className="inline-flex min-h-11 items-center text-base font-semibold text-primary underline underline-offset-4">
                       Newer Dispatches
                     </Link>
                   ) : null}
                   {page * PER_PAGE < (dispatchTotal ?? 0) ? (
-                    <Link href={`/dossier?page=${page + 1}#dossier-dispatches`} className="inline-flex min-h-12 items-center text-lg font-semibold text-primary underline">
+                    <Link href={`/dossier?page=${page + 1}#dossier-dispatches`} className="inline-flex min-h-11 items-center text-base font-semibold text-primary underline underline-offset-4">
                       Older Dispatches
                     </Link>
                   ) : null}
@@ -152,16 +152,16 @@ export default async function DossierPage({ searchParams }: PageProps<"/dossier"
       </section>
 
       <section aria-labelledby="dossier-following" className="flex flex-col gap-3">
-        <h2 id="dossier-following" className="flex items-center gap-2 text-2xl font-semibold">
+        <h2 id="dossier-following" className="flex items-center gap-2">
           <Bell aria-hidden className="size-6 text-primary" /> Following
         </h2>
         <p className="text-lg text-muted-foreground">Only you can see who and what you follow. You follow a Campaign automatically when you post in it.</p>
-        <h3 className="text-xl font-semibold">Campaigns</h3>
+        <h3>Campaigns</h3>
         {followedCampaigns.length ? (
           <ul className="flex flex-col gap-2">
             {followedCampaigns.map((c) => (
               <li key={c.slug}>
-                <Link href={`/campaigns/${c.slug}`} className="inline-flex min-h-12 items-center text-lg text-primary underline [overflow-wrap:anywhere]">
+                <Link href={`/campaigns/${c.slug}`} className="inline-flex min-h-11 items-center text-base text-primary underline underline-offset-4 [overflow-wrap:anywhere]">
                   {c.title}
                 </Link>
               </li>
@@ -170,12 +170,12 @@ export default async function DossierPage({ searchParams }: PageProps<"/dossier"
         ) : (
           <p className="text-lg">You do not follow any Campaigns yet. Use Follow this Campaign on a Campaign page.</p>
         )}
-        <h3 className="text-xl font-semibold">Strategists</h3>
+        <h3>Strategists</h3>
         {followedStrategists.length ? (
           <ul className="flex flex-col gap-3">
             {followedStrategists.map((s) => (
-              <li key={s.id} className="flex flex-col gap-2 rounded-lg border border-border p-3 sm:flex-row sm:items-center sm:justify-between">
-                <Link href={`/strategists/${s.handle}`} className="inline-flex min-h-12 items-center text-lg font-semibold text-primary underline">
+              <li key={s.id} className="flex flex-col gap-2 rounded-[10px] border border-hairline bg-card p-3 sm:flex-row sm:items-center sm:justify-between">
+                <Link href={`/strategists/${s.handle}`} className="inline-flex min-h-11 items-center text-base font-semibold text-primary underline underline-offset-4">
                   @{s.handle}
                 </Link>
                 <FollowStrategistButton id={s.id} handle={s.handle} following compact />

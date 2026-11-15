@@ -10,7 +10,7 @@ export function CheckBeforeRelying({ body, sources, claims }: { body: string; so
   const list = (claims ?? []).filter(Boolean);
   if (!list.length && counts.figures + counts.namedStudies === 0 && counts.links === 0) return null;
   return (
-    <div role="note" className="flex flex-col gap-1 rounded-lg border-2 border-border bg-muted p-3 text-base">
+    <div role="note" className="flex flex-col gap-1 rounded-lg border border-hairline bg-muted p-3 text-base">
       <p className="font-semibold">Check before relying</p>
       <p>
         {describeCounts(counts)}.{leansOnUnlinkedClaims(counts) ? " It names figures or studies but gives no link." : ""} The AI cannot check any source, so look at these yourself.

@@ -40,13 +40,13 @@ export default async function JudgingPage() {
       <AdminNav current="/admin/judging" />
 
       <section aria-labelledby="board-h" className="flex flex-col gap-3">
-        <h2 id="board-h" className="text-2xl font-bold">
+        <h2 id="board-h">
           Status by Campaign
         </h2>
         {rows.length ? (
-          <ul className="flex flex-col gap-3">
+          <ul className="admin-list">
             {rows.map((r) => (
-              <li key={r.campaign_id} className="flex flex-col gap-1 rounded-xl border border-border p-4 text-lg">
+              <li key={r.campaign_id} className="admin-row text-base">
                 <Link href={`/admin/judging/${r.campaign_id}`} className="text-xl font-semibold text-primary underline [overflow-wrap:anywhere]">
                   {r.title}
                 </Link>
@@ -65,10 +65,10 @@ export default async function JudgingPage() {
       </section>
 
       <section aria-labelledby="settings-h" className="flex flex-col gap-3">
-        <h2 id="settings-h" className="text-2xl font-bold">
+        <h2 id="settings-h">
           Windows and votes
         </h2>
-        <p className="text-lg">
+        <p className="text-base">
           Steelman bonus: up to {settings.steelman_bonus_max} points, needing the AI&apos;s detection and {settings.steelman_min_confirmations} confirmations from other people. Voter
           weight cap: {settings.reputation_cap_multiple} times the median voter.
         </p>
@@ -85,20 +85,20 @@ export default async function JudgingPage() {
       </section>
 
       <section aria-labelledby="prompt-h" className="flex flex-col gap-3">
-        <h2 id="prompt-h" className="text-2xl font-bold">
+        <h2 id="prompt-h">
           Judge prompt version
         </h2>
-        <p className="text-lg">
+        <p className="text-base">
           Version 2 tells the AI judge it cannot verify any source and asks it to list up to three claims for a person to check; version 1 is the original wording. The change takes effect the next time scoring runs, with no deploy. Scores already stored keep the version that wrote them.
           {promptVersionNow === null ? " (This database does not have the setting yet: the judge uses version 1.)" : ` Now using version ${promptVersionNow}.`}
         </p>
         {promptVersionNow !== null ? (
           <AdminForm action={setJudgePromptVersion} label="Judge prompt version" submitLabel="Save version">
             <div className="flex flex-col gap-2">
-              <label htmlFor="judge_prompt_version" className="text-lg font-semibold">
+              <label htmlFor="judge_prompt_version" className="text-base font-semibold">
                 Version to use
               </label>
-              <select id="judge_prompt_version" name="version" defaultValue={String(promptVersionNow)} className="min-h-12 rounded-md border-2 border-input bg-background px-3 text-lg">
+              <select id="judge_prompt_version" name="version" defaultValue={String(promptVersionNow)} className="field">
                 <option value="1">Version 1 (original)</option>
                 <option value="2">Version 2 (cannot verify sources; lists claims to check)</option>
               </select>
@@ -109,18 +109,18 @@ export default async function JudgingPage() {
       </section>
 
       <section aria-labelledby="weights-h" className="flex flex-col gap-3">
-        <h2 id="weights-h" className="text-2xl font-bold">
+        <h2 id="weights-h">
           Weights
         </h2>
-        <p className="text-lg">
+        <p className="text-base">
           Saving creates a new version for Campaigns that have not opened yet. A Campaign keeps the version it opened with, and every Verdict stores the weights it used.
           To use different weights for one Verdict, override them when you recompute it.
         </p>
         {current ? <WeightsForm current={current} /> : null}
-        <h3 className="text-xl font-semibold">Versions</h3>
+        <h3>Versions</h3>
         <ul className="flex flex-col gap-3">
           {versions.map((v) => (
-            <li key={v.version} className="rounded-xl border border-border p-4 text-lg">
+            <li key={v.version} className="surface-card p-4 text-base">
               <p className="font-semibold">
                 Version {v.version}
                 {v === current ? " (current)" : ""} · {formatUkShort(v.created_at)}

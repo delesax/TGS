@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 export default function ErrorPage({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
     <div role="alert" className="mx-auto flex w-full max-w-xl flex-col gap-4 px-4 py-12">
-      <h1 className="text-3xl font-bold">Something went wrong</h1>
+      <h1>Something went wrong</h1>
       <p className="text-xl text-muted-foreground">
         This page did not load properly. Nothing you saved has been lost. Please try again, or go back to the home page.
       </p>

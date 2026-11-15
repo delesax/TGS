@@ -20,7 +20,7 @@ function CampaignCard({ campaign, now }: { campaign: CampaignSummary; now: numbe
         : `Closed ${formatUkDateTime(campaign.ends_at)}`;
   return (
     <li className="surface-card soft-hover p-5 hover:shadow-[var(--shadow-raised)]">
-      <h3 className="text-xl font-semibold tracking-tight">
+      <h3>
         <Link href={`/campaigns/${campaign.slug}`} className="no-underline underline-offset-4 hover:underline focus-visible:underline">
           {campaign.title}
         </Link>
@@ -63,7 +63,7 @@ export default async function CampaignsPage() {
 
       {SECTIONS.map((section) => (
         <section key={section.key} aria-labelledby={`${section.key}-heading`} className="flex flex-col gap-4">
-          <h2 id={`${section.key}-heading`} className="text-xl font-semibold tracking-tight">
+          <h2 id={`${section.key}-heading`}>
             {section.title}
           </h2>
           {groups[section.key].length ? (

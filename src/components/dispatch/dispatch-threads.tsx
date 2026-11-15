@@ -162,7 +162,7 @@ export function DispatchThreads({
             ))}
           </ol>
         ) : (
-          <div className="flex flex-col items-start gap-3 rounded-xl border-2 border-dashed border-border bg-muted p-6">
+          <div className="flex flex-col items-start gap-3 rounded-[12px] bg-muted/70 p-5">
             <p className="text-2xl font-semibold">No Dispatches yet</p>
             <p className="text-lg text-muted-foreground">
               {context.open ? "Be the first to make the case. Your Dispatch will appear here." : "Nothing was posted in this Campaign."}
@@ -171,7 +171,7 @@ export function DispatchThreads({
         )}
 
         {loadError ? (
-          <p role="alert" className="rounded-lg border-2 border-destructive p-3 text-lg font-semibold text-destructive">
+          <p role="alert" className="rounded-lg border border-destructive p-3 text-lg font-semibold text-destructive">
             {loadError}
           </p>
         ) : null}
@@ -237,11 +237,11 @@ function DispatchCard({ node }: { node: ThreadNode }) {
   const handle = node.author?.handle;
 
   return (
-    <div className={cn("flex flex-col gap-3 rounded-xl border border-border bg-card p-4", node.position ? POSITION_BORDER[node.position] : null)}>
+    <div className={cn("surface-card flex flex-col gap-3 p-4 sm:p-5", node.position ? POSITION_BORDER[node.position] : null)}>
       <header className="flex flex-col gap-2">
-        <p id={`dispatch-${node.id}-by`} className="flex flex-wrap items-center gap-x-2 gap-y-1 text-lg">
+        <p id={`dispatch-${node.id}-by`} className="flex flex-wrap items-center gap-x-2 gap-y-1 text-base">
           {handle ? (
-            <Link href={`/strategists/${handle}`} className="font-semibold text-primary underline underline-offset-2">
+            <Link href={`/strategists/${handle}`} className="font-semibold text-foreground no-underline underline-offset-4 hover:underline focus-visible:underline">
               @{handle}
             </Link>
           ) : (
@@ -269,12 +269,12 @@ function DispatchCard({ node }: { node: ThreadNode }) {
       </header>
 
       {isMine && node.moderation_status === "pending" ? (
-        <p role="status" className="rounded-lg border-2 border-border bg-muted p-3 text-base">
+        <p role="status" className="rounded-lg border border-hairline bg-muted p-3 text-base">
           <strong>Checking…</strong> Only you can see this until our automatic check finishes. It usually takes a few seconds.
         </p>
       ) : null}
       {isMine && node.moderation_status === "held" ? (
-        <div role="note" className="flex flex-col gap-1 rounded-lg border-2 border-accent-foreground bg-accent p-3 text-base text-accent-foreground">
+        <div role="note" className="flex flex-col gap-1 rounded-lg border border-accent-foreground/50 bg-accent p-3 text-base text-accent-foreground">
           <p>
             <strong>Held.</strong> {node.held_reason ?? "A person will check this before others can see it."} Only you can see it.
           </p>
@@ -293,7 +293,7 @@ function DispatchCard({ node }: { node: ThreadNode }) {
         <p className="text-lg italic text-muted-foreground">Hidden by a moderator.</p>
       ) : (
         <>
-          <p className="whitespace-pre-line break-words text-lg">{node.body}</p>
+          <p className="max-w-[65ch] whitespace-pre-line break-words text-base leading-[1.7]">{node.body}</p>
           <SourceList sources={node.sources} />
           <AiUseLabel aiUse={node.ai_use} />
           {ctx.opinionNotAdvice ? <p className="text-base font-semibold">Opinion, not advice.</p> : null}
@@ -334,7 +334,7 @@ function DispatchCard({ node }: { node: ThreadNode }) {
       ) : null}
 
       {panel === "reply" ? (
-        <div className="rounded-lg border-2 border-primary p-3">
+        <div className="rounded-lg border border-primary/60 p-3">
           <ComposeForm
             campaignId={ctx.campaignId}
             slug={ctx.slug}
@@ -350,7 +350,7 @@ function DispatchCard({ node }: { node: ThreadNode }) {
         </div>
       ) : null}
       {panel === "edit" ? (
-        <div className="rounded-lg border-2 border-primary p-3">
+        <div className="rounded-lg border border-primary/60 p-3">
           <ComposeForm
             campaignId={ctx.campaignId}
             slug={ctx.slug}
@@ -412,8 +412,8 @@ function Reactions({ node, isMine }: { node: ThreadNode; isMine: boolean }) {
                   disabled={busy === t.key}
                   onClick={() => toggle(t.key)}
                   className={cn(
-                    "inline-flex min-h-12 items-center gap-1.5 rounded-full border-2 px-3 text-base font-semibold focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring",
-                    pressed ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background hover:bg-muted",
+                    "inline-flex min-h-12 items-center gap-1.5 rounded-full border px-3 text-base font-semibold focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring",
+                    pressed ? "border-primary bg-primary text-primary-foreground" : "border-control bg-background hover:bg-muted hover:border-foreground",
                   )}
                 >
                   {pressed ? <span aria-hidden>✓</span> : null}
@@ -422,7 +422,7 @@ function Reactions({ node, isMine }: { node: ThreadNode; isMine: boolean }) {
                   <span className="sr-only">{n === 1 ? "reaction" : "reactions"}</span>
                 </button>
               ) : (
-                <span className="inline-flex min-h-10 items-center gap-2 rounded-full border border-border px-3 text-base">
+                <span className="inline-flex min-h-10 items-center gap-2 rounded-full border border-hairline px-3 text-base">
                   {t.label} <span className="tabular-nums font-semibold">{n}</span>
                 </span>
               )}
@@ -448,7 +448,7 @@ function WithdrawPanel({ id, onCancel }: { id: string; onCancel: () => void }) {
   const [error, setError] = React.useState<{ message: string; hint?: string } | null>(null);
   const [pending, startTransition] = React.useTransition();
   return (
-    <div role="group" aria-label="Withdraw this Dispatch" className="flex flex-col gap-3 rounded-lg border-2 border-destructive p-3">
+    <div role="group" aria-label="Withdraw this Dispatch" className="flex flex-col gap-3 rounded-lg border border-destructive p-3">
       <p className="text-lg">
         <strong>Withdraw this Dispatch?</strong> Others will see “Withdrawn by author” instead of your text. The judges and the audit record keep the
         original, so it is not deleted. This cannot be undone.
@@ -485,7 +485,7 @@ function ReportPanel({ id, onCancel }: { id: string; onCancel: () => void }) {
   const [state, action, pending] = useActionState(reportDispatch, {} as FormState);
   const errors = state.fieldErrors ?? {};
   return (
-    <div className="rounded-lg border-2 border-border p-3">
+    <div className="rounded-[10px] border border-hairline p-3">
       <ActionForm action={action} aria-label="Report this Dispatch" className="gap-4">
         <FormMessage state={state} />
         <input type="hidden" name="dispatchId" value={id} />
@@ -530,7 +530,7 @@ function AppealPanel({ id, slug, onCancel }: { id: string; slug: string; onCance
   const router = useRouter();
   const [state, action, pending] = useActionState(appealDispatch, {} as FormState);
   return (
-    <div className="rounded-lg border-2 border-border p-3">
+    <div className="rounded-[10px] border border-hairline p-3">
       <ActionForm action={action} aria-label="Appeal this decision" className="gap-4">
         <FormMessage state={state} />
         <input type="hidden" name="dispatchId" value={id} />

@@ -9,16 +9,16 @@ import { cn } from "@/lib/utils";
 // Against a minus, Undecided a question mark, and each has its own border style.
 const POSITION_ICON = { for: CirclePlus, against: CircleMinus, undecided: CircleHelp } as const;
 export const POSITION_BORDER: Record<PositionChoice, string> = {
-  for: "border-l-[6px] border-l-primary",
-  against: "border-l-[6px] [border-left-style:dashed] border-l-foreground",
-  undecided: "border-l-[6px] [border-left-style:dotted] border-l-muted-foreground",
+  for: "border-l-[6px]! border-l-primary!",
+  against: "border-l-[6px]! [border-left-style:dashed]! border-l-foreground!",
+  undecided: "border-l-[6px]! [border-left-style:dotted]! border-l-muted-foreground!",
 };
 
 export function PositionTag({ position }: { position: PositionChoice | null }) {
   if (!position) return null;
   const Icon = POSITION_ICON[position];
   return (
-    <span className="inline-flex items-center gap-1 rounded-full border-2 border-foreground px-2 py-0.5 text-base font-semibold">
+    <span className="inline-flex items-center gap-1 rounded-full border border-foreground/70 px-2 py-0.5 text-base font-semibold">
       <Icon aria-hidden className="size-4" />
       {POSITION_LABELS[position]}
     </span>

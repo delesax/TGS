@@ -51,7 +51,7 @@ export function Pending({ children }: { children: React.ReactNode }) {
 }
 
 export function H2({ children }: { children: React.ReactNode }) {
-  return <h2 className="mt-4 text-2xl font-semibold">{children}</h2>;
+  return <h2 className="mt-4">{children}</h2>;
 }
 
 export function Prose({ children }: { children: React.ReactNode }) {
@@ -77,7 +77,7 @@ export function StackTable({ columns, rows, caption }: { columns: string[]; rows
       </thead>
       <tbody className="block sm:table-row-group">
         {rows.map((row, i) => (
-          <tr key={i} className="mb-4 block rounded-lg border border-border sm:mb-0 sm:table-row sm:rounded-none sm:border-0">
+          <tr key={i} className="mb-4 block rounded-[10px] border border-hairline sm:mb-0 sm:table-row sm:rounded-none sm:border-0">
             {row.map((cell, j) => (
               <td key={j} className={cn("block px-3 py-2 sm:table-cell sm:border-b sm:border-border sm:align-top", j === 0 && "font-semibold")}>
                 <span className="block text-base font-semibold text-muted-foreground sm:hidden">{columns[j]}</span>

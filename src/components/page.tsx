@@ -15,7 +15,7 @@ export function Page({
 }) {
   return (
     <div className={cn("mx-auto w-full px-4 py-8 sm:py-12", narrow ? "max-w-xl" : "max-w-5xl")}>
-      <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h1>
+      <h1>{title}</h1>
       {intro ? <div className="mt-3 max-w-[65ch] text-lg text-muted-foreground">{intro}</div> : null}
       <div className="mt-8 flex flex-col gap-6">{children}</div>
     </div>
@@ -26,7 +26,7 @@ export function Page({
 export function EmptyState({ title, children, action }: { title: string; children: React.ReactNode; action?: React.ReactNode }) {
   return (
     <div className="flex flex-col items-start gap-2 rounded-[12px] bg-muted/70 px-5 py-4">
-      <h3 className="text-lg font-semibold">{title}</h3>
+      <h3 className="text-lg">{title}</h3>
       <div className="max-w-[65ch] text-base text-muted-foreground">{children}</div>
       {action}
     </div>
@@ -40,7 +40,7 @@ export function EmptyState({ title, children, action }: { title: string; childre
 export function DraftNotice() {
   if (LEGAL.reviewed) return null;
   return (
-    <div role="note" className="rounded-lg border-2 border-accent-foreground bg-accent p-4 text-lg text-accent-foreground">
+    <div role="note" className="rounded-lg border border-accent-foreground/50 bg-accent p-4 text-lg text-accent-foreground">
       <p className="font-bold">DRAFT: this page is complete but has not yet had its final legal review. Some details are still to be added.</p>
     </div>
   );

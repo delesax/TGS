@@ -20,8 +20,7 @@ import {
 /** Triggers (the header "Text" button and the one in the phone Menu) dispatch this; the one dialog below opens. */
 export const OPEN_DISPLAY_EVENT = "tgs:open-display";
 
-const radioCard =
-  "flex min-h-11 cursor-pointer items-start gap-3 rounded-[10px] border border-input bg-background px-3 py-2 transition-colors duration-200 motion-reduce:transition-none has-[:checked]:border-primary has-[:checked]:bg-secondary has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ring";
+const radioCard = "option-card";
 
 function subscribe(onChange: () => void) {
   const observer = new MutationObserver(onChange);
