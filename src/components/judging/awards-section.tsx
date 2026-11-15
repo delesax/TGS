@@ -10,7 +10,7 @@ export function TitlesAndAwards({ awards, own }: { awards: AwardRow[]; own: bool
   const titles = awards.filter((a) => a.category === "grand_strategist");
   const others = awards.filter((a) => a.category !== "grand_strategist");
   const item = (a: AwardRow) => (
-    <li key={`${a.category}-${a.campaign?.slug}`} className="flex flex-col gap-1 rounded-xl border border-border p-4">
+    <li key={`${a.category}-${a.campaign?.slug}`} className="flex flex-col gap-1 surface-card p-4">
       <p className="text-xl font-semibold">{AWARD_LABELS[a.category]}</p>
       {a.campaign ? (
         <Link href={`/campaigns/${a.campaign.slug}/verdict`} className="inline-flex min-h-12 items-center text-lg text-primary underline [overflow-wrap:anywhere]">
@@ -23,7 +23,7 @@ export function TitlesAndAwards({ awards, own }: { awards: AwardRow[]; own: bool
   return (
     <>
       <section aria-labelledby="dossier-titles" className="flex flex-col gap-3">
-        <h2 id="dossier-titles" className="flex items-center gap-2 text-2xl font-semibold">
+        <h2 id="dossier-titles" className="flex items-center gap-2">
           <Medal aria-hidden className="size-6 text-primary" /> Titles
         </h2>
         {titles.length ? (
@@ -35,7 +35,7 @@ export function TitlesAndAwards({ awards, own }: { awards: AwardRow[]; own: bool
         )}
       </section>
       <section aria-labelledby="dossier-awards" className="flex flex-col gap-3">
-        <h2 id="dossier-awards" className="flex items-center gap-2 text-2xl font-semibold">
+        <h2 id="dossier-awards" className="flex items-center gap-2">
           <Award aria-hidden className="size-6 text-primary" /> Awards
         </h2>
         {others.length ? (

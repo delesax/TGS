@@ -67,12 +67,12 @@ export function Countdown({
       ) : (
         <>
           <p className="sr-only">{describeDuration(left)}</p>
-          <div aria-hidden className="flex gap-2 sm:gap-3" data-seconds-left={left}>
+          <div aria-hidden className="flex flex-wrap gap-2 sm:gap-3" data-seconds-left={left}>
             {units.map((u) => (
               <div
                 key={u.name}
                 className={cn(
-                  "flex flex-col items-center rounded-lg bg-primary text-primary-foreground",
+                  "flex flex-col items-center rounded-[10px] border border-hairline bg-muted text-foreground",
                   size === "large" ? "min-w-16 px-2 py-2 sm:min-w-20" : "min-w-12 px-1.5 py-1",
                 )}
               >

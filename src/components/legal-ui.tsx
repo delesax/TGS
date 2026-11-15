@@ -7,10 +7,11 @@ import { cn } from "@/lib/utils";
  * shows "[to be added]" in a highlighted box (and carries data-pending so the
  * gate test can find it).
  */
-export function Fact({ k }: { k: LegalKey }) {
+export function Fact({ k, plain = false }: { k: LegalKey; plain?: boolean }) {
   if (legalHas(k)) return <>{legalValue(k)}</>;
+  // `plain` (the footer): the same visible "[to be added]" text, bold, without the highlighted box.
   return (
-    <span data-pending="fact" className="rounded bg-accent px-1 font-semibold text-accent-foreground">
+    <span data-pending="fact" className={plain ? "font-semibold text-foreground" : "rounded bg-accent px-1 font-semibold text-accent-foreground"}>
       {legalValue(k)}
     </span>
   );
@@ -19,6 +20,8 @@ export function Fact({ k }: { k: LegalKey }) {
 /** An email address from LEGAL as a mailto link, or the placeholder. */
 export function FactEmail({ k }: { k: "privacyEmail" | "contactEmail" }) {
   if (!legalHas(k)) return <Fact k={k} />;
+export function FactEmail({ k, plain = false }: { k: "privacyEmail" | "contactEmail"; plain?: boolean }) {
+  if (!legalHas(k)) return <Fact k={k} plain={plain} />;
   // An email address has no spaces, so at large type on a 375px screen it can be wider than the line and
   // push the page sideways. It may break after the "@" (and, as a last resort, anywhere).
   const email = legalValue(k);
@@ -51,7 +54,7 @@ export function Pending({ children }: { children: React.ReactNode }) {
 }
 
 export function H2({ children }: { children: React.ReactNode }) {
-  return <h2 className="mt-4 text-2xl font-semibold">{children}</h2>;
+  return <h2 className="mt-4">{children}</h2>;
 }
 
 export function Prose({ children }: { children: React.ReactNode }) {
@@ -77,7 +80,7 @@ export function StackTable({ columns, rows, caption }: { columns: string[]; rows
       </thead>
       <tbody className="block sm:table-row-group">
         {rows.map((row, i) => (
-          <tr key={i} className="mb-4 block rounded-lg border border-border sm:mb-0 sm:table-row sm:rounded-none sm:border-0">
+          <tr key={i} className="mb-4 block rounded-[10px] border border-hairline sm:mb-0 sm:table-row sm:rounded-none sm:border-0">
             {row.map((cell, j) => (
               <td key={j} className={cn("block px-3 py-2 sm:table-cell sm:border-b sm:border-border sm:align-top", j === 0 && "font-semibold")}>
                 <span className="block text-base font-semibold text-muted-foreground sm:hidden">{columns[j]}</span>

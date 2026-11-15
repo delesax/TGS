@@ -63,7 +63,7 @@ export default async function StrategistPage({ params }: PageProps<"/strategists
 
   return (
     <Page title={`@${profile.handle}`} intro={profile.display_name ?? undefined}>
-      <section aria-label="About" className="flex flex-col gap-3 rounded-xl border border-border p-5">
+      <section aria-label="About" className="flex flex-col gap-3 surface-card p-5">
         {profile.expertise_tag ? (
           <p className="inline-block self-start rounded-full bg-secondary px-3 py-1 text-base font-semibold text-secondary-foreground">{profile.expertise_tag}</p>
         ) : null}
@@ -85,7 +85,7 @@ export default async function StrategistPage({ params }: PageProps<"/strategists
       <TitlesAndAwards awards={awards} own={isMe} />
 
       <section aria-labelledby="recent-heading" className="flex flex-col gap-3">
-        <h2 id="recent-heading" className="text-2xl font-semibold">
+        <h2 id="recent-heading">
           Recent Dispatches
         </h2>
         {list.length ? (

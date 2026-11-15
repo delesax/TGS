@@ -32,7 +32,7 @@ const AiHelp = dynamic(() => import("./ai-help").then((m) => m.AiHelp), { ssr: f
 /** A private nudge about tone. Only the author sees it. */
 function NudgeNote({ nudge }: { nudge: string }) {
   return (
-    <p role="note" className="rounded-lg border-2 border-accent-foreground bg-accent p-3 text-lg text-accent-foreground">
+    <p role="note" className="rounded-lg border border-accent-foreground/50 bg-accent p-3 text-lg text-accent-foreground">
       <strong>A private note:</strong> {nudge} <span className="text-base">Only you can see this.</span>
     </p>
   );
@@ -156,7 +156,7 @@ export function ComposeForm({ campaignId, slug, limits, kinds, replyTo, editing,
       {fixedKind ? <input type="hidden" name="kind" value={fixedKind} /> : null}
 
       {opinionNotAdvice ? (
-        <p role="note" className="rounded-lg border-2 border-border bg-muted p-3 text-base">
+        <p role="note" className="rounded-lg border border-hairline bg-muted p-3 text-base">
           <strong>Opinion, not advice.</strong> Your Dispatch is a personal view. Do not present it as financial, medical or professional advice.
         </p>
       ) : null}
@@ -173,9 +173,9 @@ export function ComposeForm({ campaignId, slug, limits, kinds, replyTo, editing,
             {kinds.map((k) => (
               <label
                 key={k}
-                className="flex min-h-14 cursor-pointer items-start gap-3 rounded-lg border-2 border-border p-3 has-[:checked]:border-primary has-[:checked]:bg-muted has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-ring"
+                className="option-card"
               >
-                <input type="radio" name="kind" value={k} checked={kind === k} onChange={() => setKind(k)} className="mt-1 size-6 shrink-0 accent-primary" />
+                <input type="radio" name="kind" value={k} checked={kind === k} onChange={() => setKind(k)} className="mt-1 size-5 shrink-0 accent-primary" />
                 <span>
                   <span className="block text-lg font-semibold">{KIND_LABELS[k].label}</span>
                   <span className="block text-base text-muted-foreground">{KIND_LABELS[k].explain}</span>
@@ -199,9 +199,9 @@ export function ComposeForm({ campaignId, slug, limits, kinds, replyTo, editing,
             {(["for", "against"] as const).map((side) => (
               <label
                 key={side}
-                className="flex min-h-14 cursor-pointer items-center gap-3 rounded-lg border-2 border-border px-4 text-lg font-semibold has-[:checked]:border-primary has-[:checked]:bg-muted has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-ring"
+                className="option-card items-center text-base font-semibold"
               >
-                <input type="radio" name="side" value={side} className="size-6 shrink-0 accent-primary" />
+                <input type="radio" name="side" value={side} className="size-5 shrink-0 accent-primary" />
                 {side === "for" ? "For" : "Against"}
               </label>
             ))}
@@ -225,7 +225,7 @@ export function ComposeForm({ campaignId, slug, limits, kinds, replyTo, editing,
           aria-invalid={errors.body || over ? true : undefined}
           aria-describedby={`${idBase}-count${errors.body ? ` ${idBase}-body-error` : ""}`}
         />
-        <p id={`${idBase}-count`} className={over ? "text-base font-semibold text-destructive" : "text-base text-muted-foreground"}>
+        <p id={`${idBase}-count`} className={over ? "text-[0.95rem] font-semibold text-destructive" : "help tabular-nums"}>
           {length.toLocaleString("en-GB")} of {max.toLocaleString("en-GB")} characters{over ? `. Please cut ${(length - max).toLocaleString("en-GB")}.` : ""}
         </p>
       </div>
@@ -240,7 +240,7 @@ export function ComposeForm({ campaignId, slug, limits, kinds, replyTo, editing,
             const initial = editing?.sources[i];
             const err = errors[`source${n}`];
             return (
-              <div key={n} className="flex flex-col gap-2 rounded-lg border border-border p-3">
+              <div key={n} className="flex flex-col gap-2 rounded-[10px] border border-hairline p-3">
                 <Label htmlFor={`${idBase}-source${n}Url`}>Link {n}</Label>
                 {err ? (
                   <p id={`${idBase}-source${n}-error`} className="text-base font-semibold text-destructive">
@@ -284,9 +284,9 @@ export function ComposeForm({ campaignId, slug, limits, kinds, replyTo, editing,
         {AI_USES.map((use) => (
           <label
             key={use}
-            className="flex min-h-12 cursor-pointer items-start gap-3 rounded-lg border-2 border-border p-3 text-lg has-[:checked]:border-primary has-[:checked]:bg-muted has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-ring"
+            className="option-card text-base"
           >
-            <input type="radio" name="aiUse" value={use} defaultChecked={editing?.aiUse === use} className="mt-1 size-6 shrink-0 accent-primary" />
+            <input type="radio" name="aiUse" value={use} defaultChecked={editing?.aiUse === use} className="mt-1 size-5 shrink-0 accent-primary" />
             {AI_USE_LABELS[use].choice}
           </label>
         ))}
@@ -297,14 +297,14 @@ export function ComposeForm({ campaignId, slug, limits, kinds, replyTo, editing,
       ) : null}
 
       {!online ? (
-        <p role="status" className="flex items-start gap-2 rounded-lg border-2 border-accent-foreground bg-accent p-3 text-lg text-accent-foreground">
+        <p role="status" className="flex items-start gap-2 rounded-lg border border-accent-foreground/50 bg-accent p-3 text-lg text-accent-foreground">
           <WifiOff aria-hidden className="mt-1 size-5 shrink-0" />
           <span>
             <strong>You are offline.</strong> Your text is kept on this device. Post it when your connection comes back.
           </span>
         </p>
       ) : wait > 0 ? (
-        <p role="status" className="rounded-lg border-2 border-border bg-muted p-3 text-lg">
+        <p role="status" className="rounded-lg border border-hairline bg-muted p-3 text-lg">
           You can post again in {wait} second{wait === 1 ? "" : "s"}. Your text is kept.
         </p>
       ) : null}

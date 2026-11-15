@@ -48,17 +48,17 @@ export default async function AdminCampaignsPage() {
         </Button>
       </div>
       {rows.length ? (
-        <ul className="flex flex-col gap-4">
+        <ul className="admin-list">
           {rows.map((c) => (
-            <li key={c.id} className="flex flex-col gap-3 rounded-xl border border-border bg-card p-5">
-              <h2 className="text-xl font-semibold">{c.title}</h2>
+            <li key={c.id} className="admin-row">
+              <h2>{c.title}</h2>
               <CampaignBadges status={statusAt(c, now)} category={c.category} format={c.format} />
               <p className="text-base text-muted-foreground">
                 {formatUkDateTime(c.starts_at)} to {formatUkDateTime(c.ends_at)}
                 {c.wave ? ` · Launch wave ${c.wave}` : ""}
               </p>
               {adminFields.get(c.id)?.needs_owner_decision ? (
-                <p role="note" className="rounded-lg border-2 border-accent-foreground bg-accent p-3 text-base text-accent-foreground">
+                <p role="note" className="rounded-lg border border-accent-foreground/50 bg-accent p-3 text-base text-accent-foreground">
                   <strong>Owner decision needed:</strong> {adminFields.get(c.id)?.needs_owner_decision}
                 </p>
               ) : null}

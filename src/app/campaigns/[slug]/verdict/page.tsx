@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Crown } from "lucide-react";
+import { ApexMark } from "@/components/apex-motif";
 import { AwardList, Breakdown, Rationale, StrategistName, VERDICT_STATUS_LABELS, WeightsLine } from "@/components/judging/verdict-parts";
 import { EmptyState } from "@/components/page";
 import { Button } from "@/components/ui/button";
@@ -41,8 +41,8 @@ export default async function VerdictPage({ params }: PageProps<"/campaigns/[slu
 
   if (!verdict) {
     return (
-      <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-8 sm:py-12">
-        <h1 className="text-3xl font-bold sm:text-4xl">Verdict: {campaign.title}</h1>
+      <div className="page-container flex flex-col gap-6 py-8 sm:py-12">
+        <h1>Verdict: {campaign.title}</h1>
         <EmptyState
           title="The Verdict has not been published yet"
           action={
@@ -75,6 +75,10 @@ export default async function VerdictPage({ params }: PageProps<"/campaigns/[slu
     ...referencedUsers(verdict.rationale, ...verdict.proposed_awards.map((a) => a.rationale)),
   ]);
   const winner = verdict.component_scores.find((s) => s.user_id === verdict.winner_id);
+  const runnersUp = verdict.component_scores
+    .filter((c) => c.user_id !== verdict.winner_id && c.final !== null && c.final !== undefined)
+    .sort((x, y) => (y.final ?? 0) - (x.final ?? 0))
+    .slice(0, 3);
   const appealOpen = verdict.status !== "final" && verdict.appeal_closes_at !== null && Date.parse(verdict.appeal_closes_at) > now;
 
   let canAppeal = false;
@@ -90,49 +94,85 @@ export default async function VerdictPage({ params }: PageProps<"/campaigns/[slu
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 px-4 py-8 sm:py-12">
+    <div className="page-container flex flex-col gap-8 py-8 sm:py-12">
       <div className="flex flex-col gap-3">
-        <p className="text-lg font-semibold text-muted-foreground">Verdict</p>
-        <h1 className="text-3xl font-bold sm:text-4xl">{campaign.title}</h1>
-        <p className="inline-flex w-fit rounded-full border-2 border-foreground px-3 py-1 text-base font-semibold">
-          {VERDICT_STATUS_LABELS[verdict.status]}
-          {verdict.version > 1 ? ` · version ${verdict.version}` : ""}
-        </p>
-        <p className="text-lg text-muted-foreground">
-          Published {verdict.published_at ? formatUkDateTime(verdict.published_at) : ""}
-          {verdict.status === "final" && verdict.finalised_at ? `. Final since ${formatUkDateTime(verdict.finalised_at)}.` : "."}
-        </p>
+        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">Verdict</p>
+        <h1 className="max-w-[28ch]">{campaign.title}</h1>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-muted-foreground">
+          <span className="inline-flex w-fit items-center rounded-full border border-hairline bg-muted px-2.5 py-0.5 font-semibold text-foreground">
+            {VERDICT_STATUS_LABELS[verdict.status]}
+            {verdict.version > 1 ? ` · version ${verdict.version}` : ""}
+          </span>
+          <span>
+            Published {verdict.published_at ? formatUkDateTime(verdict.published_at) : ""}
+            {verdict.status === "final" && verdict.finalised_at ? `. Final since ${formatUkDateTime(verdict.finalised_at)}.` : "."}
+          </span>
+        </div>
       </div>
 
-      <section aria-labelledby="winner-h" className="flex flex-col gap-2 rounded-xl border-2 border-primary bg-muted p-5">
-        <h2 id="winner-h" className="flex items-center gap-2 text-2xl font-bold">
-          <Crown aria-hidden className="size-7 text-primary" /> Grand Strategist
-        </h2>
-        <p className="text-2xl">{verdict.winner_id ? <StrategistName id={verdict.winner_id} handles={handles} /> : "Not named"}</p>
-        {winner?.final !== undefined && winner?.final !== null ? <p className="text-lg">Final score: {winner.final.toFixed(1)} out of 100.</p> : null}
+      <section aria-labelledby="winner-h" className="hero-glow">
+        <div className="featured-edge relative overflow-hidden rounded-[12px] p-6 shadow-[var(--shadow-raised)] sm:p-9">
+          <ApexMark className="pointer-events-none absolute bottom-4 right-6 hidden w-44 text-foreground sm:block" />
+          <div className="flex items-center gap-3">
+            <span aria-hidden className="grid size-10 place-items-center rounded-full bg-secondary">
+              <span className="size-3.5 rounded-full bg-gold shadow-[0_0_14px_3px_rgb(200_162_74/0.55)]" />
+            </span>
+            <h2 id="winner-h" className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-text">
+              Grand Strategist
+            </h2>
+          </div>
+          <p className="mt-4 font-serif text-3xl font-medium leading-tight tracking-tight [overflow-wrap:anywhere] sm:text-5xl">
+            {verdict.winner_id ? <StrategistName id={verdict.winner_id} handles={handles} /> : "Not named"}
+          </p>
+          {winner?.final !== undefined && winner?.final !== null ? (
+            <p className="mt-3 text-base text-muted-foreground">
+              Final score: <span className="font-semibold text-foreground">{winner.final.toFixed(1)}</span> out of 100.
+            </p>
+          ) : null}
+          {runnersUp.length ? (
+            <div className="mt-6 border-t border-hairline pt-4">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">Runners-up</h3>
+              <ol className="mt-2 flex flex-col gap-1.5 text-base">
+                {runnersUp.map((r) => (
+                  <li key={r.user_id} className="flex items-baseline justify-between gap-4">
+                    <span className="min-w-0 [overflow-wrap:anywhere]">
+                      <span aria-hidden className="mr-2 text-muted-foreground tabular-nums">
+                        {r.rank ?? ""}
+                      </span>
+                      <StrategistName id={r.user_id} handles={handles} />
+                    </span>
+                    <span className="tabular-nums text-muted-foreground">{r.final !== null && r.final !== undefined ? r.final.toFixed(1) : "–"}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          ) : null}
+        </div>
       </section>
 
+      {/* Slot: the public "The winning case" section (feat/verdict-winning-case-public) goes here, directly under the Grand Strategist card and before "Why". */}
+
       <section aria-labelledby="rationale-h" className="flex flex-col gap-3">
-        <h2 id="rationale-h" className="text-2xl font-bold">
+        <h2 id="rationale-h">
           Why
         </h2>
         <Rationale text={verdict.rationale} handles={handles} />
         {verdict.rationale_ai_assisted ? (
-          <p role="note" className="rounded-lg border border-border p-3 text-base text-muted-foreground">
+          <p role="note" className="rounded-[10px] bg-muted/70 p-3 text-sm text-muted-foreground">
             {AI_ASSISTED_RATIONALE_NOTICE}
           </p>
         ) : null}
       </section>
 
       <section aria-labelledby="awards-h" className="flex flex-col gap-3">
-        <h2 id="awards-h" className="text-2xl font-bold">
+        <h2 id="awards-h">
           Awards
         </h2>
         <AwardList awards={verdict.proposed_awards} handles={handles} campaignSlug={campaign.slug} />
       </section>
 
       <section aria-labelledby="breakdown-h" className="flex flex-col gap-3">
-        <h2 id="breakdown-h" className="text-2xl font-bold">
+        <h2 id="breakdown-h">
           How the scores add up
         </h2>
         <p className="text-lg">
@@ -141,13 +181,13 @@ export default async function VerdictPage({ params }: PageProps<"/campaigns/[slu
         </p>
         <WeightsLine weights={verdict.weights_snapshot} />
         <Breakdown scores={verdict.component_scores} handles={handles} caption="Scores by Strategist" />
-        <p role="note" className="rounded-lg border border-border p-3 text-base text-muted-foreground">
+        <p role="note" className="rounded-[10px] bg-muted/70 p-3 text-sm text-muted-foreground">
           {AI_JUDGING_NOTICE}
         </p>
       </section>
 
       <section aria-labelledby="appeal-h" className="flex flex-col gap-3">
-        <h2 id="appeal-h" className="text-2xl font-bold">
+        <h2 id="appeal-h">
           Appeal
         </h2>
         <p className="text-lg">{APPEAL_NOTICE}</p>

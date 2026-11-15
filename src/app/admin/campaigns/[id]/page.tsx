@@ -27,17 +27,17 @@ export default async function EditCampaignPage({ params, searchParams }: PagePro
   return (
     <Page title="Edit Campaign" intro={c.title} narrow>
       {saved ? (
-        <p role="status" className="rounded-lg border-2 border-success bg-success/10 p-4 text-lg font-semibold">
+        <p role="status" className="rounded-lg border border-success bg-success/10 p-4 text-base font-semibold">
           Saved. The change has been recorded in the audit log.
         </p>
       ) : null}
       {rubric ? (
-        <p role="status" className="rounded-lg border-2 border-success bg-success/10 p-4 text-lg font-semibold">
+        <p role="status" className="rounded-lg border border-success bg-success/10 p-4 text-base font-semibold">
           The rubric is published. The change has been recorded in the audit log.
         </p>
       ) : null}
       {adminFields?.needs_owner_decision ? (
-        <p role="note" className="rounded-lg border-2 border-accent-foreground bg-accent p-4 text-lg text-accent-foreground">
+        <p role="note" className="rounded-lg border border-accent-foreground/50 bg-accent p-4 text-base text-accent-foreground">
           <strong>Owner decision needed:</strong> {adminFields.needs_owner_decision} It cannot be scheduled until this is cleared in the database.
         </p>
       ) : null}

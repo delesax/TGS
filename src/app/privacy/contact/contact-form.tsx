@@ -25,7 +25,7 @@ export function ContactForm({ signedInEmail }: { signedInEmail: string | null })
           defaultValue=""
           aria-invalid={errors.type ? true : undefined}
           aria-describedby={errors.type ? "type-error" : undefined}
-          className="min-h-12 w-full rounded-md border-2 border-input bg-background px-3 text-lg"
+          className="field"
         >
           <option value="" disabled>
             Choose one

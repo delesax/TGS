@@ -38,7 +38,7 @@ const COACH_FAIL: Record<string, string> = {
 
 function NudgeNote({ nudge }: { nudge: string }) {
   return (
-    <p role="note" className="rounded-lg border-2 border-accent-foreground bg-accent p-3 text-lg text-accent-foreground">
+    <p role="note" className="rounded-lg border border-accent-foreground/50 bg-accent p-3 text-lg text-accent-foreground">
       <strong>A private note:</strong> {nudge} <span className="text-base">Only you can see this.</span>
     </p>
   );
@@ -53,7 +53,7 @@ export function AiHelp({ campaignId, kind, body, draftKey, usesPerDraft }: { cam
   const usesLeft = coach ? coach.usesLeft : usesPerDraft;
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-border p-3">
+    <div className="flex flex-col gap-3 rounded-[10px] border border-hairline p-3">
       <p className="text-base text-muted-foreground">
         Optional, private help from AI. If you use it, your draft is sent to our AI provider, Anthropic, to check it. We do not keep your draft, and only
         you see the result.{" "}

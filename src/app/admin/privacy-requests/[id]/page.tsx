@@ -45,7 +45,7 @@ export default async function PrivacyRequestPage({ params }: PageProps<"/admin/p
       <Link href="/admin/privacy-requests" className="font-semibold underline">
         Back to all requests
       </Link>
-      <dl className="grid gap-1 text-lg">
+      <dl className="grid gap-1 text-base">
         <dt className="font-semibold">From</dt>
         <dd className="mb-2">{row.email}{row.user_id ? " (a signed-in account)" : " (not signed in: confirm who they are before acting)"}</dd>
         <dt className="font-semibold">Received</dt>
@@ -58,11 +58,11 @@ export default async function PrivacyRequestPage({ params }: PageProps<"/admin/p
           {state === "overdue" ? ` (overdue by ${Math.abs(days)} days)` : state === "closed" ? "" : ` (${days} days left)`}
         </dd>
       </dl>
-      <section aria-labelledby="msg-h" className="rounded-xl border-2 border-border bg-muted p-4">
-        <h2 id="msg-h" className="text-xl font-semibold">
+      <section aria-labelledby="msg-h" className="rounded-xl border border-hairline bg-muted p-4">
+        <h2 id="msg-h">
           Their message
         </h2>
-        <p className="mt-2 whitespace-pre-wrap text-lg [overflow-wrap:anywhere]">{row.message}</p>
+        <p className="mt-2 whitespace-pre-wrap text-base [overflow-wrap:anywhere]">{row.message}</p>
       </section>
       <UpdateForm id={row.id} status={row.status} note={row.outcome_note ?? ""} />
     </Page>

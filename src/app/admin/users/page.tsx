@@ -48,20 +48,20 @@ export default async function UsersPage({ searchParams }: PageProps<"/admin/user
           name="q"
           defaultValue={q}
           placeholder="Find by handle"
-          className="min-h-12 w-full min-w-0 rounded-md border-2 border-input bg-background px-3 text-lg"
+          className="field min-w-0"
         />
-        <button type="submit" className="min-h-12 shrink-0 rounded-md bg-primary px-4 text-lg font-semibold text-primary-foreground">
+        <button type="submit" className="min-h-12 shrink-0 rounded-md bg-primary px-4 text-base font-semibold text-primary-foreground">
           Find
         </button>
       </form>
-      <p className="text-lg">
+      <p className="text-base">
         {total} Strategist{total === 1 ? "" : "s"}
         {q ? ` matching “${q}”` : ""}.
       </p>
       {rows.length ? (
-        <ul className="flex flex-col gap-4">
+        <ul className="admin-list">
           {rows.map((u) => (
-            <li key={u.id} className="flex flex-col gap-2 rounded-xl border-2 border-border bg-card p-4">
+            <li key={u.id} className="admin-row">
               <p className="text-xl font-semibold">
                 <Link href={`/strategists/${u.handle}`} className="text-primary underline">
                   @{u.handle}
@@ -83,8 +83,8 @@ export default async function UsersPage({ searchParams }: PageProps<"/admin/user
                   Muted {formatUkShort(u.posting_muted_at)}: {u.posting_muted_reason}
                 </p>
               ) : null}
-              <details className="rounded-lg border border-border p-3">
-                <summary className="min-h-12 cursor-pointer py-2 text-lg font-semibold">{u.posting_muted_at ? "Allow posting again" : "Mute posting"}</summary>
+              <details className="rounded-[10px] border border-hairline p-3">
+                <summary className="min-h-12 cursor-pointer py-2 text-base font-semibold">{u.posting_muted_at ? "Allow posting again" : "Mute posting"}</summary>
                 <MuteForm userId={u.id} muted={Boolean(u.posting_muted_at)} handle={u.handle} />
               </details>
             </li>
@@ -95,12 +95,12 @@ export default async function UsersPage({ searchParams }: PageProps<"/admin/user
       )}
       <nav aria-label="Pages" className="flex gap-3">
         {page > 1 ? (
-          <Link href={link(page - 1)} className="inline-flex min-h-12 items-center text-lg font-semibold text-primary underline">
+          <Link href={link(page - 1)} className="inline-flex min-h-12 items-center text-base font-semibold text-primary underline">
             Previous page
           </Link>
         ) : null}
         {page * PER_PAGE < total ? (
-          <Link href={link(page + 1)} className="inline-flex min-h-12 items-center text-lg font-semibold text-primary underline">
+          <Link href={link(page + 1)} className="inline-flex min-h-12 items-center text-base font-semibold text-primary underline">
             Next page
           </Link>
         ) : null}

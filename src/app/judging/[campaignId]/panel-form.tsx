@@ -29,7 +29,7 @@ function ScoreRadios({ dispatchId, criterion, label, hint, value, locked }: { di
       </p>
       <div className="flex flex-wrap gap-2">
         {[1, 2, 3, 4, 5].map((n) => (
-          <label key={n} className="flex min-h-12 min-w-12 cursor-pointer items-center justify-center gap-2 rounded-md border-2 border-border px-3 text-lg has-[:checked]:border-primary has-[:checked]:bg-primary has-[:checked]:text-primary-foreground has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-ring">
+          <label key={n} className="flex min-h-12 min-w-12 cursor-pointer items-center justify-center gap-2 rounded-[10px] border border-control hover:border-foreground px-3 text-lg has-[:checked]:border-primary has-[:checked]:bg-primary has-[:checked]:text-primary-foreground has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-ring">
             <input type="radio" name={name} value={n} defaultChecked={value === n} disabled={locked} className="sr-only" />
             {n}
           </label>
@@ -52,9 +52,9 @@ export function PanelForm({ campaignId, dispatches, scores, locked }: { campaign
       <p className="text-lg">1 is weak, 3 is a decent Dispatch, 5 is excellent. Judge the quality of the argument, not whether you agree with it.</p>
       <ol className="flex flex-col gap-6">
         {dispatches.map((d, i) => (
-          <li key={d.id} className="flex flex-col gap-4 rounded-xl border border-border p-4">
+          <li key={d.id} className="flex flex-col gap-4 surface-card p-4">
             <input type="hidden" name="dispatch" value={d.id} />
-            <h2 className="text-xl font-bold">
+            <h2>
               Dispatch {i + 1} of {dispatches.length}: {d.kind} by {d.author}
             </h2>
             {d.parentExcerpt ? <p className="border-l-4 border-border pl-3 text-base text-muted-foreground">Replying to: {d.parentExcerpt}</p> : null}
@@ -82,7 +82,7 @@ export function PanelForm({ campaignId, dispatches, scores, locked }: { campaign
       {done ? (
         <p className="text-lg font-semibold">Your scores are submitted and locked.</p>
       ) : (
-        <div className="flex flex-col gap-4 rounded-xl border-2 border-border p-4">
+        <div className="flex flex-col gap-4 rounded-xl border border-hairline p-4">
           <Button type="submit" variant="outline" disabled={pending} onClick={(e) => ((e.currentTarget.form!.elements.namedItem("intent") as HTMLInputElement).value = "draft")}>
             {pending ? "Saving…" : "Save draft"}
           </Button>

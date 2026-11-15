@@ -6,6 +6,7 @@ import {
   formatUkDateTime,
   fromUkInputValue,
   groupCampaigns,
+  pickNextCampaign,
   secondsLeft,
   slugify,
   statusAt,
@@ -179,5 +180,50 @@ describe("campaignInputSchema", () => {
 describe("slugify", () => {
   it("makes a web address from a title", () => {
     expect(slugify("Should the UK ban under-16s from social media?")).toBe("should-the-uk-ban-under-16s-from-social-media");
+  });
+});
+
+describe("pickNextCampaign (the home page's Next Campaign card)", () => {
+  const NOW = ms("2026-12-02T09:00:00.000Z");
+  const mk = (id: string, status: "draft" | "scheduled" | "open" | "closed", starts: string, ends: string, extra: { is_sensitive?: boolean } = {}) => ({
+    id,
+    status,
+    starts_at: starts,
+    ends_at: ends,
+    ...extra,
+  });
+  const openSoon = mk("open-soon", "open", "2026-12-01T09:00:00.000Z", "2026-12-05T09:00:00.000Z");
+  const openLater = mk("open-later", "open", "2026-12-01T09:00:00.000Z", "2026-12-09T09:00:00.000Z");
+  const nextUp = mk("next-up", "scheduled", "2026-12-10T09:00:00.000Z", "2026-12-17T09:00:00.000Z");
+  const furtherOn = mk("further-on", "scheduled", "2026-12-20T09:00:00.000Z", "2026-12-27T09:00:00.000Z");
+
+  it("prefers an open Campaign, the one closing soonest", () => {
+    expect(pickNextCampaign([openLater, nextUp, openSoon], NOW)?.id).toBe("open-soon");
+  });
+  it("falls back to the scheduled one opening soonest", () => {
+    expect(pickNextCampaign([furtherOn, nextUp], NOW)?.id).toBe("next-up");
+  });
+  it("never picks a draft", () => {
+    const draft = mk("draft", "draft", "2026-12-01T09:00:00.000Z", "2026-12-05T09:00:00.000Z");
+    expect(pickNextCampaign([draft], NOW)).toBeNull();
+    expect(pickNextCampaign([draft, nextUp], NOW)?.id).toBe("next-up");
+  });
+  it("never picks a closed Campaign, even one still marked open in the database", () => {
+    const closed = mk("closed", "closed", "2026-11-01T09:00:00.000Z", "2026-11-08T09:00:00.000Z");
+    const overdue = mk("overdue", "open", "2026-11-01T09:00:00.000Z", "2026-11-08T09:00:00.000Z");
+    expect(pickNextCampaign([closed, overdue], NOW)).toBeNull();
+  });
+  it("leaves out sensitive Campaigns", () => {
+    const sensitive = mk("sensitive", "open", "2026-12-01T09:00:00.000Z", "2026-12-03T09:00:00.000Z", { is_sensitive: true });
+    expect(pickNextCampaign([sensitive, openLater], NOW)?.id).toBe("open-later");
+    expect(pickNextCampaign([sensitive], NOW)).toBeNull();
+  });
+  it("leaves out Campaigns carrying an owner-decision flag", () => {
+    const flagged = new Set(["open-soon", "next-up"]);
+    expect(pickNextCampaign([openSoon, openLater, nextUp], NOW, flagged)?.id).toBe("open-later");
+    expect(pickNextCampaign([openSoon, nextUp], NOW, flagged)).toBeNull();
+  });
+  it("returns null when there is nothing to show", () => {
+    expect(pickNextCampaign([], NOW)).toBeNull();
   });
 });

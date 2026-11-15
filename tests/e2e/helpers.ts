@@ -1,6 +1,16 @@
 import { expect, type Page } from "@playwright/test";
 
 /**
+ * Below 1024px the header links live in a "Menu" panel. Opens it if it is closed and returns the Main navigation.
+ * At desktop widths there is no Menu button, so this just returns the always-visible navigation.
+ */
+export async function openMenu(page: Page) {
+  const button = page.getByRole("button", { name: "Menu", exact: true });
+  if ((await button.isVisible()) && (await button.getAttribute("aria-expanded")) !== "true") await button.click();
+  return page.getByRole("navigation", { name: "Main" });
+}
+
+/**
  * Fails if the page scrolls sideways, or if any visible element pokes out past
  * the right edge of the viewport (which the page-level check can miss when a
  * parent clips it). Names the offending elements so the failure is useful.

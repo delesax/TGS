@@ -42,7 +42,7 @@ type Appeal = { id: string; verdict_id: string; appellant_id: string; reason: st
 
 function Score({ label, value }: { label: string; value: number }) {
   return (
-    <span className="inline-block rounded-md border border-border px-2 py-0.5">
+    <span className="inline-block rounded-md border border-hairline px-2 py-0.5">
       {label} {value}
     </span>
   );
@@ -98,7 +98,7 @@ export default async function AdminCampaignJudgingPage({ params }: PageProps<"/a
   return (
     <Page title={status.title} intro={`Judging: ${stage(status)}.`}>
       <AdminNav current="/admin/judging" />
-      <p className="text-lg">
+      <p className="text-base">
         <Link href={`/campaigns/${status.slug}`} className="font-semibold text-primary underline">
           Campaign page
         </Link>
@@ -112,8 +112,8 @@ export default async function AdminCampaignJudgingPage({ params }: PageProps<"/a
         </Link>
       </p>
 
-      <section aria-labelledby="status-h" className="flex flex-col gap-2 rounded-xl border border-border p-4 text-lg">
-        <h2 id="status-h" className="text-2xl font-bold">
+      <section aria-labelledby="status-h" className="flex flex-col gap-2 surface-card p-4 text-base">
+        <h2 id="status-h">
           Status
         </h2>
         <ul className="flex list-disc flex-col gap-1 pl-6">
@@ -132,21 +132,21 @@ export default async function AdminCampaignJudgingPage({ params }: PageProps<"/a
       </section>
 
       <section aria-labelledby="panel-h" className="flex flex-col gap-3">
-        <h2 id="panel-h" className="text-2xl font-bold">
+        <h2 id="panel-h">
           Panel
         </h2>
-        <p className="text-lg">Judges see only Campaigns they are assigned to, and only once they close. You cannot see a judge&apos;s scores until they submit.</p>
+        <p className="text-base">Judges see only Campaigns they are assigned to, and only once they close. You cannot see a judge&apos;s scores until they submit.</p>
         {judges.length ? (
           <ul className="flex flex-col gap-3">
             {judges.map((j) => (
-              <li key={j.judge_id} className="flex flex-col gap-2 rounded-xl border border-border p-4">
-                <p className="text-lg font-semibold">{h(j.judge_id)}</p>
+              <li key={j.judge_id} className="flex flex-col gap-2 surface-card p-4">
+                <p className="text-base font-semibold">{h(j.judge_id)}</p>
                 <p className="text-base text-muted-foreground">
                   Assigned {formatUkShort(j.assigned_at)}. {j.submitted_at ? `Submitted ${formatUkShort(j.submitted_at)}: locked.` : "Not submitted yet."}
                 </p>
                 {!j.submitted_at && canChange ? (
                   <details>
-                    <summary className="min-h-12 cursor-pointer py-2 text-lg font-semibold text-primary underline">Remove from the panel</summary>
+                    <summary className="min-h-12 cursor-pointer py-2 text-base font-semibold text-primary underline">Remove from the panel</summary>
                     <AdminForm action={unassignJudge} label={`Remove ${h(j.judge_id)}`} hidden={{ ...hidden, judgeId: j.judge_id }} submitLabel="Remove this judge">
                       <TextField name="reason" id={`reason-${j.judge_id}`} label="Reason (kept in the audit log)" maxLength={500} />
                     </AdminForm>
@@ -166,24 +166,24 @@ export default async function AdminCampaignJudgingPage({ params }: PageProps<"/a
       </section>
 
       <section aria-labelledby="draft-h" className="flex flex-col gap-4">
-        <h2 id="draft-h" className="text-2xl font-bold">
+        <h2 id="draft-h">
           Draft Verdict
         </h2>
         {draft ? (
-          <div className="flex flex-col gap-4 rounded-xl border-2 border-primary p-4">
-            <p className="text-lg">
+          <div className="flex flex-col gap-4 rounded-xl border border-primary/60 p-4">
+            <p className="text-base">
               Version {draft.version}, computed {formatUkDateTime(draft.computed_at)} {draft.computed_by ? `by ${h(draft.computed_by)}` : "by the scheduler"}.
               {draft.rationale_ai_assisted ? ` Rationale worded with AI help (${draft.rationale_model}).` : ""}
             </p>
             {!draft.needs_attention && draft.attention_reasons.length ? (
-              <div role="note" className="rounded-lg border-2 border-primary p-4">
-                <p className="text-lg font-bold">For review (does not block publishing)</p>
+              <div role="note" className="rounded-lg border border-primary/60 p-4">
+                <p className="text-base font-bold">For review (does not block publishing)</p>
                 <AttentionList items={draft.attention_reasons} handles={handles} />
               </div>
             ) : null}
             {draft.needs_attention ? (
-              <div role="note" className="rounded-lg border-2 border-destructive p-4">
-                <p className="text-lg font-bold">Needs attention before it can be published</p>
+              <div role="note" className="rounded-lg border border-destructive p-4">
+                <p className="text-base font-bold">Needs attention before it can be published</p>
                 <AttentionList items={draft.attention_reasons} handles={handles} />
                 <p className="mt-2 text-base">
                   Missing parts are never reweighted automatically. Fix the gap (for example, wait for voting, re-run AI scoring, remove a judge who will not submit), or recompute
@@ -193,12 +193,12 @@ export default async function AdminCampaignJudgingPage({ params }: PageProps<"/a
             ) : null}
             <WeightsLine weights={draft.weights_snapshot} />
             <Breakdown scores={draft.component_scores} handles={handles} caption="Draft scores by Strategist" />
-            <h3 className="text-xl font-semibold">Proposed awards</h3>
+            <h3>Proposed awards</h3>
             <AwardList awards={draft.proposed_awards} handles={handles} campaignSlug={status.slug} />
-            <h3 className="text-xl font-semibold">Rationale (as it will appear)</h3>
+            <h3>Rationale (as it will appear)</h3>
             <Rationale text={draft.rationale} handles={handles} />
             <details>
-              <summary className="min-h-12 cursor-pointer py-2 text-lg font-semibold text-primary underline">Edit the rationale</summary>
+              <summary className="min-h-12 cursor-pointer py-2 text-base font-semibold text-primary underline">Edit the rationale</summary>
               <AdminForm action={editRationale} label="Edit the rationale" hidden={{ ...hidden, verdictId: draft.id }} submitLabel="Save rationale">
                 <TextAreaField
                   name="rationale"
@@ -224,9 +224,9 @@ export default async function AdminCampaignJudgingPage({ params }: PageProps<"/a
           </EmptyState>
         )}
         {closed && canChange ? (
-          <div className="flex flex-col gap-2 rounded-xl border border-border p-4">
-            <h3 className="text-xl font-semibold">{draft ? "Recompute" : "Compute a draft now"}</h3>
-            <p className="text-lg">
+          <div className="flex flex-col gap-2 surface-card p-4">
+            <h3>{draft ? "Recompute" : "Compute a draft now"}</h3>
+            <p className="text-base">
               Uses the latest submitted panel scores, votes, picks and AI scores, and the weights this Campaign opened with
               {campaignWeights ? ` (panel ${campaignWeights.panel}%, peer ${campaignWeights.peer}%, AI ${campaignWeights.ai_rubric}%, mind-change ${campaignWeights.mind_change}%)` : ""}. The
               old draft is kept as discarded.
@@ -246,33 +246,33 @@ export default async function AdminCampaignJudgingPage({ params }: PageProps<"/a
       </section>
 
       <section aria-labelledby="live-h" className="flex flex-col gap-3">
-        <h2 id="live-h" className="text-2xl font-bold">
+        <h2 id="live-h">
           Published Verdict and appeals
         </h2>
         {live ? (
-          <p className="text-lg">
+          <p className="text-base">
             Version {live.version}: {VERDICT_STATUS_LABELS[live.status]}. Published {live.published_at ? formatUkDateTime(live.published_at) : ""}. Appeals close{" "}
             {live.appeal_closes_at ? formatUkDateTime(live.appeal_closes_at) : ""}.
           </p>
         ) : (
-          <p className="text-lg">Nothing published yet.</p>
+          <p className="text-base">Nothing published yet.</p>
         )}
         {appeals.length ? (
           <ul className="flex flex-col gap-3">
             {appeals.map((a) => (
-              <li key={a.id} className="flex flex-col gap-2 rounded-xl border border-border p-4">
-                <p className="text-lg font-semibold">
+              <li key={a.id} className="flex flex-col gap-2 surface-card p-4">
+                <p className="text-base font-semibold">
                   {h(a.appellant_id)} · {formatUkShort(a.created_at)} · {a.status}
                 </p>
-                <p className="whitespace-pre-line text-lg">{a.reason}</p>
+                <p className="whitespace-pre-line text-base">{a.reason}</p>
                 {a.status === "open" ? (
                   <AdminForm action={decideAppeal} label={`Decide the appeal by ${h(a.appellant_id)}`} hidden={{ ...hidden, appealId: a.id }} submitLabel="Record decision">
                     <fieldset className="flex flex-col gap-2">
-                      <legend className="text-lg font-semibold">Decision</legend>
-                      <label className="flex min-h-12 items-center gap-3 text-lg">
+                      <legend className="text-base font-semibold">Decision</legend>
+                      <label className="flex min-h-12 items-center gap-3 text-base">
                         <input type="radio" name="outcome" value="rejected" className="size-6 accent-primary" /> Reject: the Verdict stands
                       </label>
-                      <label className="flex min-h-12 items-center gap-3 text-lg">
+                      <label className="flex min-h-12 items-center gap-3 text-base">
                         <input type="radio" name="outcome" value="upheld" className="size-6 accent-primary" /> Uphold: recompute and publish a revised Verdict
                       </label>
                     </fieldset>
@@ -288,23 +288,23 @@ export default async function AdminCampaignJudgingPage({ params }: PageProps<"/a
             ))}
           </ul>
         ) : (
-          <p className="text-lg">No appeals.</p>
+          <p className="text-base">No appeals.</p>
         )}
       </section>
 
       <section aria-labelledby="ai-h" className="flex flex-col gap-3">
-        <h2 id="ai-h" className="text-2xl font-bold">
+        <h2 id="ai-h">
           AI rubric by Dispatch
         </h2>
-        <p className="text-lg">Every AI score keeps its model, prompt version and reason. Override a score with a reason, or re-run it; then recompute the draft.</p>
+        <p className="text-base">Every AI score keeps its model, prompt version and reason. Override a score with a reason, or re-run it; then recompute the draft.</p>
         {dispatches.length ? (
           <ul className="flex flex-col gap-3">
             {dispatches.map((d) => {
               const s = latestAi.get(d.id);
               const shown = s?.override_scores ?? s;
               return (
-                <li key={d.id} className="flex flex-col gap-2 rounded-xl border border-border p-4">
-                  <p className="text-lg font-semibold">
+                <li key={d.id} className="flex flex-col gap-2 surface-card p-4">
+                  <p className="text-base font-semibold">
                     {handleOf(d)} · {KIND_LABELS[d.kind].label}
                   </p>
                   <p className="line-clamp-3 text-base [overflow-wrap:anywhere]">{d.body}</p>
@@ -324,7 +324,7 @@ export default async function AdminCampaignJudgingPage({ params }: PageProps<"/a
                       </p>
                       {canChange ? (
                         <details>
-                          <summary className="min-h-12 cursor-pointer py-2 text-lg font-semibold text-primary underline">Override this score</summary>
+                          <summary className="min-h-12 cursor-pointer py-2 text-base font-semibold text-primary underline">Override this score</summary>
                           <AdminForm action={overrideAiScore} label="Override AI score" hidden={{ ...hidden, scoreId: s.id }} submitLabel="Save override">
                             <div className="grid grid-cols-2 gap-3">
                               {(["logic", "evidence", "originality", "responsiveness"] as const).map((k) => (
@@ -352,11 +352,11 @@ export default async function AdminCampaignJudgingPage({ params }: PageProps<"/a
       </section>
 
       <section aria-labelledby="history-h" className="flex flex-col gap-3">
-        <h2 id="history-h" className="text-2xl font-bold">
+        <h2 id="history-h">
           Verdict history
         </h2>
         {verdicts.length ? (
-          <ul className="flex flex-col gap-2 text-lg">
+          <ul className="flex flex-col gap-2 text-base">
             {verdicts.map((v) => (
               <li key={v.id}>
                 Version {v.version}: {VERDICT_STATUS_LABELS[v.status]}, computed {formatUkShort(v.computed_at)}
@@ -365,7 +365,7 @@ export default async function AdminCampaignJudgingPage({ params }: PageProps<"/a
             ))}
           </ul>
         ) : (
-          <p className="text-lg">None yet. Every compute, edit, publish and appeal decision is in the audit log.</p>
+          <p className="text-base">None yet. Every compute, edit, publish and appeal decision is in the audit log.</p>
         )}
       </section>
     </Page>

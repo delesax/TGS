@@ -27,7 +27,7 @@ export type CampaignFormValues = {
 };
 
 const selectClass =
-  "min-h-12 w-full rounded-md border-2 border-input bg-background px-3 text-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring aria-[invalid=true]:border-destructive";
+  "field focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring aria-[invalid=true]:border-destructive";
 
 function SelectField({ name, label, error, options, defaultValue, hint }: { name: string; label: string; error?: string; hint?: string; options: [string, string][]; defaultValue: string }) {
   return (
@@ -106,8 +106,8 @@ export function CampaignForm({ values }: { values: CampaignFormValues }) {
           const n = i + 1;
           const error = errors[`round${n}`];
           return (
-            <div key={n} className={`flex flex-col gap-3 rounded-lg border-2 p-4 ${error ? "border-destructive" : "border-border"}`}>
-              <p className="text-lg font-semibold">Round {n}</p>
+            <div key={n} className={`flex flex-col gap-3 rounded-lg border p-4 ${error ? "border-destructive" : "border-hairline"}`}>
+              <p className="text-base font-semibold">Round {n}</p>
               {error ? (
                 <p role="alert" className="text-base font-semibold text-destructive">
                   {error}
@@ -117,7 +117,7 @@ export function CampaignForm({ values }: { values: CampaignFormValues }) {
               <TextField name={`round${n}-startsAt`} type="datetime-local" label={`Round ${n} starts`} defaultValue={r.startsAt} />
               <TextField name={`round${n}-endsAt`} type="datetime-local" label={`Round ${n} deadline`} defaultValue={r.endsAt} />
               <fieldset className="flex flex-col gap-1">
-                <legend className="text-lg font-semibold">Round {n} accepts</legend>
+                <legend className="text-base font-semibold">Round {n} accepts</legend>
                 {DISPATCH_KINDS.map((k) => (
                   <CheckboxField
                     key={k}

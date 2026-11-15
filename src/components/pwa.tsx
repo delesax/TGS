@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { Download, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 type InstallPromptEvent = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: "accepted" | "dismissed" }> };
 
@@ -39,33 +38,38 @@ export function PwaSupport() {
   }, []);
 
   if (!prompt) return null;
+  // A small pill in the bottom-left corner, out of the page flow (position: fixed), so it adds no height and causes
+  // no layout shift; it sits below the header menu and covers only a corner of the viewport. Same two actions as before.
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <Button
+    <div
+      role="region"
+      aria-label="Install the app"
+      className="fixed bottom-3 left-3 z-30 flex items-center gap-0.5 rounded-full border border-hairline bg-raised py-0.5 pl-1 pr-0.5 shadow-[var(--shadow-raised)]"
+    >
+      <button
         type="button"
-        variant="outline"
         onClick={async () => {
           await prompt.prompt();
           await prompt.userChoice.catch(() => null);
           setPrompt(null);
         }}
+        className="inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-[15px] font-semibold text-foreground transition-colors duration-200 hover:bg-muted motion-reduce:transition-none"
       >
-        <Download aria-hidden /> Install the app
-      </Button>
-      <Button
+        <Download aria-hidden className="size-4" /> Install the app
+      </button>
+      <button
         type="button"
-        variant="ghost"
-        className="min-w-12 px-0"
         onClick={() => {
           setPrompt(null);
           try {
             window.localStorage.setItem(DISMISSED_KEY, "1");
           } catch {}
         }}
+        className="grid size-11 place-items-center rounded-full text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground motion-reduce:transition-none"
       >
-        <X aria-hidden />
+        <X aria-hidden className="size-4" />
         <span className="sr-only">Do not offer to install the app again</span>
-      </Button>
+      </button>
     </div>
   );
 }

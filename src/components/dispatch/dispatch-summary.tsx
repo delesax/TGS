@@ -30,12 +30,12 @@ export function DispatchSummaryItem({ d }: { d: DispatchSummary }) {
   // Only the author ever receives pending or held rows (row-level security).
   const check = d.moderation_status === "pending" ? "Checking… only you can see this for now." : d.moderation_status === "held" ? "Held: a person will check this before others can see it." : null;
   return (
-    <li className="flex flex-col gap-2 rounded-xl border border-border bg-card p-4">
+    <li className="flex flex-col gap-2 surface-card bg-card p-4">
       <div className="flex flex-wrap items-center gap-2">
         <PositionTag position={d.position} />
         <KindTag kind={d.kind} />
-        {gone ? <span className="rounded-full border-2 border-muted-foreground px-2 py-0.5 text-base font-semibold">{d.withdrawn_at ? "Withdrawn" : d.moderation_status === "removed" ? "Removed" : "Hidden"}</span> : null}
-        {!gone && check ? <span className="rounded-full border-2 border-accent-foreground bg-accent px-2 py-0.5 text-base font-semibold text-accent-foreground">{d.moderation_status === "held" ? "Held" : "Checking…"}</span> : null}
+        {gone ? <span className="rounded-full border border-muted-foreground/60 px-2 py-0.5 text-base font-semibold">{d.withdrawn_at ? "Withdrawn" : d.moderation_status === "removed" ? "Removed" : "Hidden"}</span> : null}
+        {!gone && check ? <span className="rounded-full border border-accent-foreground/50 bg-accent px-2 py-0.5 text-base font-semibold text-accent-foreground">{d.moderation_status === "held" ? "Held" : "Checking…"}</span> : null}
       </div>
       <p className="text-base text-muted-foreground">
         <time dateTime={d.created_at}>{formatUkShort(d.created_at)}</time>

@@ -14,7 +14,7 @@ export function UpdateForm({ id, status, note }: { id: string; status: string; n
       <input type="hidden" name="id" value={id} />
       <div className="flex flex-col gap-2">
         <Label htmlFor="status">Status</Label>
-        <select id="status" name="status" defaultValue={status} className="min-h-12 w-full rounded-md border-2 border-input bg-background px-3 text-lg">
+        <select id="status" name="status" defaultValue={status} className="field">
           {STATUSES.map((s) => (
             <option key={s} value={s}>
               {STATUS_LABELS[s]}

@@ -9,7 +9,7 @@ import { AWARD_LABELS, COMPONENT_LABELS, rationaleParts } from "@/lib/judging/ra
 export function StrategistName({ id, handles }: { id: string; handles: Map<string, string | null> }) {
   const handle = handles.get(id);
   return handle ? (
-    <Link href={`/strategists/${handle}`} className="font-semibold text-primary underline underline-offset-2">
+    <Link href={`/strategists/${handle}`} className="font-semibold text-primary underline decoration-1 underline-offset-4 hover:decoration-2">
       @{handle}
     </Link>
   ) : (
@@ -20,7 +20,7 @@ export function StrategistName({ id, handles }: { id: string; handles: Map<strin
 /** The rationale, paragraph by paragraph, with each Strategist linked. */
 export function Rationale({ text, handles }: { text: string; handles: Map<string, string | null> }) {
   return (
-    <div className="flex flex-col gap-4 text-lg">
+    <div className="flex max-w-[65ch] flex-col gap-4 text-[1.05rem] leading-[1.7]">
       {text.split(/\n{2,}/).map((para, i) => (
         <p key={i} className="whitespace-pre-line">
           {rationaleParts(para).map((part, j) => ("text" in part ? <span key={j}>{part.text}</span> : <StrategistName key={j} id={part.userId} handles={handles} />))}
@@ -34,7 +34,7 @@ const fmt = (n: number | null) => (n === null ? "–" : Number.isInteger(n) ? St
 
 export function WeightsLine({ weights }: { weights: Weights }) {
   return (
-    <p className="text-lg">
+    <p className="text-base text-muted-foreground">
       Weights used: panel {weights.panel}%, peer votes {weights.peer}%, AI rubric {weights.ai_rubric}%, mind-change {weights.mind_change}%.{" "}
       {weights.source === "override" ? (
         <span>Set by an admin for this Verdict{weights.reason ? `: ${weights.reason}` : ""}.</span>
@@ -47,16 +47,16 @@ export function WeightsLine({ weights }: { weights: Weights }) {
 
 /**
  * The component breakdown. On phones, one card per Strategist (a definition
- * list, so nothing scrolls sideways); from tablet width up, a real table with
+ * list, so nothing scrolls sideways); from 1024px up, a real table with
  * row and column headers. Only one of the two is displayed, so assistive
  * technology meets it once.
  */
 export function Breakdown({ scores, handles, caption }: { scores: StrategistScore[]; handles: Map<string, string | null>; caption: string }) {
   return (
     <>
-      <ol aria-label={caption} className="flex flex-col gap-3 sm:hidden">
+      <ol aria-label={caption} className="flex flex-col gap-3 lg:hidden">
         {scores.map((s) => (
-          <li key={s.user_id} className="rounded-xl border border-border p-4 text-lg">
+          <li key={s.user_id} className="surface-card p-4 text-base">
             <p className="font-semibold">
               {s.rank ? `${s.rank}. ` : ""}
               <StrategistName id={s.user_id} handles={handles} />
@@ -71,51 +71,51 @@ export function Breakdown({ scores, handles, caption }: { scores: StrategistScor
               ))}
               <dt>Steelman bonus</dt>
               <dd className="text-right">{s.steelman_bonus ? `+${fmt(s.steelman_bonus)}` : "0"}</dd>
-              <dt className="font-bold">Final</dt>
-              <dd className="text-right font-bold">{fmt(s.final)}</dd>
+              <dt className="font-semibold">Final</dt>
+              <dd className="text-right font-semibold">{fmt(s.final)}</dd>
               {bonusCapped(s) ? <dt className="col-span-2 text-base text-muted-foreground">Capped at 100.</dt> : null}
             </dl>
           </li>
         ))}
       </ol>
-      <table className="hidden w-full border-collapse rounded-xl text-left text-lg sm:table">
+      <table className="data-table hidden lg:table">
         <caption className="sr-only">{caption}</caption>
-        <thead className="bg-muted">
+        <thead>
           <tr>
-            <th scope="col" className="p-3">
+            <th scope="col" >
               Place
             </th>
-            <th scope="col" className="p-3">
+            <th scope="col" >
               Strategist
             </th>
             {COMPONENT_ORDER.map((c) => (
-              <th key={c} scope="col" className="p-3 capitalize">
+              <th key={c} scope="col">
                 {COMPONENT_LABELS[c]}
               </th>
             ))}
-            <th scope="col" className="p-3">
+            <th scope="col" >
               Steelman bonus
             </th>
-            <th scope="col" className="p-3">
+            <th scope="col" >
               Final
             </th>
           </tr>
         </thead>
         <tbody>
           {scores.map((s) => (
-            <tr key={s.user_id} className="border-t border-border align-top">
-              <td className="p-3 font-semibold">{s.rank ?? "–"}</td>
-              <th scope="row" className="p-3 font-normal">
+            <tr key={s.user_id}>
+              <td className="font-semibold">{s.rank ?? "–"}</td>
+              <th scope="row" className="font-normal normal-case">
                 <StrategistName id={s.user_id} handles={handles} />
                 {s.tie_break ? <span className="block text-base text-muted-foreground">{s.tie_break}</span> : null}
               </th>
               {COMPONENT_ORDER.map((c) => (
-                <td key={c} className="p-3">
+                <td key={c} >
                   {fmt(s.components[c])}
                 </td>
               ))}
-              <td className="p-3">{s.steelman_bonus ? `+${fmt(s.steelman_bonus)}` : "0"}</td>
-              <td className="p-3 font-bold">
+              <td >{s.steelman_bonus ? `+${fmt(s.steelman_bonus)}` : "0"}</td>
+              <td className="font-semibold">
                 {fmt(s.final)}
                 {bonusCapped(s) ? <span className="block text-base font-normal text-muted-foreground">Capped at 100</span> : null}
               </td>
@@ -132,16 +132,16 @@ export function AwardList({ awards, handles, campaignSlug }: { awards: Pick<Prop
   return (
     <ul className="flex flex-col gap-3">
       {awards.map((a) => (
-        <li key={a.category} className="rounded-xl border border-border p-4">
-          <p className="text-xl font-bold">{AWARD_LABELS[a.category]}</p>
-          <p className="text-lg">
+        <li key={a.category} className="surface-card p-4">
+          <p className="font-serif text-lg font-semibold tracking-tight">{AWARD_LABELS[a.category]}</p>
+          <p className="text-base">
             <StrategistName id={a.profile_id} handles={handles} />
           </p>
           <div className="mt-1 text-base text-muted-foreground">
             <Rationale text={a.rationale} handles={handles} />
           </div>
           {a.dispatch_id ? (
-            <Link href={`/campaigns/${campaignSlug}#dispatch-${a.dispatch_id}`} className="mt-1 inline-flex min-h-12 items-center text-lg text-primary underline">
+            <Link href={`/campaigns/${campaignSlug}#dispatch-${a.dispatch_id}`} className="mt-1 inline-flex min-h-11 items-center text-base text-primary underline underline-offset-4">
               Read the Dispatch
             </Link>
           ) : null}

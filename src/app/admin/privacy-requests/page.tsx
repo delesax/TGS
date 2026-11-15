@@ -33,7 +33,7 @@ export default async function PrivacyRequestsPage({ searchParams }: PageProps<"/
             href={s ? `/admin/privacy-requests?status=${s}` : "/admin/privacy-requests"}
             aria-current={s === filter ? "page" : undefined}
             className={cn(
-              "inline-flex min-h-12 items-center rounded-md border-2 px-3 text-lg font-semibold",
+              "inline-flex min-h-12 items-center rounded-md border px-3 text-base font-semibold",
               s === filter ? "border-primary bg-primary text-primary-foreground" : "border-border hover:bg-muted",
             )}
           >
@@ -54,17 +54,17 @@ export default async function PrivacyRequestsPage({ searchParams }: PageProps<"/
               <li
                 key={r.id}
                 className={cn(
-                  "rounded-xl border-2 p-4",
-                  state === "overdue" ? "border-destructive bg-destructive/10" : state === "soon" ? "border-accent-foreground bg-accent" : "border-border bg-card",
+                  "rounded-[12px] border p-4",
+                  state === "overdue" ? "border-destructive bg-destructive/10" : state === "soon" ? "border-accent-foreground/50 bg-accent" : "border-hairline bg-card",
                 )}
               >
                 <Link href={`/admin/privacy-requests/${r.id}`} className="text-xl font-semibold underline">
                   {REQUEST_TYPE_LABELS[r.type] ?? r.type}
                 </Link>
-                <p className="text-lg">
+                <p className="text-base">
                   {STATUS_LABELS[r.status as keyof typeof STATUS_LABELS] ?? r.status} · received {formatUkShort(r.created_at)} · reference {r.id.slice(0, 8)}
                 </p>
-                <p className={cn("text-lg", state === "overdue" ? "font-bold text-destructive" : state === "soon" ? "font-bold" : "")}>
+                <p className={cn("text-base", state === "overdue" ? "font-bold text-destructive" : state === "soon" ? "font-bold" : "")}>
                   {state === "closed"
                     ? "Closed"
                     : state === "overdue"

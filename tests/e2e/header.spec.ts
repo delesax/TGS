@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { loadTestEnv } from "../test-env";
-import { expectNoHorizontalOverflow } from "./helpers";
+import { expectNoHorizontalOverflow, openMenu } from "./helpers";
 
 const env = loadTestEnv();
 const service = createClient(env.supabaseUrl, env.serviceKey, { auth: { persistSession: false } });
@@ -43,12 +43,14 @@ test.describe("Site header", () => {
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
     await expect(page).not.toHaveURL(/\/login/);
     await page.goto("/");
+    // Below 1024px the links are inside the Menu panel.
+    if (width < 1024) await openMenu(page);
     await expect(page.getByRole("link", { name: "Admin", exact: true })).toBeVisible();
     return page;
   }
 
   for (const width of [1080, 1280, 1440, 1920]) {
-    test(`at ${width}px the links stay on one row and the search box sits directly below`, async ({ browser }) => {
+    test(`at ${width}px the header is one slim sticky row: seven links on one line, search within reach`, async ({ browser }) => {
       const page = await signedInAt(browser, width, 900);
       const nav = page.getByRole("navigation", { name: "Main" });
       const items = nav.locator("a, button");
@@ -58,24 +60,38 @@ test.describe("Site header", () => {
       for (let i = 0; i < 7; i++) tops.push(Math.round((await items.nth(i).boundingBox())!.y));
       expect(Math.max(...tops) - Math.min(...tops), `link tops ${tops.join(", ")}`).toBeLessThanOrEqual(2);
 
-      const signOut = (await nav.getByRole("button", { name: "Sign out" }).boundingBox())!;
-      const search = (await page.getByRole("searchbox", { name: /Search Campaigns/ }).boundingBox())!;
-      expect(search.y).toBeGreaterThanOrEqual(signOut.y + signOut.height);
-      // One 48px row of links plus the search box: well under two link rows' worth of extra height.
+      // No link wraps onto a second line inside the row (each is one line tall).
+      for (let i = 0; i < 7; i++) expect((await items.nth(i).boundingBox())!.height, `nav item ${i}`).toBeLessThanOrEqual(48);
+      // One slim row (64 to 72px) that stays in view; the search is in the same row.
       const header = (await page.getByRole("banner").boundingBox())!;
-      expect(header.height).toBeLessThan(150);
+      expect(header.height).toBeLessThanOrEqual(72);
+      expect(header.height).toBeGreaterThanOrEqual(60);
+      expect(await page.getByRole("banner").evaluate((el) => getComputedStyle(el).position)).toBe("sticky");
+      const search = width >= 1280 ? page.getByRole("searchbox", { name: /Search Campaigns/ }) : page.getByRole("banner").getByRole("link", { name: "Search", exact: true });
+      const box = (await search.boundingBox())!;
+      expect(box.y).toBeGreaterThanOrEqual(header.y);
+      expect(box.y + box.height).toBeLessThanOrEqual(header.y + header.height);
       await expectNoHorizontalOverflow(page);
       await page.context().close();
     });
   }
 
-  test("at 375px the layout is unchanged: logo above the links, links wrap, nothing overflows", async ({ browser }) => {
+  test("at 375px the links sit in a Menu panel: the header stays short, the open panel overlays and nothing overflows", async ({ browser }) => {
     const page = await signedInAt(browser, 375, 812);
-    const logo = (await page.getByRole("link", { name: "The Grand Strategist" }).first().boundingBox())!;
-    const home = (await page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Home" }).boundingBox())!;
-    expect(home.y).toBeGreaterThanOrEqual(logo.y + logo.height);
-    const header = (await page.getByRole("banner").boundingBox())!;
-    console.log(`HEADER375 height=${Math.round(header.height)} logoY=${Math.round(logo.y)} homeY=${Math.round(home.y)}`);
+    // signedInAt left the menu open: seven destinations, none wrapped into the header.
+    const nav = page.getByRole("navigation", { name: "Main" });
+    // Seven destinations plus the "Text" row (display settings).
+    await expect(nav.locator("a, button")).toHaveCount(8);
+    const open = (await page.getByRole("banner").boundingBox())!;
+    const panel = (await page.locator("#mobile-menu").boundingBox())!;
+    expect(panel.x).toBeGreaterThanOrEqual(0);
+    expect(panel.x + panel.width).toBeLessThanOrEqual(375);
+    await expectNoHorizontalOverflow(page);
+    await page.keyboard.press("Escape");
+    const closed = (await page.getByRole("banner").boundingBox())!;
+    expect(closed.height).toBeLessThan(150);
+    // Opening the panel overlays the page; it does not make the header taller.
+    expect(open.height).toBe(closed.height);
     await expectNoHorizontalOverflow(page);
     await page.context().close();
   });

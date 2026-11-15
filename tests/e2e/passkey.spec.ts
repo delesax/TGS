@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { expect, test } from "@playwright/test";
 import { loadTestEnv } from "../test-env";
+import { openMenu } from "./helpers";
 
 const env = loadTestEnv();
 const service = createClient(env.supabaseUrl, env.serviceKey, { auth: { persistSession: false } });
@@ -42,6 +43,7 @@ test("a Strategist adds a passkey and signs in with it", async ({ page, context 
     await expect(page.getByText("Passkey added.")).toBeVisible();
     await expect(page.getByRole("list", { name: "Your passkeys" })).toContainText("Test laptop");
 
+    await openMenu(page);
     await page.getByRole("button", { name: "Sign out" }).click();
     await expect(page.getByRole("link", { name: "Sign in" }).first()).toBeVisible();
 

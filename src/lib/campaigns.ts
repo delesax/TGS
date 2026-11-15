@@ -88,6 +88,21 @@ export function groupCampaigns<C extends CampaignTimes>(campaigns: C[], now: num
   return groups;
 }
 
+/**
+ * The Campaign the home page features: only open or scheduled ones (never a draft or a closed one), never a sensitive
+ * one, and never one in `blockedIds` (Campaigns carrying an owner-decision flag, looked up on the server). Among open
+ * Campaigns the one closing soonest; otherwise the scheduled one opening soonest; otherwise null.
+ */
+export function pickNextCampaign<C extends CampaignTimes & { id: string; is_sensitive?: boolean }>(
+  campaigns: C[],
+  now: number,
+  blockedIds: ReadonlySet<string> = new Set(),
+): C | null {
+  const eligible = campaigns.filter((c) => !c.is_sensitive && !blockedIds.has(c.id));
+  const groups = groupCampaigns(eligible, now);
+  return groups.open[0] ?? groups.soon[0] ?? null;
+}
+
 // ---------------------------------------------------------------------------
 // Time display and UK local time
 // ---------------------------------------------------------------------------

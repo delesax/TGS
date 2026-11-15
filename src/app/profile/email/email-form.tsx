@@ -19,7 +19,7 @@ export function EmailForm({ prefs }: { prefs: EmailPrefs }) {
         <CheckboxField name="closing_soon" label="a Campaign I am in will close within 24 hours" defaultChecked={!off && prefs.closing_soon} />
         <CheckboxField name="moderation" label="a moderator holds, releases or removes one of my Dispatches, or decides my appeal" defaultChecked={!off && prefs.moderation} />
       </fieldset>
-      <div className="rounded-lg border-2 border-dashed border-border p-3">
+      <div className="rounded-lg border border-hairline p-3">
         <CheckboxField name="stopAll" label="Stop all emails from The Grand Strategist" defaultChecked={off} />
       </div>
       <SubmitButton pending={pending} pendingLabel="Saving…">
