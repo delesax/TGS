@@ -14,7 +14,7 @@ export function Page({
   children?: React.ReactNode;
 }) {
   return (
-    <div className={cn("mx-auto w-full px-4 py-8 sm:py-12", narrow ? "max-w-xl" : "max-w-5xl")}>
+    <div className={cn("page-container py-8 sm:py-12", narrow && "max-w-xl")}>
       <h1>{title}</h1>
       {intro ? <div className="mt-3 max-w-[65ch] text-lg text-muted-foreground">{intro}</div> : null}
       <div className="mt-8 flex flex-col gap-6">{children}</div>

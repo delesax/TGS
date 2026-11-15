@@ -35,7 +35,7 @@ export default async function CampaignPage({ params }: PageProps<"/campaigns/[sl
     : [null, false];
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:py-12">
+    <div className="page-container flex flex-col gap-6 py-8 sm:py-12">
       {campaign.is_sensitive && campaign.content_note ? (
         <section aria-label="Content note" className="rounded-xl border border-accent-foreground/50 bg-accent p-5 text-lg text-accent-foreground">
           <h2>Content note</h2>

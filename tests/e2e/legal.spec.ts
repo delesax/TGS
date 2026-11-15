@@ -80,7 +80,8 @@ test.describe("legal pages and the footer", () => {
       await expect(footer).toContainText("The Grand Strategist Limited");
       await expect(footer).toContainText("Registered in England and Wales, company number");
       await expect(footer).toContainText("Registered office:");
-      await expect(footer).toContainText("Contact:");
+      // The footer small print is one line now: the contact address follows the registered office (no "Contact:" label).
+      await expect(footer).toContainText("contact@thegrandstrategist.com");
       for (const name of ["Terms of use", "Privacy policy", "How we use AI", "Accessibility", "Contact us about your data"]) {
         await expect(page.getByRole("navigation", { name: "Policies" }).getByRole("link", { name })).toBeVisible();
       }

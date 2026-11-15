@@ -11,7 +11,7 @@ export function Skeleton({ className }: { className?: string }) {
 
 function Shell({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div role="status" aria-live="polite" className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:py-12">
+    <div role="status" aria-live="polite" className="page-container flex flex-col gap-6 py-8 sm:py-12">
       <span className="sr-only">{label}</span>
       {children}
     </div>

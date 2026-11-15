@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Atkinson_Hyperlegible, Inter, Lexend, Lora, Merriweather, Open_Sans, Source_Sans_3, Source_Serif_4 } from "next/font/google";
 import { SiteHeader } from "@/components/site-header";
 import { SiteNotice } from "@/components/site-notice";
+import { PwaSupport } from "@/components/pwa";
 import { SiteFooter } from "@/components/site-footer";
 import { DISPLAY_INIT_SCRIPT } from "@/lib/display";
 import "./globals.css";
@@ -74,6 +75,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
         </main>
         <SiteFooter />
+        <PwaSupport />
       </body>
     </html>
   );

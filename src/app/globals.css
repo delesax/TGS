@@ -217,6 +217,10 @@ html[data-font="lora"] {
   dd {
     overflow-wrap: anywhere;
   }
+  /* Long reading text keeps a comfortable line length (about 68 characters) however wide the page container is. */
+  main :where(p, dd, blockquote) {
+    max-width: 68ch;
+  }
   :focus-visible {
     outline: 3px solid var(--ring);
     outline-offset: 2px;
@@ -237,6 +241,19 @@ html[data-font="lora"] {
  * is switched off under prefers-reduced-motion (see the media block at the end).
  */
 @layer components {
+  /* One shared container for the header, page content and footer: up to 1280px wide, centred, with 24px side padding
+     on phones and 32px from 768px up (px, not rem, so it does not change with the text size). */
+  .page-container {
+    width: 100%;
+    max-width: 1280px;
+    margin-inline: auto;
+    padding-inline: 24px;
+  }
+  @media (min-width: 768px) {
+    .page-container {
+      padding-inline: 32px;
+    }
+  }
 .surface-card {
   background: var(--card);
   border: 1px solid var(--hairline);

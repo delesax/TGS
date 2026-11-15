@@ -25,8 +25,8 @@ export default async function HomePage() {
   const nextStatus = next ? statusAt(next, now) : null;
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:py-12">
-      <section className="hero-glow relative grid grid-cols-[minmax(0,1fr)] items-center gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-14">
+    <div className="page-container py-8 sm:py-12">
+      <section className="hero-glow relative grid grid-cols-[minmax(0,1fr)] items-center gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-16">
         <ApexMotif className="pointer-events-none absolute right-0 top-0 -z-10 hidden w-[30rem] max-w-full sm:block" />
         <div className="fade-up flex min-w-0 flex-col items-start gap-5">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-text">Invite-only pilot</p>
@@ -55,7 +55,10 @@ export default async function HomePage() {
             </>
           ) : (
             <>
-              <h1 className="text-[2rem] font-medium leading-[1.1] tracking-[-0.025em] sm:text-5xl lg:text-[3.4rem]">The best argument wins. Before the deadline.</h1>
+              <h1 className="text-[2rem] font-medium leading-[1.08] tracking-[-0.025em] sm:text-5xl lg:text-[3rem] xl:text-[3.3rem]">
+                <span className="block">The best argument wins.</span>
+                <span className="block">Before the deadline.</span>
+              </h1>
               <p className="max-w-[34rem] text-lg text-muted-foreground">
                 The Grand Strategist is an arena for careful reasoning on questions that matter. It is invite-only during the pilot.
               </p>

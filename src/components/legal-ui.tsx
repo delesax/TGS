@@ -7,18 +7,19 @@ import { cn } from "@/lib/utils";
  * shows "[to be added]" in a highlighted box (and carries data-pending so the
  * gate test can find it).
  */
-export function Fact({ k }: { k: LegalKey }) {
+export function Fact({ k, plain = false }: { k: LegalKey; plain?: boolean }) {
   if (legalHas(k)) return <>{legalValue(k)}</>;
+  // `plain` (the footer): the same visible "[to be added]" text, bold, without the highlighted box.
   return (
-    <span data-pending="fact" className="rounded bg-accent px-1 font-semibold text-accent-foreground">
+    <span data-pending="fact" className={plain ? "font-semibold text-foreground" : "rounded bg-accent px-1 font-semibold text-accent-foreground"}>
       {legalValue(k)}
     </span>
   );
 }
 
 /** An email address from LEGAL as a mailto link, or the placeholder. */
-export function FactEmail({ k }: { k: "privacyEmail" | "contactEmail" }) {
-  if (!legalHas(k)) return <Fact k={k} />;
+export function FactEmail({ k, plain = false }: { k: "privacyEmail" | "contactEmail"; plain?: boolean }) {
+  if (!legalHas(k)) return <Fact k={k} plain={plain} />;
   // An email address has no spaces, so at large type on a 375px screen it can be wider than the line and
   // push the page sideways. It may break after the "@" (and, as a last resort, anywhere).
   const email = legalValue(k);

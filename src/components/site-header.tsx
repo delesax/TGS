@@ -29,7 +29,7 @@ export async function SiteHeader() {
       >
         Skip to main content
       </a>
-      <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-x-2 gap-y-0 px-4 py-[3px] lg:h-[68px] lg:flex-nowrap lg:gap-3 lg:py-0">
+      <div className="page-container flex flex-wrap items-center justify-between gap-x-2 gap-y-0 py-[3px] lg:h-[68px] lg:flex-nowrap lg:gap-3 lg:py-0">
         <Link href="/" className="flex min-h-[46px] max-w-full min-w-0 shrink items-center no-underline lg:min-h-10 lg:shrink-0 lg:whitespace-nowrap">
           {/* The same two-tier lockup at every width: 46px tall (about 282px wide) below lg, so it fits a 320px screen. */}
           <Image src="/brand/lockup-full.svg" alt="The Grand Strategist" width={295} height={48} priority unoptimized className="block h-[46px] w-auto max-w-full object-contain object-left lg:h-[34px] xl:h-[40px]" />
@@ -37,32 +37,32 @@ export async function SiteHeader() {
         <nav aria-label="Main" className="hidden lg:block">
           <ul className="flex items-center gap-x-0.5">
             <li>
-              <NavLink href="/" className="lg:min-h-[42px] lg:px-[9px] lg:text-[16px] lg:whitespace-nowrap">Home</NavLink>
+              <NavLink href="/" className="lg:min-h-[42px] lg:px-[7px] lg:text-[15px] lg:whitespace-nowrap xl:px-[9px] xl:text-[16px]">Home</NavLink>
             </li>
             <li>
-              <NavLink href="/campaigns" className="lg:min-h-[42px] lg:px-[9px] lg:text-[16px] lg:whitespace-nowrap">Campaigns</NavLink>
+              <NavLink href="/campaigns" className="lg:min-h-[42px] lg:px-[7px] lg:text-[15px] lg:whitespace-nowrap xl:px-[9px] xl:text-[16px]">Campaigns</NavLink>
             </li>
             <li>
-              <NavLink href="/leaderboard" className="lg:min-h-[42px] lg:px-[9px] lg:text-[16px] lg:whitespace-nowrap">Leaderboard</NavLink>
+              <NavLink href="/leaderboard" className="lg:min-h-[42px] lg:px-[7px] lg:text-[15px] lg:whitespace-nowrap xl:px-[9px] xl:text-[16px]">Leaderboard</NavLink>
             </li>
             <li>
-              <NavLink href="/dossier" className="lg:min-h-[42px] lg:px-[9px] lg:text-[16px] lg:whitespace-nowrap">Dossier</NavLink>
+              <NavLink href="/dossier" className="lg:min-h-[42px] lg:px-[7px] lg:text-[15px] lg:whitespace-nowrap xl:px-[9px] xl:text-[16px]">Dossier</NavLink>
             </li>
             {viewer ? (
               <>
                 {viewer.isAdmin ? (
                   <li>
-                    <NavLink href="/admin" className="lg:min-h-[42px] lg:px-[9px] lg:text-[16px] lg:whitespace-nowrap">Admin</NavLink>
+                    <NavLink href="/admin" className="lg:min-h-[42px] lg:px-[7px] lg:text-[15px] lg:whitespace-nowrap xl:px-[9px] xl:text-[16px]">Admin</NavLink>
                   </li>
                 ) : null}
                 <li>
-                  <NavLink href="/profile" className="lg:min-h-[42px] lg:px-[9px] lg:text-[16px] lg:whitespace-nowrap">Account</NavLink>
+                  <NavLink href="/profile" className="lg:min-h-[42px] lg:px-[7px] lg:text-[15px] lg:whitespace-nowrap xl:px-[9px] xl:text-[16px]">Account</NavLink>
                 </li>
                 <li>
                   <form action={signOut} className="flex">
                     <button
                       type="submit"
-                      className="h-[42px] whitespace-nowrap rounded-md px-[9px] text-[16px] font-semibold text-foreground underline underline-offset-4 hover:bg-muted"
+                      className="h-[42px] whitespace-nowrap rounded-md px-[7px] text-[15px] xl:px-[9px] xl:text-[16px] font-semibold text-foreground underline underline-offset-4 hover:bg-muted"
                     >
                       Sign out
                     </button>
@@ -71,7 +71,7 @@ export async function SiteHeader() {
               </>
             ) : (
               <li>
-                <NavLink href="/login" className="lg:min-h-[42px] lg:px-[9px] lg:text-[16px] lg:whitespace-nowrap">Sign in</NavLink>
+                <NavLink href="/login" className="lg:min-h-[42px] lg:px-[7px] lg:text-[15px] lg:whitespace-nowrap xl:px-[9px] xl:text-[16px]">Sign in</NavLink>
               </li>
             )}
           </ul>
@@ -139,7 +139,7 @@ export async function SiteHeader() {
           </MobileNav>
         </div>
       </div>
-      <div className="mx-auto w-full max-w-5xl px-4 pb-[4px] lg:hidden">
+      <div className="page-container pb-[4px] lg:hidden">
         <form role="search" action="/search" className="flex gap-2">
           <label htmlFor="site-search" className="sr-only">
             Search Campaigns, Dispatches and Strategists

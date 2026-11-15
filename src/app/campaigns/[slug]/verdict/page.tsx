@@ -41,7 +41,7 @@ export default async function VerdictPage({ params }: PageProps<"/campaigns/[slu
 
   if (!verdict) {
     return (
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 sm:py-12">
+      <div className="page-container flex flex-col gap-6 py-8 sm:py-12">
         <h1>Verdict: {campaign.title}</h1>
         <EmptyState
           title="The Verdict has not been published yet"
@@ -94,7 +94,7 @@ export default async function VerdictPage({ params }: PageProps<"/campaigns/[slu
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-8 sm:py-12">
+    <div className="page-container flex flex-col gap-8 py-8 sm:py-12">
       <div className="flex flex-col gap-3">
         <p className="text-sm font-semibold uppercase tracking-[0.16em] text-muted-foreground">Verdict</p>
         <h1 className="max-w-[28ch]">{campaign.title}</h1>
