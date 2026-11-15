@@ -12,6 +12,8 @@ export const PROMPTS = {
   coach: { name: "coach", version: 1 },
   judge_rubric: { name: "judge-rubric", version: 1 },
   judge_rationale: { name: "judge-rationale", version: 1 },
+  // The winner's summary (admin-approved before publication). Logged under the ai_usage feature "judge_rationale".
+  judge_summary: { name: "judge-summary", version: 1 },
 } as const;
 
 export type PromptKey = keyof typeof PROMPTS;

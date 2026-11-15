@@ -41,7 +41,7 @@ export function createAnthropicProvider(apiKey: string): AiProvider {
   return {
     name: "anthropic",
     async complete(req: ProviderRequest): Promise<ProviderResponse> {
-      if (req.task === "judge_rubric" || req.task === "judge_rationale") return judge(req);
+      if (req.task === "judge_rubric" || req.task === "judge_rationale" || req.task === "judge_summary") return judge(req);
       // Haiku answers fastest with thinking off. Other models (Sonnet for the
       // coach) do not accept "disabled", so they think adaptively at low effort.
       const isHaiku = req.model.startsWith("claude-haiku");

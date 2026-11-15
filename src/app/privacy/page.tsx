@@ -112,6 +112,9 @@ export default function PrivacyPage() {
             text.
           </li>
         </ul>
+        <p data-testid="verdict-summary-sentence">
+          For some Verdicts, an AI model drafts a short summary of the winner&apos;s own Dispatches. An admin reads and approves it before it is published, and it is labelled as AI-assisted. It does not affect scores or rankings.
+        </p>
         <p>
           We send only the text and the Campaign&apos;s question and type. We do not send your name, email address or profile. We do send your text exactly as
           you wrote it, so anything in it, such as another person&apos;s name, goes too.
