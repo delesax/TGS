@@ -190,3 +190,24 @@ test.describe("Display picker", () => {
     }
   });
 });
+
+test.describe("Display picker with the mobile menu", () => {
+  for (const width of [320, 360, 375, 414, 768]) {
+    test(`Larger text at ${width}px: header under 150px closed, Sign in visible, menu opens, no sideways scroll`, async ({ browser }) => {
+      const context = await browser.newContext({ baseURL: env.siteUrl, viewport: { width, height: 800 } });
+      await context.addInitScript((key) => window.localStorage.setItem(key, JSON.stringify({ font: "lexend", size: "larger" })), KEY);
+      const page = await context.newPage();
+      await page.goto("/");
+      await expect(html(page)).toHaveAttribute("data-size", "larger");
+      const header = (await page.getByRole("banner").boundingBox())!;
+      expect(header.height).toBeLessThan(150);
+      await expect(page.getByRole("banner").getByRole("link", { name: "Sign in" })).toBeVisible();
+      await expectNoHorizontalOverflow(page);
+      await page.getByRole("button", { name: "Menu", exact: true }).click();
+      await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Campaigns" })).toBeVisible();
+      await expectNoHorizontalOverflow(page);
+      await page.keyboard.press("Escape");
+      await context.close();
+    });
+  }
+});
