@@ -11,7 +11,8 @@ import { usePathname } from "next/navigation";
  *
  * Behaviour: a real button with aria-expanded and aria-controls; closes on a second press, on Escape (focus goes
  * back to the button), on choosing a link, on a route change and on a press outside; focus moves to the first
- * link on open. No animation, so nothing to switch off for prefers-reduced-motion. The panel is positioned
+ * link on open. The button keeps a fixed 18px size (like Sign in beside it) so the logo still fits at 320px when the
+ * Display picker's Larger text is on; the links inside the panel do scale. No animation, so nothing to switch off for prefers-reduced-motion. The panel is positioned
  * against the <header> (which is `relative`), so opening it overlays the page and never pushes content sideways.
  */
 export function MobileNav({ children }: { children: React.ReactNode }) {
@@ -53,9 +54,9 @@ export function MobileNav({ children }: { children: React.ReactNode }) {
         aria-expanded={open}
         aria-controls="mobile-menu"
         onClick={() => (open ? close(false) : setOpenAt(pathname))}
-        className="inline-flex min-h-[44px] items-center gap-1.5 rounded-md border-2 border-primary bg-background px-3 text-base font-semibold text-primary hover:bg-secondary aria-expanded:bg-secondary"
+        className="inline-flex min-h-[44px] items-center gap-[6px] rounded-md border-2 border-primary bg-background px-[12px] text-[18px] font-semibold text-primary hover:bg-secondary aria-expanded:bg-secondary"
       >
-        {open ? <X aria-hidden className="size-5" /> : <Menu aria-hidden className="size-5" />}
+        {open ? <X aria-hidden className="size-[20px]" /> : <Menu aria-hidden className="size-[20px]" />}
         Menu
       </button>
       <div

@@ -26,7 +26,7 @@ export async function SiteHeader() {
       >
         Skip to main content
       </a>
-      <div className="mx-auto flex max-w-4xl items-center justify-between gap-2 px-3 py-2 lg:max-w-6xl lg:px-4 lg:py-3">
+      <div className="mx-auto flex max-w-4xl items-center justify-between gap-2 px-[12px] py-[8px] lg:max-w-6xl lg:px-4 lg:py-3">
         <Link href="/" className="flex min-h-[44px] min-w-0 shrink items-center no-underline lg:min-h-12 lg:shrink-0 lg:whitespace-nowrap">
           {/* Stacked lockup below lg (shrinks to fit narrow phones), full two-tier lockup from lg up. Only the visible one is in the accessibility tree. */}
           <Image src="/brand/lockup-stacked.svg" alt="The Grand Strategist" width={152} height={40} priority unoptimized className="block h-[40px] w-auto max-w-full object-contain object-left lg:hidden" />
@@ -76,7 +76,7 @@ export async function SiteHeader() {
         </nav>
         <div className="flex shrink-0 items-center gap-1 lg:hidden">
           {viewer ? null : (
-            <NavLink href="/login" className="min-h-[44px] px-2 text-base">
+            <NavLink href="/login" className="min-h-[44px] px-[8px] text-[18px]">
               Sign in
             </NavLink>
           )}
