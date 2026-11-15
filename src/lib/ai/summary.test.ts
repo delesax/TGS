@@ -31,7 +31,7 @@ const dispatches = [
 
 describe("the judge-summary prompt", () => {
   it("is its own versioned file and states the rules", () => {
-    expect(promptVersion("judge_summary")).toBe("judge-summary.v1");
+    expect(promptVersion("judge_summary")).toBe("judge-summary.v2");
     const text = loadPrompt("judge_summary").text;
     for (const rule of [/Use only what is written/, /Do not invent or alter quotations/, /Do not judge, rank, praise or criticise/, /neutral tone/i, /untrusted_text/]) expect(text).toMatch(rule);
     // The rationale prompt is untouched.
@@ -78,7 +78,7 @@ describe("judgeSummaryWith", () => {
     const r = await judgeSummaryWith(deps(rec.provider), { topic: "Should libraries open on Sundays?", dispatches });
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.record.promptVersion).toBe("judge-summary.v1");
+    expect(r.record.promptVersion).toBe("judge-summary.v2");
     expect(r.record.model).toBe("claude-sonnet-5-5");
     expect(r.usage.estimatedCostUsd).toBeGreaterThan(0);
     expect(r.inputDispatchIds).toEqual(dispatches.map((d) => d.id));
@@ -119,5 +119,86 @@ describe("judgeSummaryWith", () => {
     });
     await judgeSummaryWith(d, { topic: "t", dispatches });
     expect(features).toEqual(["judge_rationale"]);
+  });
+});
+
+describe("judge-summary prompt v2 (labels, motives, whose view is whose)", () => {
+  const v2 = loadPrompt("judge_summary").text;
+  it("keeps v1 on disk unchanged and selectable, and v2 is the default", () => {
+    expect(promptVersion("judge_summary", 1)).toBe("judge-summary.v1");
+    expect(loadPrompt("judge_summary", 1).text).toMatch(/Choose the one Dispatch that best sets out their case/);
+    expect(loadPrompt("judge_summary", 1).text).not.toMatch(/WRONG/);
+    expect(loadPrompt("judge_summary").version).toBe("judge-summary.v2");
+  });
+  it("forbids labels in the summary, with a wrong and a right example", () => {
+    expect(v2).toMatch(/appear ONLY in the best_dispatch field/);
+    expect(v2).toMatch(/WRONG: "In D1 they say/);
+    expect(v2).toMatch(/RIGHT: "They say people are living longer/);
+  });
+  it("forbids inferred motives, intent and effects, with an example", () => {
+    expect(v2).toMatch(/Do not say what the participant meant, wanted, hoped, aimed or intended/);
+    expect(v2).toMatch(/aimed at easing the change/);
+  });
+  it("attributes a restated or steelmanned view to the other side", () => {
+    expect(v2).toMatch(/That restated view belongs to the OTHER side/);
+    expect(v2).toMatch(/They acknowledge the opposing view that/);
+    expect(v2).toMatch(/State the participant's own position only from what they themselves assert/);
+  });
+  it("passes each Dispatch's type with its label", async () => {
+    const rec = recording();
+    await judgeSummaryWith(deps(rec.provider), { topic: "t", dispatches });
+    expect(rec.sent[0].user).toContain("D1_kind: argument");
+    expect(rec.sent[0].user).toContain("D2_kind: rebuttal");
+  });
+});
+
+describe("summaryProblems: label leak and inferred motive", () => {
+  const ok = WORDS(100);
+  it("rejects a Dispatch label anywhere in the summary", () => {
+    expect(summaryProblems(`${ok} In D1 they say families are free.`, SOURCE).join()).toMatch(/internal label in the summary: D1/);
+    expect(summaryProblems(`${ok} D2 answers the other side.`, SOURCE).join()).toMatch(/internal label/);
+    expect(summaryProblems(`${ok} See Dispatch 3 for more.`, SOURCE).join()).toMatch(/internal label/);
+    expect(summaryProblems(`${ok} Their first Dispatch says families are free.`, SOURCE)).toEqual([]);
+  });
+  it("rejects a stated motive or intent the Dispatches do not use", () => {
+    expect(summaryProblems(`${ok} They suggest a notice period, aimed at easing the change.`, SOURCE).join()).toMatch(/inferred motive or intent: aimed at/);
+    expect(summaryProblems(`${ok} They want to protect families.`, SOURCE).join()).toMatch(/inferred motive or intent: want to/);
+    expect(summaryProblems(`${ok} The rota is designed to cut costs.`, SOURCE).join()).toMatch(/inferred motive or intent: designed to/);
+  });
+  it("allows the same words when a Dispatch itself says them", () => {
+    const source = `${SOURCE}\n\nThe rota is designed to cut costs.`;
+    expect(summaryProblems(`${ok} The rota is designed to cut costs.`, source)).toEqual([]);
+  });
+});
+
+describe("a winner who steelmans the other side (fixture)", () => {
+  // The winner's own rebuttal first restates the opposing view, then asserts their own.
+  const STEELMAN =
+    "Restating your view to check I have it right: phones distract pupils and fuel bullying, and a ban saves teachers time. That is a fair case. " +
+    "But a ban in school hours does nothing about bullying at 10pm. A pouch policy might help with the time teachers spend enforcing rules.";
+  const own = "Phones should stay in pupils' bags, not be banned outright, because pupils need them for emergencies and for homework.";
+  const SRC = `${own}\n\n${STEELMAN}`;
+  const pad = WORDS(70);
+  it("accepts a summary that attributes the restated view to the other side", () => {
+    const good = `They argue that phones should not be banned outright. They acknowledge the opposing view that phones distract pupils and fuel bullying. They answer that a ban in school hours does nothing about bullying at 10pm. ${pad}`;
+    expect(summaryProblems(good, SRC)).toEqual([]);
+  });
+  it("still applies every other check to such a summary (the validator is not loosened)", () => {
+    const bad = `They argue that phones should be banned, as D2 says, to stop bullying at 11pm. ${pad}`;
+    const problems = summaryProblems(bad, SRC).join();
+    expect(problems).toMatch(/internal label/);
+    expect(problems).toMatch(/number not in the Dispatches: 11/);
+  });
+  it("tells the model which Dispatch is a rebuttal, so the restatement can be attributed", async () => {
+    const rec = recording();
+    await judgeSummaryWith(deps(rec.provider), {
+      topic: "Should phones be banned in schools?",
+      dispatches: [
+        { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", kind: "argument", body: own },
+        { id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", kind: "rebuttal", body: STEELMAN },
+      ],
+    });
+    expect(rec.sent[0].user).toContain("D2_kind: rebuttal");
+    expect(rec.sent[0].user).toContain("Restating your view");
   });
 });

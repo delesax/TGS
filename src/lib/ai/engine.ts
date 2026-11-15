@@ -373,6 +373,8 @@ export type SummaryResult =
   | { ok: false; why: Unavailable | "no_dispatches"; record: CallRecord | null };
 
 const squash = (t: string) => t.toLowerCase().replace(/[\u2018\u2019`]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/\s+/g, " ").trim();
+/** Phrases that state what someone meant, wanted or aimed at. Allowed only when the Dispatches use the same words. */
+const MOTIVE_PHRASES = /\b(?:aimed at|aims? to|intended to|intends? to|designed to|meant to|seeks? to|hopes? to|hoping to|wants? to|wanted to|in an attempt to|so as to|motivated by|their (?:real |true )?(?:aim|goal|motive|intention|intent) (?:is|was))\b/gi;
 const numbersIn = (t: string) => [...t.matchAll(/\d+(?:[.,]\d+)*/g)].map((m) => m[0].replace(/,/g, ""));
 const urlsIn = (t: string) => [...t.matchAll(/https?:\/\/[^\s)"]+/g)].map((m) => m[0].replace(/[.,;]+$/, ""));
 
@@ -398,6 +400,13 @@ export function summaryProblems(summary: string, source: string): string[] {
   for (const u of urlsIn(summary)) if (!knownUrls.has(u)) problems.push(`address not in the Dispatches: ${u.slice(0, 40)}`);
   // No handles or mention tokens.
   if (/@\{user:|@[A-Za-z0-9_]{3,}/.test(summary)) problems.push("names a member");
+  // No internal Dispatch labels (D1, D2, "Dispatch 3"): they belong only in the best_dispatch field.
+  const label = summary.match(/\bD\s?\d+\b|\bDispatch\s+\d+\b/i);
+  if (label) problems.push(`internal label in the summary: ${label[0]}`);
+  // No stated motive or intent the Dispatches do not themselves state (detectable phrases only; the prompt does the rest).
+  for (const m of summary.matchAll(MOTIVE_PHRASES)) {
+    if (!src.includes(squash(m[0]))) problems.push(`inferred motive or intent: ${m[0]}`);
+  }
   return problems;
 }
 

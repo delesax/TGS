@@ -107,6 +107,12 @@ Checkouts and local stacks: `TGS-admin/` (project `tgs-adm`, ports 583xx, site 3
 - **Other docs still quote the old default of 1,000** (`docs/LAUNCH_RUNBOOK.md`, `docs/GO_NO_GO.md` row 7, `docs/LOAD_TEST_RESULTS.md`); not changed in this entry.
 - No hosted command run, no model call.
 
+### 2026-11-16 — Winner summary prompt v2 and real-model check (branch `feat/verdict-winning-case`)
+
+- **`prompts/judge-summary.v2.md`** (v1 untouched, selectable; default now v2, recorded as `judge-summary.v2` on every draft): no Dispatch labels or other internal labels in the summary text (wrong and right example; labels only in `best_dispatch`); no inferred motive, intent or effect; a restated or steelmanned view is attributed to the other side and the winner's position comes only from what they assert. Each Dispatch's type was already passed with its label (`D1_kind`).
+- **Validator tightened, nothing loosened:** rejects `D1`/`Dispatch 2` labels and motive phrases (aimed at, intended to, designed to, wants to and similar) unless the Dispatches use the same words. Attribution cannot be checked mechanically: it is enforced by the prompt and by the real-model check, and the admin still reads every draft. Unit tests added (label leak, inferred motive, a steelman fixture, prompt rules, kinds passed). The old tests that asserted v1 now assert v2.
+- **Real-model check** (`scripts/eval-summary.ts --real --fixtures`, `evals/judging/summary-fixtures.json`, synthetic single-author sets): three cases, all accepted first time, 124 to 153 words, no labels, quotations or handles, every claim traced to the winner's own assertions, the other side's views attributed to the other side. True total from the usage log: 3 calls, $0.0191. Earlier (v1, mixed-author gold items) one case was rejected twice for "D1/D2" labels; that is the failure v2 targets.
+
 ### 2026-11-15 — Header logo larger; larger-THE variant (test only) (branch `ui/header-logo`)
 
 - **Header lockup (approved artwork) 30 to 35% larger:** `--header-logo-h: clamp(44px, 44px + (100vw - 1024px) * 0.0192, 52px)` (about 270px wide at 1024, 319px from 1440), header row = logo + 20px. Header height before 69px (68 plus border) and after 65px at 1024, 66 at 1100, 70 at 1280, 73 at 1440 and above. Sticky, same lockup everywhere; mobile header and footer unchanged.
