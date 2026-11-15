@@ -18,7 +18,7 @@ Every line must be YES on the day, or you decide knowingly to launch without it.
 | 12 | Owner decisions D1 to D8 taken | `docs/SPRINT_7_PLAN.md`, "Decided 13 Nov" | O | Done |
 | 13 | Judge prompt version chosen (2 by default; 1 is the fall-back, Admin, Judging) | Admin, Judging | O | Real evaluation passed for v2; v2 is slightly less aligned than v1 (see plan, W7), so look at the numbers before confirming |
 | 14 | Email essentials on and the global cap set | Admin, Settings | O | Default on, cap 60 once `20261113000600` is live (it is) |
-| 15 | Launch topics are real: content note and summaries written, Bank of England decision resolved, no `DRAFT` text left on a Campaign that opens | Admin, Campaigns | O | **Open.** All 15 topics are drafts; the first opens 1 December 2026 |
+| 15 | Launch topics are real: content note and summaries written, Bank of England decision resolved, no `DRAFT` text left on a Campaign that opens | Admin, Campaigns | O | **Open.** Campaign 1 is published and scheduled (owner-reported 15 Nov, see row 21; opens 1 December 2026). The other 14 topics are still drafts as far as Claude knows (from the owner's earlier SQL Editor check), each needing its real summary and rules, and the three flagged Campaigns need your decision |
 | 16 | Legal pages reviewed and the draft banner decision taken | `docs/legal/`, `src/lib/legal.ts` | O | Parked by the owner; account deletion stays off |
 | 17 | Supabase project is active (not paused) in the week before launch | Dashboard; open the site | O | n/a until the week before |
 | 18 | You know the rollback: the previous Production deployment is noted | Vercel, Deployments | O | Do on release day |
