@@ -14,15 +14,42 @@ import { loadEnv } from "./lib/env";
 
 loadEnv();
 const real = process.argv.includes("--real");
+const debug = process.argv.includes("--debug");
 const capIdx = process.argv.indexOf("--cap-usd");
 const CAP = capIdx >= 0 ? Number(process.argv[capIdx + 1]) : 0.1;
-const titles = process.argv.slice(2).filter((a, i, all) => !a.startsWith("--") && all[i - 1] !== "--cap-usd");
+const titles = process.argv.slice(2).filter((a, i, all) => !a.startsWith("--") && all[i - 1] !== "--cap-usd" && all[i - 1] !== "--only");
 
 async function main() {
-  const deps = scriptDeps({ real });
+  const base = scriptDeps({ real });
+  const inner = base.provider;
+  // --debug prints each raw answer and the mechanical-check failures, so a rejected draft can be understood.
+  const deps = debug && inner
+    ? {
+        ...base,
+        provider: {
+          ...inner,
+          async complete(req: Parameters<typeof inner.complete>[0]) {
+            const res = await inner.complete(req);
+            console.log(`[debug] tokens in=${res.inputTokens} out=${res.outputTokens}`);
+            console.log(`[debug] raw answer: ${res.text.slice(0, 1500)}`);
+            try {
+              const parsed = JSON.parse(res.text) as { summary?: string };
+              const source = req.user.split("<untrusted_text>").slice(1).join(" ");
+              if (parsed.summary) console.log(`[debug] checks: ${JSON.stringify(summaryProblems(parsed.summary, source))}`);
+            } catch {
+              console.log("[debug] answer was not JSON");
+            }
+            return res;
+          },
+        },
+      }
+    : base;
   let spent = 0;
   for (const title of titles) {
-    const items = gold.items.filter((i) => i.campaign_title === title);
+    // --only argument keeps one side's own case (the gold set mixes both sides' items, so all three together are not one author).
+    const onlyIdx = process.argv.indexOf("--only");
+    const only = onlyIdx >= 0 ? process.argv[onlyIdx + 1] : null;
+    const items = gold.items.filter((i) => i.campaign_title === title && (!only || i.kind === only));
     if (!items.length) {
       console.log(`No gold items for "${title}"`);
       continue;
