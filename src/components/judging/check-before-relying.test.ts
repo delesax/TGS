@@ -21,7 +21,8 @@ describe("CheckBeforeRelying without v2 claims (prompt v1)", () => {
   });
 
   it("still shows the plain counts for a Dispatch with figures, but no AI claims list", () => {
-    for (const claims of [undefined, null, []] as const) {
+    const missing: (string[] | null | undefined)[] = [undefined, null, []];
+    for (const claims of missing) {
       const out = html({ body: WITH_FIGURES, claims });
       expect(out).toContain("Check before relying");
       expect(out).toContain("The AI cannot check any source");
