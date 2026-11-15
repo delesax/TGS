@@ -50,7 +50,7 @@ test.describe("Site header", () => {
   }
 
   for (const width of [1080, 1280, 1440, 1920]) {
-    test(`at ${width}px the links stay on one row and the search box sits directly below`, async ({ browser }) => {
+    test(`at ${width}px the header is one slim sticky row: seven links on one line, search within reach`, async ({ browser }) => {
       const page = await signedInAt(browser, width, 900);
       const nav = page.getByRole("navigation", { name: "Main" });
       const items = nav.locator("a, button");
@@ -60,12 +60,15 @@ test.describe("Site header", () => {
       for (let i = 0; i < 7; i++) tops.push(Math.round((await items.nth(i).boundingBox())!.y));
       expect(Math.max(...tops) - Math.min(...tops), `link tops ${tops.join(", ")}`).toBeLessThanOrEqual(2);
 
-      const signOut = (await nav.getByRole("button", { name: "Sign out" }).boundingBox())!;
-      const search = (await page.getByRole("searchbox", { name: /Search Campaigns/ }).boundingBox())!;
-      expect(search.y).toBeGreaterThanOrEqual(signOut.y + signOut.height);
-      // One 48px row of links plus the search box: well under two link rows' worth of extra height.
+      // One slim row (64 to 72px) that stays in view; the search is in the same row.
       const header = (await page.getByRole("banner").boundingBox())!;
-      expect(header.height).toBeLessThan(150);
+      expect(header.height).toBeLessThanOrEqual(72);
+      expect(header.height).toBeGreaterThanOrEqual(60);
+      expect(await page.getByRole("banner").evaluate((el) => getComputedStyle(el).position)).toBe("sticky");
+      const search = width >= 1280 ? page.getByRole("searchbox", { name: /Search Campaigns/ }) : page.getByRole("banner").getByRole("link", { name: "Search", exact: true });
+      const box = (await search.boundingBox())!;
+      expect(box.y).toBeGreaterThanOrEqual(header.y);
+      expect(box.y + box.height).toBeLessThanOrEqual(header.y + header.height);
       await expectNoHorizontalOverflow(page);
       await page.context().close();
     });

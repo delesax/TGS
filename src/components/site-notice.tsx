@@ -7,7 +7,7 @@ export async function SiteNotice() {
   if (!lines.length) return null;
   return (
     <div role="status" className="border-b-2 border-primary bg-secondary">
-      <div className="mx-auto flex max-w-4xl flex-col gap-1 px-4 py-3 text-lg lg:max-w-6xl">
+      <div className="mx-auto flex max-w-5xl flex-col gap-1 px-4 py-3 text-lg lg:max-w-5xl">
         {lines.map((l) => (
           <p key={l}>{l}</p>
         ))}

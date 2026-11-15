@@ -14,9 +14,9 @@ export function Page({
   children?: React.ReactNode;
 }) {
   return (
-    <div className={cn("mx-auto w-full px-4 py-8 sm:py-12", narrow ? "max-w-xl" : "max-w-4xl")}>
-      <h1 className="text-3xl font-bold sm:text-4xl">{title}</h1>
-      {intro ? <div className="mt-3 text-xl text-muted-foreground">{intro}</div> : null}
+    <div className={cn("mx-auto w-full px-4 py-8 sm:py-12", narrow ? "max-w-xl" : "max-w-5xl")}>
+      <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h1>
+      {intro ? <div className="mt-3 max-w-[65ch] text-lg text-muted-foreground">{intro}</div> : null}
       <div className="mt-8 flex flex-col gap-6">{children}</div>
     </div>
   );
@@ -25,9 +25,9 @@ export function Page({
 /** Shown when a list has nothing in it yet: say why, and what to do next. */
 export function EmptyState({ title, children, action }: { title: string; children: React.ReactNode; action?: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-start gap-3 rounded-xl border-2 border-dashed border-border bg-muted p-6">
-      <h2 className="text-2xl font-semibold">{title}</h2>
-      <div className="text-lg text-muted-foreground">{children}</div>
+    <div className="flex flex-col items-start gap-2 rounded-[12px] bg-muted/70 px-5 py-4">
+      <h3 className="text-lg font-semibold">{title}</h3>
+      <div className="max-w-[65ch] text-base text-muted-foreground">{children}</div>
       {action}
     </div>
   );

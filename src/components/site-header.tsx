@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Search } from "lucide-react";
 import { getViewer } from "@/lib/auth";
 import { signOut } from "@/app/(auth)/actions";
+import { HeaderSearch } from "@/components/header-search";
 import { MobileNav } from "@/components/mobile-nav";
 import { NavLink } from "@/components/nav-link";
 
@@ -19,47 +20,47 @@ export async function SiteHeader() {
   const viewer = await getViewer();
 
   return (
-    <header className="relative border-b border-border bg-background">
+    <header className="relative z-40 border-b border-hairline bg-background/85 backdrop-blur-md lg:sticky lg:top-0">
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-md focus:bg-primary focus:px-4 focus:py-3 focus:text-primary-foreground"
       >
         Skip to main content
       </a>
-      <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-x-2 gap-y-0 px-[12px] py-[3px] lg:max-w-6xl lg:flex-nowrap lg:gap-2 lg:px-4 lg:py-3">
-        <Link href="/" className="flex min-h-[46px] max-w-full min-w-0 shrink items-center no-underline lg:min-h-12 lg:shrink-0 lg:whitespace-nowrap">
+      <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-x-2 gap-y-0 px-4 py-[3px] lg:h-[68px] lg:flex-nowrap lg:gap-3 lg:py-0">
+        <Link href="/" className="flex min-h-[46px] max-w-full min-w-0 shrink items-center no-underline lg:min-h-10 lg:shrink-0 lg:whitespace-nowrap">
           {/* The same two-tier lockup at every width: 46px tall (about 282px wide) below lg, so it fits a 320px screen. */}
-          <Image src="/brand/lockup-full.svg" alt="The Grand Strategist" width={295} height={48} priority unoptimized className="block h-[46px] w-auto max-w-full object-contain object-left lg:h-[34px] xl:h-[54px]" />
+          <Image src="/brand/lockup-full.svg" alt="The Grand Strategist" width={295} height={48} priority unoptimized className="block h-[46px] w-auto max-w-full object-contain object-left lg:h-[34px] xl:h-[40px]" />
         </Link>
         <nav aria-label="Main" className="hidden lg:block">
-          <ul className="-mx-2 flex flex-wrap items-center gap-x-1 gap-y-1">
+          <ul className="flex items-center gap-x-0.5">
             <li>
-              <NavLink href="/">Home</NavLink>
+              <NavLink href="/" className="lg:min-h-10 lg:px-2.5 lg:text-base">Home</NavLink>
             </li>
             <li>
-              <NavLink href="/campaigns">Campaigns</NavLink>
+              <NavLink href="/campaigns" className="lg:min-h-10 lg:px-2.5 lg:text-base">Campaigns</NavLink>
             </li>
             <li>
-              <NavLink href="/leaderboard">Leaderboard</NavLink>
+              <NavLink href="/leaderboard" className="lg:min-h-10 lg:px-2.5 lg:text-base">Leaderboard</NavLink>
             </li>
             <li>
-              <NavLink href="/dossier">Dossier</NavLink>
+              <NavLink href="/dossier" className="lg:min-h-10 lg:px-2.5 lg:text-base">Dossier</NavLink>
             </li>
             {viewer ? (
               <>
                 {viewer.isAdmin ? (
                   <li>
-                    <NavLink href="/admin">Admin</NavLink>
+                    <NavLink href="/admin" className="lg:min-h-10 lg:px-2.5 lg:text-base">Admin</NavLink>
                   </li>
                 ) : null}
                 <li>
-                  <NavLink href="/profile">Account</NavLink>
+                  <NavLink href="/profile" className="lg:min-h-10 lg:px-2.5 lg:text-base">Account</NavLink>
                 </li>
                 <li>
-                  <form action={signOut}>
+                  <form action={signOut} className="flex">
                     <button
                       type="submit"
-                      className="min-h-12 rounded-md px-3 text-lg font-semibold text-foreground underline underline-offset-4 hover:bg-muted"
+                      className="h-10 rounded-md px-2.5 text-base font-semibold text-foreground underline underline-offset-4 hover:bg-muted"
                     >
                       Sign out
                     </button>
@@ -68,11 +69,22 @@ export async function SiteHeader() {
               </>
             ) : (
               <li>
-                <NavLink href="/login">Sign in</NavLink>
+                <NavLink href="/login" className="lg:min-h-10 lg:px-2.5 lg:text-base">Sign in</NavLink>
               </li>
             )}
           </ul>
         </nav>
+        <div className="hidden items-center gap-1 lg:flex">
+          <Link
+            href="/search"
+            aria-label="Search"
+            title="Search"
+            className="grid size-10 place-items-center rounded-[10px] text-foreground transition-colors duration-200 hover:bg-muted motion-reduce:transition-none xl:hidden"
+          >
+            <Search aria-hidden className="size-5" />
+          </Link>
+          <HeaderSearch />
+        </div>
         <div className="ml-auto flex shrink-0 items-center gap-1 lg:hidden">
           {viewer ? null : (
             <NavLink href="/login" className="min-h-[44px] shrink-0 px-[8px] text-[18px] lg:hidden">
@@ -121,8 +133,8 @@ export async function SiteHeader() {
           </MobileNav>
         </div>
       </div>
-      <div className="mx-auto max-w-4xl px-[12px] pb-[4px] lg:max-w-6xl lg:px-4 lg:pb-3">
-        <form role="search" action="/search" className="flex gap-2 lg:max-w-4xl">
+      <div className="mx-auto w-full max-w-5xl px-4 pb-[4px] lg:hidden">
+        <form role="search" action="/search" className="flex gap-2">
           <label htmlFor="site-search" className="sr-only">
             Search Campaigns, Dispatches and Strategists
           </label>
