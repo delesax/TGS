@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button";
 import { getViewer } from "@/lib/auth";
 import { getCampaign, getServerNow } from "@/lib/campaign-data";
 import { formatUkDateTime } from "@/lib/campaigns";
-import { getHandles, getJudgingWindow, getLiveVerdict } from "@/lib/judging/data";
+import { getHandles, getJudgingWindow, getLiveVerdict, getWinningCase } from "@/lib/judging/data";
 import { AI_ASSISTED_RATIONALE_NOTICE, AI_JUDGING_NOTICE, APPEAL_NOTICE } from "@/lib/judging/notices";
 import { referencedUsers } from "@/lib/judging/rationale";
 import { createClient } from "@/lib/supabase/server";
+import { WinningCaseSection } from "@/components/judging/winning-case";
 import { AppealForm } from "./appeal-form";
 
 export const dynamic = "force-dynamic";
@@ -74,6 +75,8 @@ export default async function VerdictPage({ params }: PageProps<"/campaigns/[slu
     ...verdict.proposed_awards.map((a) => a.profile_id),
     ...referencedUsers(verdict.rationale, ...verdict.proposed_awards.map((a) => a.rationale)),
   ]);
+  const winningCase = await getWinningCase(verdict.id);
+  const publicAwards = verdict.proposed_awards.filter((a) => a.category !== "grand_strategist"); // the Grand Strategist card above already says it
   const winner = verdict.component_scores.find((s) => s.user_id === verdict.winner_id);
   const runnersUp = verdict.component_scores
     .filter((c) => c.user_id !== verdict.winner_id && c.final !== null && c.final !== undefined)
@@ -150,7 +153,7 @@ export default async function VerdictPage({ params }: PageProps<"/campaigns/[slu
         </div>
       </section>
 
-      {/* Slot: the public "The winning case" section (feat/verdict-winning-case-public) goes here, directly under the Grand Strategist card and before "Why". */}
+      <WinningCaseSection winningCase={winningCase} campaignSlug={campaign.slug} />
 
       <section aria-labelledby="rationale-h" className="flex flex-col gap-3">
         <h2 id="rationale-h">
@@ -164,12 +167,12 @@ export default async function VerdictPage({ params }: PageProps<"/campaigns/[slu
         ) : null}
       </section>
 
-      <section aria-labelledby="awards-h" className="flex flex-col gap-3">
-        <h2 id="awards-h">
-          Awards
-        </h2>
-        <AwardList awards={verdict.proposed_awards} handles={handles} campaignSlug={campaign.slug} />
-      </section>
+      {publicAwards.length ? (
+        <section aria-labelledby="awards-h" className="flex flex-col gap-3">
+          <h2 id="awards-h">Awards</h2>
+          <AwardList awards={publicAwards} handles={handles} campaignSlug={campaign.slug} />
+        </section>
+      ) : null}
 
       <section aria-labelledby="breakdown-h" className="flex flex-col gap-3">
         <h2 id="breakdown-h">

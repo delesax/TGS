@@ -81,6 +81,7 @@ async function signIn(page: Page, email: string) {
 }
 
 test.afterAll(async () => {
+  if (process.env.KEEP_TEST_DATA) return; // leave the published Verdict in the local database for visual checks
   await service.from("community_settings").update({ ai_enabled: true }).eq("id", true);
   await service.from("awards").delete().in("campaign_id", campaignIds);
   await service.from("dispatches").delete().in("campaign_id", campaignIds);
@@ -146,6 +147,27 @@ test("an admin drafts on demand, edits and approves, publishes, and can remove i
   expect(published.winner_summary).toContain("working families");
   expect(published.winner_summary_ai_assisted).toBe(true);
 
+  // The public Verdict page: "The winning case" sits directly under the Grand Strategist card and before "Why".
+  const slug = (await service.from("campaigns").select("slug").eq("id", campaignId).single()).data!.slug as string;
+  const pub = await browser.newContext({ baseURL: env.siteUrl, viewport: { width: 375, height: 812 } });
+  const pubPage = await pub.newPage();
+  await pubPage.goto(`/campaigns/${slug}/verdict`);
+  const section = pubPage.getByTestId("winning-case");
+  await expect(section).toBeVisible();
+  await expect(section).toContainText("working families");
+  await expect(pubPage.getByTestId("winning-case-label")).toHaveText("Summary drafted by AI from the winner's Dispatches and reviewed by an admin.");
+  await expect(section.getByRole("link", { name: "Read the Dispatch" })).toHaveAttribute("href", new RegExp(`/campaigns/${slug}#dispatch-`));
+  const order = await pubPage.evaluate(() => {
+    const ids = ["winner-h", "winning-case-h", "rationale-h"].map((id) => document.getElementById(id)?.getBoundingClientRect().top ?? -1);
+    return ids[0] >= 0 && ids[0] < ids[1] && ids[1] < ids[2];
+  });
+  expect(order).toBe(true);
+  // The Grand Strategist card is not repeated in the public Awards list.
+  const awards = pubPage.locator("section[aria-labelledby='awards-h']");
+  if (await awards.count()) await expect(awards.getByText("Grand Strategist", { exact: true })).toHaveCount(0);
+  await expectNoHorizontalOverflow(pubPage);
+  await pub.close();
+
   // After publication there is no approve or draft form, but removal is still possible, with a reason.
   await page.goto(`/admin/judging/${campaignId}`);
   await expect(page.getByRole("button", { name: "Approve this summary" })).toHaveCount(0);
@@ -192,5 +214,9 @@ test("a Verdict published without an approved summary shows none, and AI off or 
   await expect(page.getByText(/Published\. Awards are issued/)).toBeVisible();
   const row = (await service.from("verdicts").select("status, winner_summary").eq("id", verdictId).single()).data!;
   expect(row).toEqual({ status: "published", winner_summary: null });
+  const slug2 = (await service.from("campaigns").select("slug").eq("id", campaignId).single()).data!.slug as string;
+  await page.goto(`/campaigns/${slug2}/verdict`);
+  await expect(page.getByRole("heading", { name: "Grand Strategist" }).first()).toBeVisible();
+  await expect(page.getByTestId("winning-case")).toHaveCount(0); // no summary, nothing rendered
   await context.close();
 });
