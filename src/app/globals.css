@@ -174,9 +174,14 @@ html[data-font="lora"] {
   h3 {
     @apply font-serif font-semibold tracking-tight text-foreground;
     text-wrap: balance;
+    overflow-wrap: anywhere; /* a long handle or word wraps instead of pushing the page sideways at large sizes */
   }
   a {
     @apply underline-offset-4;
+  }
+  dt,
+  dd {
+    overflow-wrap: anywhere;
   }
   :focus-visible {
     outline: 3px solid var(--ring);

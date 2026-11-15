@@ -128,7 +128,7 @@ export function DisplayDialog() {
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-base font-semibold">Text size</legend>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {SIZE_OPTIONS.map((size) => (
+            {[...SIZE_OPTIONS].sort((a, b) => a.px - b.px).map((size) => (
               <label key={size.id} className={`${radioCard} items-center`}>
                 <input
                   type="radio"
