@@ -68,7 +68,7 @@ Nothing below has been done by Claude. Tick them off in order; none needs a code
 - Announce nothing.
 
 ### Launch day (T)
-1. Create the first 10 to 20 invites (`npm run invite:create`, or Admin). Prefer binding an invite to an email address where you know it (decision D3b).
+1. Create the first 10 to 20 invites (`npm run invite:create`, or Admin). Prefer binding an invite to an email address where you know it (decision D3b). **The script's sign-up link uses the local site address, so do not send it as printed:** send `https://thegrandstrategist.com/signup?code=<printed code>`.
 2. For the first two hours look every 15 minutes at: Admin, Health; Admin, Signals; `/admin/audit`; the Supabase and Vercel dashboards for errors.
 3. Email: if the day's app email is over 80% of the Resend figure, flip emails off (Admin, Settings, switches). They stay queued and send on resume.
 4. AI: if calls used pass 80% of the daily cap before evening, tell members judging will be slower. Judging stops at 80% by design and resumes the next UK day.
