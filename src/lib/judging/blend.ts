@@ -184,6 +184,11 @@ export function movement(before: Position | null, after: Position | null): numbe
   return before === "undecided" || after === "undecided" ? 0.5 : 1;
 }
 
+/** True when the 100 cap took something off: blended plus the steelman bonus would have been above 100. */
+export function bonusCapped(s: { blended: number | null | undefined; steelman_bonus: number }): boolean {
+  return typeof s.blended === "number" && Math.round((s.blended + s.steelman_bonus) * 100) / 100 > 100;
+}
+
 /** The steelman bonus for a Strategist, capped. */
 export function steelmanBonus(qualifying: number, settings: Pick<JudgingSettings, "steelman_bonus_max" | "steelman_bonus_per_dispatch">): number {
   return round2(Math.min(Math.min(settings.steelman_bonus_max, 5), qualifying * settings.steelman_bonus_per_dispatch));

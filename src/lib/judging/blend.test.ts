@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { blend, compareStrategists, criteriaToScore, median, movement, steelmanBonus, voterWeights, type Criteria, type JudgingInputs, type StrategistScore, type Weights } from "./blend";
+import { blend, bonusCapped, compareStrategists, criteriaToScore, median, movement, steelmanBonus, voterWeights, type Criteria, type JudgingInputs, type StrategistScore, type Weights } from "./blend";
 import { chooseWeights } from "./compute";
 import { referencedUsers, renderRationale, templateRationale } from "./rationale";
 
@@ -306,6 +306,26 @@ describe("steelman bonus", () => {
     expect(blended_plus_bonus(b)).toBeGreaterThan(100); // without the cap B would have beaten A
     expect(a.final).toBe(100);
     expect(b.final).toBe(100);
+  });
+
+  it("says so plainly when the cap took something off, and keeps the old wording when it did not", () => {
+    const aiTop = inputs().ai.map((a) => (a.dispatch_id === "da" ? { ...a, ...c(5), steelman_detected: true, steelman_confidence: 0.9 } : a));
+    const confirmed = [
+      { dispatch_id: "da", user_id: B },
+      { dispatch_id: "da", user_id: C },
+    ];
+    const capped = blend(inputs({ ai: aiTop, steelman: confirmed }), DEFAULT_WEIGHTS);
+    expect(bonusCapped(capped.strategists.find((s) => s.user_id === A)!)).toBe(true);
+    const text = templateRationale(capped, "T");
+    expect(text).toContain("with a final score of 100 out of 100 (scores are capped at 100; a steelman bonus of 2.5 was earned).");
+    expect(text).not.toContain("including a steelman bonus");
+
+    // A's blended is 93.75, so a 2.5 bonus stays under 100 and nothing is capped.
+    const ai = inputs().ai.map((a) => (a.dispatch_id === "da" ? { ...a, steelman_detected: true, steelman_confidence: 0.9 } : a));
+    const plain = blend(inputs({ ai, steelman: confirmed }), DEFAULT_WEIGHTS);
+    expect(bonusCapped(plain.strategists.find((s) => s.user_id === A)!)).toBe(false);
+    expect(templateRationale(plain, "T")).toContain("with a final score of 96.3 out of 100, including a steelman bonus of 2.5.");
+    expect(bonusCapped({ blended: null, steelman_bonus: 2.5 })).toBe(false);
   });
 
   it("cannot be self-awarded: the author's own confirmation does not count", () => {
