@@ -62,8 +62,8 @@ export function ContentGate({ campaignId, note, children }: { campaignId: string
 
   if (open || seen) return <>{children}</>;
   return (
-    <section aria-label="Content note before the Dispatches" className="flex flex-col gap-3 rounded-xl border-2 border-accent-foreground bg-accent p-5 text-accent-foreground">
-      <h3 className="text-xl font-bold">Content note</h3>
+    <section aria-label="Content note before the Dispatches" className="flex flex-col gap-3 rounded-xl border border-accent-foreground/50 bg-accent p-5 text-accent-foreground">
+      <h3>Content note</h3>
       <p className="whitespace-pre-line text-lg">{note}</p>
       <p className="text-lg">The Dispatches below may discuss this. You can stop reading at any time.</p>
       <Button

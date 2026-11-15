@@ -4,15 +4,15 @@ import { BLEND_PARTS, RUBRIC_CRITERIA, type PublishedRubric } from "@/lib/judgin
 /** How a Campaign is judged. Shown on the public Campaign page once an admin has published the rubric. */
 export function CampaignRubric({ rubric }: { rubric: PublishedRubric }) {
   return (
-    <section aria-labelledby="rubric-h" className="flex flex-col gap-4 rounded-xl border-2 border-border p-5">
+    <section aria-labelledby="rubric-h" className="flex flex-col gap-4 rounded-xl border border-hairline p-5">
       <div className="flex flex-col gap-1">
-        <h2 id="rubric-h" className="text-2xl font-bold">
+        <h2 id="rubric-h">
           How this Campaign is judged
         </h2>
         <p className="text-base text-muted-foreground">Published {formatUkDateTime(rubric.publishedAt)}, before the Campaign opens. The criteria and weights do not change once the Campaign is running.</p>
       </div>
       <div className="flex flex-col gap-2">
-        <h3 className="text-xl font-semibold">The four criteria (each scored 1 to 5)</h3>
+        <h3>The four criteria (each scored 1 to 5)</h3>
         <ul className="flex flex-col gap-2 text-lg">
           {RUBRIC_CRITERIA.map((c) => (
             <li key={c.key}>
@@ -27,7 +27,7 @@ export function CampaignRubric({ rubric }: { rubric: PublishedRubric }) {
         ) : null}
       </div>
       <div className="flex flex-col gap-2">
-        <h3 className="text-xl font-semibold">How the Verdict is put together</h3>
+        <h3>How the Verdict is put together</h3>
         <ul className="flex flex-col gap-2 text-lg">
           {BLEND_PARTS.map((p) => (
             <li key={p.key}>

@@ -113,8 +113,8 @@ export default async function ProfilePage() {
           <Button asChild variant="outline" className="self-start">
             <Link href="/privacy/contact">Contact us about your data</Link>
           </Button>
-          <div className="flex flex-col gap-2 rounded-lg border-2 border-dashed border-border p-4">
-            <h3 className="text-xl font-semibold">Deleting your account</h3>
+          <div className="flex flex-col gap-2 rounded-lg border border-hairline p-4">
+            <h3>Deleting your account</h3>
             <p className="text-lg">See exactly what is removed and what stays, then decide.</p>
             <Button asChild variant="outline" className="self-start">
               <Link href="/profile/delete">Delete my account</Link>

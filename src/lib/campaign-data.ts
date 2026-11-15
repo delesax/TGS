@@ -1,4 +1,5 @@
 import "server-only";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { PublishedRubric } from "@/lib/judging/rubric";
 import type { CampaignRound, Category, Format, PositionChoice, Status } from "@/lib/campaigns";
@@ -95,4 +96,20 @@ export async function getPublishedRubric(c: Pick<Campaign, "rubric_published_at"
     weights: (w as PublishedRubric["weights"]) ?? null,
     steelmanBonusMax: s ? Number(s.steelman_bonus_max) : null,
   };
+}
+
+/**
+ * The ids, among `ids`, of Campaigns that carry an owner-decision flag. Read on the server with the service client and
+ * returns only ids, never the note text, so the home page can leave flagged Campaigns out of its "Next Campaign" card.
+ * Returns null when it cannot be checked; callers must then fail closed (show nothing rather than risk a flagged one).
+ */
+export async function getOwnerDecisionIds(ids: string[]): Promise<Set<string> | null> {
+  if (!ids.length) return new Set();
+  try {
+    const { data, error } = await createAdminClient().from("campaigns").select("id, needs_owner_decision").in("id", ids);
+    if (error || !data) return null;
+    return new Set(data.filter((r) => typeof r.needs_owner_decision === "string" && r.needs_owner_decision.trim() !== "").map((r) => r.id as string));
+  } catch {
+    return null;
+  }
 }

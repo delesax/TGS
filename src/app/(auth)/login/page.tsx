@@ -21,12 +21,12 @@ export default async function SignInPage({ searchParams }: PageProps<"/login">) 
   return (
     <Page narrow title="Sign in" intro="Welcome back. Sign in with your email and password, or with a passkey.">
       {typeof error === "string" && CONFIRM_ERRORS[error] ? (
-        <p role="alert" className="rounded-lg border-2 border-destructive bg-[#fef3f2] p-4 text-lg text-destructive">
+        <p role="alert" className="rounded-lg border border-destructive bg-destructive-soft p-4 text-lg text-destructive">
           {CONFIRM_ERRORS[error]}
         </p>
       ) : null}
       {reset === "success" ? (
-        <p role="status" className="rounded-lg border-2 border-primary bg-secondary p-4 text-lg">
+        <p role="status" className="rounded-lg border border-primary/60 bg-secondary p-4 text-lg">
           Your password has been changed. Sign in with your new password.
         </p>
       ) : null}

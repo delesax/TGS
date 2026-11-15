@@ -28,7 +28,7 @@ export default async function OnboardingPage() {
       intro="Your handle is the name other Strategists see next to your Dispatches. You cannot change it later, so choose carefully."
     >
       {waiting?.details.handle ? (
-        <p role="status" className="rounded-lg border-2 border-border bg-muted p-4 text-lg">
+        <p role="status" className="rounded-lg border border-hairline bg-muted p-4 text-lg">
           <strong>A person is checking @{waiting.details.handle}.</strong> If it is approved, it becomes your handle and this page takes you to your
           Dossier. You can also choose a different handle below now.
         </p>

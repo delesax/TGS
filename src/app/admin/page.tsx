@@ -39,35 +39,35 @@ export default async function AdminHome() {
       <AdminNav current="/admin" />
 
       {s && !s.ai_enabled ? (
-        <p role="alert" className="rounded-lg border-2 border-destructive p-4 text-lg font-semibold text-destructive">
+        <p role="alert" className="rounded-lg border border-destructive p-4 text-base font-semibold text-destructive">
           AI features are switched off. Dispatches follow the fallback rule in Settings and appear in Moderation for a human look.
         </p>
       ) : null}
 
-      <section aria-labelledby="queue-h" className="flex flex-col gap-2 rounded-xl border-2 border-border p-4">
-        <h2 id="queue-h" className="text-2xl font-bold">
+      <section aria-labelledby="queue-h" className="flex flex-col gap-2 rounded-xl border border-hairline p-4">
+        <h2 id="queue-h">
           Moderation
         </h2>
-        <p className="text-lg">
+        <p className="text-base">
           {items.length} Dispatch{items.length === 1 ? "" : "es"} and {handles.length} handle{handles.length === 1 ? "" : "s"} waiting for a person.
         </p>
-        <Link href="/admin/moderation" className="inline-flex min-h-12 items-center text-lg font-semibold text-primary underline">
+        <Link href="/admin/moderation" className="inline-flex min-h-12 items-center text-base font-semibold text-primary underline">
           Open the queue
         </Link>
       </section>
 
-      <section aria-labelledby="spend-h" className="flex flex-col gap-3 rounded-xl border-2 border-border p-4">
-        <h2 id="spend-h" className="text-2xl font-bold">
+      <section aria-labelledby="spend-h" className="flex flex-col gap-3 rounded-xl border border-hairline p-4">
+        <h2 id="spend-h">
           AI spend
         </h2>
-        <p className="text-lg">
+        <p className="text-base">
           Today: {callsToday.toLocaleString("en-GB")} of {s?.ai_daily_cap_global.toLocaleString("en-GB") ?? "?"} calls, about ${cost(today).toFixed(2)}. Last 14 days: about $
           {cost(usage).toFixed(2)}. Estimates from token counts and list prices.
         </p>
         {usage.length ? (
           <ul className="flex flex-col gap-2" aria-label="AI calls and tokens per feature per day">
             {usage.map((u) => (
-              <li key={`${u.day}-${u.feature}`} className="rounded-lg border border-border p-3 text-base">
+              <li key={`${u.day}-${u.feature}`} className="rounded-[10px] border border-hairline p-3 text-base">
                 <p className="font-semibold">
                   {u.day} · {FEATURE_LABELS[u.feature] ?? u.feature}
                 </p>
@@ -79,22 +79,22 @@ export default async function AdminHome() {
             ))}
           </ul>
         ) : (
-          <p className="text-lg text-muted-foreground">No AI calls in the last 14 days.</p>
+          <p className="text-base text-muted-foreground">No AI calls in the last 14 days.</p>
         )}
       </section>
 
-      <section aria-labelledby="coach-h" className="flex flex-col gap-2 rounded-xl border-2 border-border p-4">
-        <h2 id="coach-h" className="text-2xl font-bold">
+      <section aria-labelledby="coach-h" className="flex flex-col gap-2 rounded-xl border border-hairline p-4">
+        <h2 id="coach-h">
           Coach usefulness
         </h2>
-        <p className="text-lg">
+        <p className="text-base">
           {coach.rated
             ? `${Math.round((coach.helpful / coach.rated) * 100)}% found it useful (${coach.helpful} of ${coach.rated} ratings).`
             : "No ratings yet."}{" "}
           {coach.unrated} piece{coach.unrated === 1 ? "" : "s"} of feedback not rated.
         </p>
         {coach.comments.length ? (
-          <ul className="flex flex-col gap-1 text-lg">
+          <ul className="flex flex-col gap-1 text-base">
             {coach.comments.map((c) => (
               <li key={c.rated_at}>
                 {c.helpful ? "Useful" : "Not useful"}: “{c.comment}”

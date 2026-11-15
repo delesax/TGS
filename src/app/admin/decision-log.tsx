@@ -40,9 +40,9 @@ export function DecisionLogProvider({ children }: { children: React.ReactNode })
         <section
           aria-label="Decisions you just made"
           role="status"
-          className="sticky top-2 z-10 flex max-h-56 flex-col gap-2 overflow-y-auto rounded-xl border-2 border-success bg-background p-3 shadow-lg"
+          className="sticky top-2 z-10 flex max-h-56 flex-col gap-2 overflow-y-auto rounded-xl border border-success bg-background p-3 shadow-lg"
         >
-          <h2 className="text-xl font-bold">Just decided ({decisions.length})</h2>
+          <h2>Just decided ({decisions.length})</h2>
           <ul className="flex flex-col gap-2">
             {decisions.map((d) => (
               <li key={d.id} className="flex items-start justify-between gap-2 rounded-lg bg-success/10 p-2 text-base">

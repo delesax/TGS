@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
 import { expect, test, type Browser, type Page } from "@playwright/test";
 import { loadTestEnv } from "../test-env";
-import { expectNoHorizontalOverflow } from "./helpers";
+import { expectNoHorizontalOverflow, openMenu } from "./helpers";
 
 // Sprint 3 core journey at 375px: post, reply, react, follow, search, email,
 // and the offline page. Two Strategists in separate browsers.
@@ -179,7 +179,7 @@ test("two Strategists post, reply, react, follow, search and get an email", asyn
   await expect(b.getByRole("button", { name: `Following @${ada.handle}. Unfollow` })).toBeVisible();
   await expectNoHorizontalOverflow(b);
 
-  await b.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Dossier" }).click();
+  await (await openMenu(b)).getByRole("link", { name: "Dossier" }).click();
   const following = b.getByRole("region", { name: "Following" });
   await expect(following.getByRole("link", { name: `@${ada.handle}` })).toBeVisible();
   await expect(following.getByRole("link", { name: "Should libraries open on Sundays?" })).toBeVisible();

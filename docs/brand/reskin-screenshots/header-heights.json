@@ -1,0 +1,218 @@
+[
+ {
+  "name": "home",
+  "scheme": "light",
+  "width": 375,
+  "headerH": 271
+ },
+ {
+  "name": "signin",
+  "scheme": "light",
+  "width": 375,
+  "headerH": 271
+ },
+ {
+  "name": "signup",
+  "scheme": "light",
+  "width": 375,
+  "headerH": 271
+ },
+ {
+  "name": "campaign-anon",
+  "scheme": "light",
+  "width": 375,
+  "headerH": 271
+ },
+ {
+  "name": "campaign-composer",
+  "scheme": "light",
+  "width": 375,
+  "headerH": 330
+ },
+ {
+  "name": "dossier",
+  "scheme": "light",
+  "width": 375,
+  "headerH": 330
+ },
+ {
+  "name": "admin",
+  "scheme": "light",
+  "width": 375,
+  "headerH": 330
+ },
+ {
+  "name": "admin-campaigns",
+  "scheme": "light",
+  "width": 375,
+  "headerH": 330
+ },
+ {
+  "name": "admin-settings",
+  "scheme": "light",
+  "width": 375,
+  "headerH": 330
+ },
+ {
+  "name": "home",
+  "scheme": "light",
+  "width": 1280,
+  "headerH": 150
+ },
+ {
+  "name": "signin",
+  "scheme": "light",
+  "width": 1280,
+  "headerH": 150
+ },
+ {
+  "name": "signup",
+  "scheme": "light",
+  "width": 1280,
+  "headerH": 150
+ },
+ {
+  "name": "campaign-anon",
+  "scheme": "light",
+  "width": 1280,
+  "headerH": 150
+ },
+ {
+  "name": "campaign-composer",
+  "scheme": "light",
+  "width": 1280,
+  "headerH": 150
+ },
+ {
+  "name": "dossier",
+  "scheme": "light",
+  "width": 1280,
+  "headerH": 150
+ },
+ {
+  "name": "admin",
+  "scheme": "light",
+  "width": 1280,
+  "headerH": 150
+ },
+ {
+  "name": "admin-campaigns",
+  "scheme": "light",
+  "width": 1280,
+  "headerH": 150
+ },
+ {
+  "name": "admin-settings",
+  "scheme": "light",
+  "width": 1280,
+  "headerH": 150
+ },
+ {
+  "name": "home",
+  "scheme": "dark",
+  "width": 375,
+  "headerH": 271
+ },
+ {
+  "name": "signin",
+  "scheme": "dark",
+  "width": 375,
+  "headerH": 271
+ },
+ {
+  "name": "signup",
+  "scheme": "dark",
+  "width": 375,
+  "headerH": 271
+ },
+ {
+  "name": "campaign-anon",
+  "scheme": "dark",
+  "width": 375,
+  "headerH": 271
+ },
+ {
+  "name": "campaign-composer",
+  "scheme": "dark",
+  "width": 375,
+  "headerH": 330
+ },
+ {
+  "name": "dossier",
+  "scheme": "dark",
+  "width": 375,
+  "headerH": 330
+ },
+ {
+  "name": "admin",
+  "scheme": "dark",
+  "width": 375,
+  "headerH": 330
+ },
+ {
+  "name": "admin-campaigns",
+  "scheme": "dark",
+  "width": 375,
+  "headerH": 330
+ },
+ {
+  "name": "admin-settings",
+  "scheme": "dark",
+  "width": 375,
+  "headerH": 330
+ },
+ {
+  "name": "home",
+  "scheme": "dark",
+  "width": 1280,
+  "headerH": 150
+ },
+ {
+  "name": "signin",
+  "scheme": "dark",
+  "width": 1280,
+  "headerH": 150
+ },
+ {
+  "name": "signup",
+  "scheme": "dark",
+  "width": 1280,
+  "headerH": 150
+ },
+ {
+  "name": "campaign-anon",
+  "scheme": "dark",
+  "width": 1280,
+  "headerH": 150
+ },
+ {
+  "name": "campaign-composer",
+  "scheme": "dark",
+  "width": 1280,
+  "headerH": 150
+ },
+ {
+  "name": "dossier",
+  "scheme": "dark",
+  "width": 1280,
+  "headerH": 150
+ },
+ {
+  "name": "admin",
+  "scheme": "dark",
+  "width": 1280,
+  "headerH": 150
+ },
+ {
+  "name": "admin-campaigns",
+  "scheme": "dark",
+  "width": 1280,
+  "headerH": 150
+ },
+ {
+  "name": "admin-settings",
+  "scheme": "dark",
+  "width": 1280,
+  "headerH": 150
+ }
+]

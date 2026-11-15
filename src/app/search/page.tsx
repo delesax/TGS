@@ -72,7 +72,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
           type="search"
           defaultValue={q}
           maxLength={200}
-          className="min-h-12 w-full rounded-md border-2 border-input bg-background px-4 text-lg focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          className="field"
         />
         {type !== "all" ? <input type="hidden" name="type" value={type} /> : null}
         <Button type="submit">Search</Button>
@@ -86,7 +86,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
                 <Link
                   href={searchHref(q, t)}
                   aria-current={t === type ? "page" : undefined}
-                  className="inline-flex min-h-12 items-center rounded-full border-2 border-border px-4 text-base font-semibold aria-[current=page]:border-primary aria-[current=page]:bg-primary aria-[current=page]:text-primary-foreground"
+                  className="inline-flex min-h-12 items-center rounded-full border border-hairline px-4 text-base font-semibold aria-[current=page]:border-primary aria-[current=page]:bg-primary aria-[current=page]:text-primary-foreground"
                 >
                   {TYPE_LABELS[t]}
                 </Link>
@@ -110,7 +110,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
       ) : !q ? (
         <EmptyState title="What are you looking for?">Type a word or two, for example a topic or a phrase from a Dispatch{viewer ? ", or a Strategist’s handle" : ""}.</EmptyState>
       ) : outcome && "error" in outcome ? (
-        <div role="alert" className="flex flex-col gap-3 rounded-xl border-2 border-destructive p-5">
+        <div role="alert" className="flex flex-col gap-3 rounded-xl border border-destructive p-5">
           <p className="text-xl font-semibold">{outcome.error === "timeout" ? "That search took too long." : "Search is not working right now."}</p>
           <p className="text-lg">{outcome.error === "timeout" ? "Try fewer or more specific words." : "Please try again in a moment."}</p>
           <Button asChild variant="outline" className="self-start">
@@ -128,7 +128,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
           </p>
           <ol className="flex flex-col gap-3">
             {outcome.results.map((r) => (
-              <li key={`${r.result_type}-${r.id}`} className="flex flex-col gap-2 rounded-xl border border-border bg-card p-4">
+              <li key={`${r.result_type}-${r.id}`} className="flex flex-col gap-2 surface-card bg-card p-4">
                 <p className="text-base font-semibold text-muted-foreground">{RESULT_LABELS[r.result_type]}</p>
                 <Link href={resultHref(r)} className="text-xl font-semibold text-primary underline underline-offset-2 [overflow-wrap:anywhere]">
                   {r.result_type === "strategist" ? `@${r.title}` : r.title}

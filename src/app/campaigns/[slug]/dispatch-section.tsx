@@ -11,7 +11,7 @@ import { KIND_LABELS, cooldownSecondsLeft } from "@/lib/dispatches";
 
 function ComposeNotice({ title, children, action }: { title: string; children: React.ReactNode; action?: React.ReactNode }) {
   return (
-    <div role="note" className="flex flex-col items-start gap-3 rounded-xl border-2 border-border bg-muted p-5">
+    <div role="note" className="flex flex-col items-start gap-3 rounded-xl border border-hairline bg-muted p-5">
       <p className="text-xl font-semibold">{title}</p>
       <div className="text-lg">{children}</div>
       {action}
@@ -104,8 +104,8 @@ export async function DispatchSection({
     );
   } else {
     composer = (
-      <div className="flex flex-col gap-3 rounded-xl border-2 border-primary p-4 sm:p-5">
-        <h3 className="text-2xl font-bold">Write a Dispatch</h3>
+      <div className="flex flex-col gap-3 rounded-xl border border-primary/60 p-4 sm:p-5">
+        <h3>Write a Dispatch</h3>
         <p className="text-base text-muted-foreground">
           {round ? `Round ${round.position}, ${round.title}, accepts: ${allowed.map((k) => KIND_LABELS[k].label.toLowerCase()).join(", ")}. ` : ""}
           You can post {limits.max_dispatches_per_round - (compose?.postedThisRound ?? 0)} more {hasRounds ? "in this round" : "here"}, and edit each for{" "}
@@ -153,7 +153,7 @@ export async function DispatchSection({
   return (
     <section className="flex flex-col gap-4" aria-labelledby="dispatches-heading" id="dispatches">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h2 id="dispatches-heading" className="text-2xl font-bold">
+        <h2 id="dispatches-heading">
           Dispatches
         </h2>
         {signedIn ? <FollowCampaignButton campaignId={campaign.id} slug={campaign.slug} following={compose?.followsCampaign ?? false} /> : null}

@@ -29,7 +29,7 @@ function Item({ item, adminId }: { item: QueueItem; adminId: string }) {
   const words = item.sealedBody ?? d.body;
   const onlyAiFlag = item.reasons.every((r) => r === "undeclared_ai" || r === "unscreened");
   return (
-    <li className="flex flex-col gap-3 rounded-xl border-2 border-border bg-card p-4">
+    <li className="admin-row">
       <ul className="flex flex-wrap gap-2" aria-label="Why it is here">
         {item.reasons.map((r) => (
           <li
@@ -37,7 +37,7 @@ function Item({ item, adminId }: { item: QueueItem; adminId: string }) {
             className={
               r === "held_high" || r === "appeal"
                 ? "rounded-full bg-destructive px-3 py-1 text-base font-semibold text-destructive-foreground"
-                : "rounded-full border-2 border-border px-3 py-1 text-base font-semibold"
+                : "rounded-full border border-hairline px-3 py-1 text-base font-semibold"
             }
           >
             {REASON_LABELS[r]}
@@ -63,7 +63,7 @@ function Item({ item, adminId }: { item: QueueItem; adminId: string }) {
           <p className="line-clamp-3 whitespace-pre-line [overflow-wrap:anywhere]">{item.parent.body}</p>
         </div>
       ) : null}
-      <blockquote className="whitespace-pre-line border-l-4 border-primary pl-3 text-lg [overflow-wrap:anywhere]">{words}</blockquote>
+      <blockquote className="whitespace-pre-line border-l-4 border-primary pl-3 text-base [overflow-wrap:anywhere]">{words}</blockquote>
       {item.replies.length ? (
         <div className="flex flex-col gap-1 pl-4 text-base text-muted-foreground">
           <p className="font-semibold">Replies:</p>
@@ -95,7 +95,7 @@ function Item({ item, adminId }: { item: QueueItem; adminId: string }) {
       ) : null}
 
       {item.flags.some((f) => f.kind === "undeclared_ai") ? (
-        <p className="rounded-lg border-2 border-dashed border-border p-3 text-base">
+        <p className="rounded-lg border border-hairline p-3 text-base">
           <strong>Possible undeclared AI text.</strong> {String(item.flags.find((f) => f.kind === "undeclared_ai")?.details.why ?? "")} Detection of AI
           writing is unreliable: never hold, remove or penalise on this signal alone, and never tell the author they used AI.
         </p>
@@ -103,7 +103,7 @@ function Item({ item, adminId }: { item: QueueItem; adminId: string }) {
 
       {item.reports.length ? (
         <div>
-          <p className="text-lg font-semibold">
+          <p className="text-base font-semibold">
             {item.reports.length} report{item.reports.length === 1 ? "" : "s"}
           </p>
           <ul className="flex flex-col gap-1 text-base">
@@ -118,7 +118,7 @@ function Item({ item, adminId }: { item: QueueItem; adminId: string }) {
       ) : null}
 
       {item.appeal ? (
-        <div className="rounded-lg border-2 border-destructive p-3 text-base">
+        <div className="rounded-lg border border-destructive p-3 text-base">
           <p className="font-semibold">Appeal from the author ({formatUkShort(item.appeal.created_at)})</p>
           <p className="[overflow-wrap:anywhere]">“{item.appeal.reason}”</p>
         </div>
@@ -134,8 +134,8 @@ function Item({ item, adminId }: { item: QueueItem; adminId: string }) {
         />
         {onlyAiFlag && d.moderation_status === "visible"
           ? item.flags.map((f) => (
-              <details key={f.id} className="rounded-lg border border-border p-3">
-                <summary className="min-h-12 cursor-pointer py-2 text-lg font-semibold">Or close the “{REASON_LABELS[f.kind as "unscreened"]}” flag with no change</summary>
+              <details key={f.id} className="rounded-[10px] border border-hairline p-3">
+                <summary className="min-h-12 cursor-pointer py-2 text-base font-semibold">Or close the “{REASON_LABELS[f.kind as "unscreened"]}” flag with no change</summary>
                 <FlagDecision flagId={f.id} summary={`Flag on ${d.author?.handle ? `@${d.author.handle}` : "a deleted Strategist"}’s Dispatch`} />
               </details>
             ))
@@ -156,7 +156,7 @@ export default async function ModerationPage() {
       <AdminNav current="/admin/moderation" />
       <DecisionLogProvider>
       <section aria-labelledby="dispatches-h" className="flex flex-col gap-4">
-        <h2 id="dispatches-h" className="text-2xl font-bold">
+        <h2 id="dispatches-h">
           Dispatches ({items.length})
         </h2>
         {items.length ? (
@@ -171,13 +171,13 @@ export default async function ModerationPage() {
       </section>
 
       <section aria-labelledby="handles-h" className="flex flex-col gap-4">
-        <h2 id="handles-h" className="text-2xl font-bold">
+        <h2 id="handles-h">
           Handles ({handles.length})
         </h2>
         {handles.length ? (
-          <ul className="flex flex-col gap-4">
+          <ul className="admin-list">
             {handles.map((h) => (
-              <li key={h.flagId} className="flex flex-col gap-3 rounded-xl border-2 border-border bg-card p-4">
+              <li key={h.flagId} className="admin-row">
                 <p className="text-xl font-semibold [overflow-wrap:anywhere]">@{h.handle}</p>
                 <p className="text-base text-muted-foreground">
                   {h.kind === "held_handle"

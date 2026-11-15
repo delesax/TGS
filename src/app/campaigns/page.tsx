@@ -19,17 +19,17 @@ function CampaignCard({ campaign, now }: { campaign: CampaignSummary; now: numbe
         ? `Opens ${formatUkDateTime(campaign.starts_at)}`
         : `Closed ${formatUkDateTime(campaign.ends_at)}`;
   return (
-    <li className="rounded-xl border border-border bg-card p-5 shadow-sm">
-      <h3 className="text-2xl font-semibold">
-        <Link href={`/campaigns/${campaign.slug}`} className="underline underline-offset-4">
+    <li className="surface-card soft-hover p-5 hover:shadow-[var(--shadow-raised)]">
+      <h3>
+        <Link href={`/campaigns/${campaign.slug}`} className="no-underline underline-offset-4 hover:underline focus-visible:underline">
           {campaign.title}
         </Link>
       </h3>
-      <div className="mt-3">
+      <div className="mt-2.5">
         <CampaignBadges status={status} category={campaign.category} format={campaign.format} />
       </div>
-      {campaign.is_sensitive ? <p className="mt-3 text-lg font-semibold">Sensitive topic: a content note is shown first.</p> : null}
-      <p className="mt-3 text-lg text-muted-foreground">{when}</p>
+      {campaign.is_sensitive ? <p className="mt-3 text-base font-semibold">Sensitive topic: a content note is shown first.</p> : null}
+      <p className="mt-2.5 text-base text-muted-foreground">{when}</p>
     </li>
   );
 }
@@ -63,11 +63,11 @@ export default async function CampaignsPage() {
 
       {SECTIONS.map((section) => (
         <section key={section.key} aria-labelledby={`${section.key}-heading`} className="flex flex-col gap-4">
-          <h2 id={`${section.key}-heading`} className="text-2xl font-bold">
+          <h2 id={`${section.key}-heading`}>
             {section.title}
           </h2>
           {groups[section.key].length ? (
-            <ul className="flex flex-col gap-4">
+            <ul className="grid items-stretch gap-3 md:grid-cols-2 min-[1500px]:grid-cols-3 min-[2000px]:grid-cols-4">
               {groups[section.key].map((c) => (
                 <CampaignCard key={c.id} campaign={c} now={now} />
               ))}

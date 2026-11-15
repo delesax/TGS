@@ -51,7 +51,7 @@ export default function PrivacyPage() {
           you signed in.
         </p>
 
-        <h2 id="sensitive-subjects" className="mt-4 scroll-mt-4 text-2xl font-semibold">
+        <h2 id="sensitive-subjects" className="mt-4 scroll-mt-4">
           Sensitive subjects
         </h2>
         <p>
@@ -95,7 +95,7 @@ export default function PrivacyPage() {
           personal data in it and you want it looked at, tell us (see Your rights).
         </p>
 
-        <h2 id="automated-checks" className="mt-4 scroll-mt-4 text-2xl font-semibold">Automated checks and AI help</h2>
+        <h2 id="automated-checks" className="mt-4 scroll-mt-4">Automated checks and AI help</h2>
         <p>
           We use an AI service from Anthropic to help keep debates safe and to help you write better. There are three uses.
         </p>

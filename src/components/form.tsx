@@ -94,12 +94,12 @@ function FieldText({ name, hint, error }: Omit<FieldProps, "label">) {
   return (
     <>
       {hint ? (
-        <p id={`${name}-hint`} className="text-base text-muted-foreground">
+        <p id={`${name}-hint`} className="help">
           {hint}
         </p>
       ) : null}
       {error ? (
-        <p id={`${name}-error`} className="flex items-start gap-2 text-base font-semibold text-destructive">
+        <p id={`${name}-error`} className="flex items-start gap-2 text-[0.95rem] font-semibold text-destructive">
           <AlertCircle aria-hidden className="mt-0.5 size-5 shrink-0" />
           {error}
         </p>
@@ -139,7 +139,7 @@ export function CheckboxField({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-start gap-3">
-        {/* The 28px box sits inside a 48px tall row; the whole label is clickable. */}
+        {/* The 24px box sits inside a 44px tall row; the whole label is clickable. */}
         <input
           id={id}
           name={name}
@@ -147,10 +147,10 @@ export function CheckboxField({
           value="on"
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? `${id}-error` : undefined}
-          className="mt-2.5 size-7 shrink-0 accent-primary"
+          className="mt-2 size-6 shrink-0 accent-primary"
           {...props}
         />
-        <label htmlFor={id} className="min-h-12 py-2 text-lg leading-snug">
+        <label htmlFor={id} className="min-h-11 py-2 text-base leading-snug">
           {label}
         </label>
       </div>

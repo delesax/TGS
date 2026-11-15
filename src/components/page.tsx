@@ -14,20 +14,20 @@ export function Page({
   children?: React.ReactNode;
 }) {
   return (
-    <div className={cn("mx-auto w-full px-4 py-8 sm:py-12", narrow ? "max-w-xl" : "max-w-4xl")}>
-      <h1 className="text-3xl font-bold sm:text-4xl">{title}</h1>
-      {intro ? <div className="mt-3 text-xl text-muted-foreground">{intro}</div> : null}
+    <div className={cn("page-container py-8 sm:py-12", narrow && "max-w-xl")}>
+      <h1>{title}</h1>
+      {intro ? <div className="mt-3 max-w-[65ch] text-lg text-muted-foreground">{intro}</div> : null}
       <div className="mt-8 flex flex-col gap-6">{children}</div>
     </div>
   );
 }
 
 /** Shown when a list has nothing in it yet: say why, and what to do next. */
-export function EmptyState({ title, children, action }: { title: string; children: React.ReactNode; action?: React.ReactNode }) {
+export function EmptyState({ title, children, action, as: Heading = "h3" }: { title: string; children: React.ReactNode; action?: React.ReactNode; as?: "h2" | "h3" }) {
   return (
-    <div className="flex flex-col items-start gap-3 rounded-xl border-2 border-dashed border-border bg-muted p-6">
-      <h2 className="text-2xl font-semibold">{title}</h2>
-      <div className="text-lg text-muted-foreground">{children}</div>
+    <div className="flex flex-col items-start gap-2 rounded-[12px] bg-muted/70 px-5 py-4">
+      <Heading className="text-lg">{title}</Heading>
+      <div className="max-w-[65ch] text-base text-muted-foreground">{children}</div>
       {action}
     </div>
   );
@@ -40,7 +40,7 @@ export function EmptyState({ title, children, action }: { title: string; childre
 export function DraftNotice() {
   if (LEGAL.reviewed) return null;
   return (
-    <div role="note" className="rounded-lg border-2 border-accent-foreground bg-accent p-4 text-lg text-accent-foreground">
+    <div role="note" className="rounded-lg border border-accent-foreground/50 bg-accent p-4 text-lg text-accent-foreground">
       <p className="font-bold">DRAFT: this page is complete but has not yet had its final legal review. Some details are still to be added.</p>
     </div>
   );

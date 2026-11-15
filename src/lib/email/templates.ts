@@ -74,13 +74,13 @@ export function render(site: string, recipient: Recipient, preference: Preferenc
     footerText,
   ].join("\n");
 
-  const p = (s: string) => `<p style="margin:0 0 16px;font-size:18px;line-height:1.5;color:#111827">${s}</p>`;
+  const p = (s: string) => `<p style="margin:0 0 16px;font-size:18px;line-height:1.5;color:#0b1f3a">${s}</p>`;
   const blockHtml = blocks
     .map(
-      (b) => `<div style="margin:0 0 20px;padding:16px;border:1px solid #d1d5db;border-radius:8px">
-${b.heading ? `<h2 style="margin:0 0 8px;font-size:20px;line-height:1.3;color:#111827">${escapeHtml(b.heading)}</h2>` : ""}
+      (b) => `<div style="margin:0 0 20px;padding:16px;border:1px solid #d9d4c7;border-radius:8px">
+${b.heading ? `<h2 style="margin:0 0 8px;font-size:20px;line-height:1.3;color:#0b1f3a">${escapeHtml(b.heading)}</h2>` : ""}
 ${b.lines.map((l) => p(escapeHtml(l))).join("\n")}
-${b.link ? `<p style="margin:0;font-size:18px"><a href="${escapeHtml(b.link.href)}" style="color:#1e3a5f;font-weight:bold;text-decoration:underline">${escapeHtml(b.link.label)}</a></p>` : ""}
+${b.link ? `<p style="margin:0;font-size:18px"><a href="${escapeHtml(b.link.href)}" style="color:#0b1f3a;font-weight:bold;text-decoration:underline">${escapeHtml(b.link.label)}</a></p>` : ""}
 </div>`,
     )
     .join("\n");
@@ -90,13 +90,13 @@ ${b.link ? `<p style="margin:0;font-size:18px"><a href="${escapeHtml(b.link.href
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${escapeHtml(subject)}</title></head>
 <body style="margin:0;padding:0;background:#ffffff">
 <div role="article" aria-label="${escapeHtml(subject)}" lang="en-GB" style="max-width:600px;margin:0 auto;padding:24px 16px;font-family:Arial,Helvetica,sans-serif">
-<p style="margin:0 0 24px;font-size:20px;font-weight:bold;color:#1e3a5f">The Grand Strategist</p>
+<p style="margin:0 0 24px;font-size:20px;font-weight:bold;color:#0b1f3a">The Grand Strategist</p>
 ${p(escapeHtml(greeting))}
 ${p(escapeHtml(intro))}
 ${blockHtml}
-<hr style="border:none;border-top:1px solid #d1d5db;margin:24px 0">
-<p style="margin:0 0 8px;font-size:16px;line-height:1.5;color:#374151">You are getting this because of your email settings: ${escapeHtml(PREFERENCE_WORDS[preference])}.</p>
-<p style="margin:0 0 8px;font-size:16px;line-height:1.5"><a href="${escapeHtml(unsubscribeUrl)}" style="color:#1e3a5f;text-decoration:underline">Stop these emails</a> &middot; <a href="${escapeHtml(settingsUrl)}" style="color:#1e3a5f;text-decoration:underline">All email settings</a></p>
+<hr style="border:none;border-top:1px solid #d9d4c7;margin:24px 0">
+<p style="margin:0 0 8px;font-size:16px;line-height:1.5;color:#4a5a70">You are getting this because of your email settings: ${escapeHtml(PREFERENCE_WORDS[preference])}.</p>
+<p style="margin:0 0 8px;font-size:16px;line-height:1.5"><a href="${escapeHtml(unsubscribeUrl)}" style="color:#0b1f3a;text-decoration:underline">Stop these emails</a> &middot; <a href="${escapeHtml(settingsUrl)}" style="color:#0b1f3a;text-decoration:underline">All email settings</a></p>
 ${companyFooterHtml()}
 </div>
 </body>
@@ -108,7 +108,7 @@ ${companyFooterHtml()}
 /** Who sent it: the company block every email carries (name, registration, registered office). */
 export function companyFooterHtml(): string {
   const [name, registration, office] = companyBlockLines();
-  return `<p style="margin:16px 0 0;font-size:14px;line-height:1.5;color:#374151">Sent by The Grand Strategist.<br>${escapeHtml(name)}<br>${escapeHtml(registration)}<br>${escapeHtml(office)}</p>`;
+  return `<p style="margin:16px 0 0;font-size:14px;line-height:1.5;color:#4a5a70">Sent by The Grand Strategist.<br>${escapeHtml(name)}<br>${escapeHtml(registration)}<br>${escapeHtml(office)}</p>`;
 }
 
 export type TransactionalEmail = { subject: string; text: string; html: string };
@@ -120,16 +120,16 @@ export type TransactionalEmail = { subject: string; text: string; html: string }
  */
 export function transactionalEmail(subject: string, paragraphs: string[], why: string): TransactionalEmail {
   const text = [...paragraphs.flatMap((p) => [p, ""]), "--", why, "", "Sent by The Grand Strategist.", ...companyBlockLines()].join("\n");
-  const p = (v: string) => `<p style="margin:0 0 16px;font-size:18px;line-height:1.5;color:#111827">${escapeHtml(v)}</p>`;
+  const p = (v: string) => `<p style="margin:0 0 16px;font-size:18px;line-height:1.5;color:#0b1f3a">${escapeHtml(v)}</p>`;
   const html = `<!doctype html>
 <html lang="en-GB">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${escapeHtml(subject)}</title></head>
 <body style="margin:0;padding:0;background:#ffffff">
 <div role="article" aria-label="${escapeHtml(subject)}" lang="en-GB" style="max-width:600px;margin:0 auto;padding:24px 16px;font-family:Arial,Helvetica,sans-serif">
-<p style="margin:0 0 24px;font-size:20px;font-weight:bold;color:#1e3a5f">The Grand Strategist</p>
+<p style="margin:0 0 24px;font-size:20px;font-weight:bold;color:#0b1f3a">The Grand Strategist</p>
 ${paragraphs.map(p).join("\n")}
-<hr style="border:none;border-top:1px solid #d1d5db;margin:24px 0">
-<p style="margin:0 0 8px;font-size:16px;line-height:1.5;color:#374151">${escapeHtml(why)}</p>
+<hr style="border:none;border-top:1px solid #d9d4c7;margin:24px 0">
+<p style="margin:0 0 8px;font-size:16px;line-height:1.5;color:#4a5a70">${escapeHtml(why)}</p>
 ${companyFooterHtml()}
 </div>
 </body>

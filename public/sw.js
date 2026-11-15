@@ -9,7 +9,7 @@
  * device is offline, the offline page is shown instead.
  * No push notifications.
  */
-const VERSION = "tgs-shell-v1";
+const VERSION = "tgs-shell-v2";
 const SHELL = ["/offline.html", "/manifest.webmanifest", "/icons/icon-192.png", "/icons/icon-512.png", "/icons/maskable-512.png"];
 
 self.addEventListener("install", (event) => {
