@@ -340,6 +340,13 @@ def wm_tier():
     return m
 
 
+def wm_compact():
+    """Single line GRAND STRATEGIST in the wordmark-03 face, for narrow headers."""
+    m = Mark()
+    text(m, "sserif", "GRAND STRATEGIST", 48, 0, 0, tracking=0.05)
+    return m
+
+
 def wm_tgs():
     m = Mark()
     size = 104
@@ -380,7 +387,7 @@ WORDMARKS = [
 
 # ---------------------------------------------------------------- lockups
 
-def lockup(icon_fn, wm_fn, icon_scale):
+def lockup(icon_fn, wm_fn, icon_scale, gap_k=0.38):
     """Icon left, wordmark right, both vertically centred."""
     wm = wm_fn()
     x0, y0, x1, y1 = wm.bounds()
@@ -388,7 +395,7 @@ def lockup(icon_fn, wm_fn, icon_scale):
     ih = wh * icon_scale
     k = ih / 64
     cy = (y0 + y1) / 2
-    gap = ih * 0.38
+    gap = ih * gap_k
     ix = x0 - gap - ih
     iy = cy - ih / 2
     ic = icon_fn()
@@ -402,13 +409,68 @@ def lockup(icon_fn, wm_fn, icon_scale):
 
 
 LOCKUPS = [
-    ("lockup-01", "icon-02", "wordmark-03", icon_apex, wm_tier, 1.15,
-     "Apex + Two-tier: the formal pairing. The gold node and the gold THE carry the same idea."),
-    ("lockup-02", "icon-01", "wordmark-02", icon_compass, wm_caps, 1.9,
+    ("lockup-01", "icon-02", "wordmark-03", icon_apex, wm_tier, 1.42, 0.55,
+     "FINAL. Apex + Two-tier: icon about as tall as the two text tiers, wide gap. The gold node and the gold THE carry the same idea."),
+    ("lockup-02", "icon-01", "wordmark-02", icon_compass, wm_caps, 1.9, 0.38,
      "Bearing G + Spaced caps: the modern pairing, cleanest in a narrow header."),
-    ("lockup-03", "icon-02", "wordmark-01", icon_apex, wm_editorial, 1.25,
+    ("lockup-03", "icon-02", "wordmark-01", icon_apex, wm_editorial, 1.25, 0.38,
      "Apex + Editorial serif: the warmer, more literary pairing."),
+    ("lockup-01-compact", "icon-02", "wordmark-03 (one line)", icon_apex, wm_compact, 1.7, 0.45,
+     "FINAL, compact. Apex + GRAND STRATEGIST on one line, for 375px phone headers."),
 ]
+
+# ---------------------------------------------------------------- favicon set (icon-02 Apex only)
+# The favicon cut is the Apex with slightly heavier strokes and nodes, so it holds at 16px.
+
+APEX_FAV = dict(apex=(32, 12), mids=[(19, 34), (45, 34)], bots=[(8, 54), (32, 54), (56, 54)],
+                stroke=4.6, r=6.6, ra=9.6)
+
+
+def apex_group(ink, accent, tf=""):
+    a = APEX_FAV
+    parts = []
+    for (p0, p1) in [(a["apex"], a["mids"][0]), (a["apex"], a["mids"][1]),
+                     (a["mids"][0], a["bots"][0]), (a["mids"][0], a["bots"][1]),
+                     (a["mids"][1], a["bots"][1]), (a["mids"][1], a["bots"][2])]:
+        parts.append('<line x1="%g" y1="%g" x2="%g" y2="%g"/>' % (p0[0], p0[1], p1[0], p1[1]))
+    lines = '<g stroke="%s" stroke-width="%g" fill="none">%s</g>' % (ink, a["stroke"], "".join(parts))
+    dots = "".join('<circle cx="%g" cy="%g" r="%g"/>' % (x, y, a["r"]) for x, y in a["mids"] + a["bots"])
+    nodes = '<g fill="%s">%s</g>' % (ink, dots)
+    apex = '<circle fill="%s" cx="%g" cy="%g" r="%g"/>' % (accent, a["apex"][0], a["apex"][1], a["ra"])
+    return '<g%s>%s%s%s</g>' % (' transform="%s"' % tf if tf else "", lines, nodes, apex)
+
+
+def favicon_svgs():
+    out = {}
+    # adaptive favicon: transparent, switches ink and gold with the browser theme
+    a = APEX_FAV
+    lines = "".join('<line x1="%g" y1="%g" x2="%g" y2="%g"/>' % (p0[0], p0[1], p1[0], p1[1])
+                    for (p0, p1) in [(a["apex"], a["mids"][0]), (a["apex"], a["mids"][1]),
+                                     (a["mids"][0], a["bots"][0]), (a["mids"][0], a["bots"][1]),
+                                     (a["mids"][1], a["bots"][1]), (a["mids"][1], a["bots"][2])])
+    dots = "".join('<circle cx="%g" cy="%g" r="%g"/>' % (x, y, a["r"]) for x, y in a["mids"] + a["bots"])
+    out["favicon.svg"] = (
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><title>The Grand Strategist</title>'
+        '<style>.i{fill:%s}.s{stroke:%s;stroke-width:%g;fill:none}.a{fill:%s}'
+        '@media (prefers-color-scheme:dark){.i{fill:%s}.s{stroke:%s}.a{fill:%s}}</style>'
+        '<g class="s">%s</g><g class="i">%s</g><circle class="a" cx="%g" cy="%g" r="%g"/></svg>'
+        % (INK, INK, a["stroke"], GOLD_MARK, PAPER, PAPER, GOLD, lines, dots, a["apex"][0], a["apex"][1], a["ra"]))
+
+    def tile(size, scale, rx, name):
+        k = scale
+        off = 32 - 32 * k
+        # centre the mark's visual box (x 1.4..62.6, y 2.4..60.6): shift y by 0.5 for balance
+        g = apex_group(PAPER, GOLD, "translate(%g %g) scale(%g)" % (off, off + 0.5 * k, k))
+        r = '<rect width="64" height="64" rx="%g" fill="%s"/>' % (rx, INK)
+        out[name] = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="%d" height="%d">%s%s</svg>'
+                     % (size, size, r, g))
+
+    tile(32, 0.88, 14, "favicon-32.svg")                  # rounded tile, readable on any tab colour
+    tile(180, 0.66, 0, "apple-touch-icon-180.svg")        # full-bleed square; iOS rounds the corners
+    tile(192, 0.60, 0, "icon-192.svg")
+    tile(512, 0.60, 0, "icon-512.svg")                    # safe padding: mark inside the central 60%
+    return out
+
 
 # ---------------------------------------------------------------- write files
 
@@ -437,12 +499,15 @@ def main():
             write(os.path.join(OUT, "wordmarks", "%s-%s.svg" % (key, v)), svg)
         write(os.path.join(OUT, "wordmarks", key + ".svg"), out_svgs[(key, "light")])
 
-    for key, _, _, ifn, wfn, sc, _ in LOCKUPS:
+    for key, _, _, ifn, wfn, sc, gk, _ in LOCKUPS:
         for v in VARIANTS:
-            svg = render(lockup(ifn, wfn, sc), v, pad=0.1, title="The Grand Strategist")
+            svg = render(lockup(ifn, wfn, sc, gk), v, pad=0.1, title="The Grand Strategist")
             out_svgs[(key, v)] = svg
             write(os.path.join(OUT, "lockups", "%s-%s.svg" % (key, v)), svg)
 
+    fav_dir = os.path.join(os.path.dirname(OUT), "favicon")
+    for name, svg in favicon_svgs().items():
+        write(os.path.join(fav_dir if name == "favicon.svg" else os.path.join(HERE, "favicon-src"), name), svg)
     write(os.path.join(OUT, "gallery.html"), gallery(out_svgs))
     write(os.path.join(HERE, "contrast.md"), contrast_md())
     print("Deep Gold", GOLD_DEEP, "Mark Gold", GOLD_MARK)
@@ -455,6 +520,11 @@ def contrast_md():
         r = ratio(fg, bg)
         rows.append("| `%s` | `%s` | %s | %s | %.2f:1 | %s |" % (fg, bg, label, use, r, grade(r)))
     return "\n".join(rows)
+
+
+def fav_inline(ink, accent, px):
+    return ('<svg width="%d" height="%d" viewBox="0 0 64 64" aria-hidden="true">%s</svg>'
+            % (px, px, apex_group(ink, accent)))
 
 
 def gallery(S):
@@ -494,7 +564,7 @@ th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);verti
 .chip .c{height:56px} .chip div.t{padding:8px 10px;font-size:13px} .chip b{display:block}
 .demo{display:inline-block;padding:2px 8px;border-radius:6px;font-weight:600}
 .fail{color:#9B1C1C;font-weight:600}
-code{font-size:13px}
+code{font-size:13px} img{max-width:100%%;height:auto}
 @media (max-width:520px){.grid{grid-template-columns:1fr}.sizes{grid-template-columns:1fr}}
 """ % {"paper": PAPER, "ink": INK, "night": INK_DEEP, "gold": GOLD, "gd": GOLD_DEEP,
        "muted": MUTED, "mutedd": MUTED_DARK}
@@ -506,6 +576,30 @@ code{font-size:13px}
          '<p class="lede">Five icons, five wordmarks and three lockups. Every file is a hand-built SVG with '
          'text converted to outlines. Each is shown on light and dark, at large size, 32px and 16px, and in '
          'one flat colour (navy, white, black). Nothing here is applied to the app.</p>']
+
+    h.append('<h2 style="border-top:0;margin-top:24px">Final choice: icon-02 Apex + wordmark-03 Two-tier</h2>'
+             '<p class="why">Chosen 15 Nov. The exploration below is kept for the record. Final files: '
+             '<code>lockups/lockup-01-*.svg</code>, <code>lockups/lockup-01-compact-*.svg</code> and '
+             '<code>../favicon/</code>.</p>'
+             '<div class="grid"><div class="card lock"><h3>Full lockup</h3><div class="pair">'
+             '<div class="tile l"><img alt="The Grand Strategist" src="lockups/lockup-01-light.svg"></div>'
+             '<div class="tile d"><img alt="The Grand Strategist" src="lockups/lockup-01-dark.svg"></div></div>'
+             '<div class="row"><div class="tile w"><img style="width:100%;height:auto;max-width:240px" alt="" src="lockups/lockup-01-mono-navy.svg"></div>'
+             '<div class="tile n"><img style="width:100%;height:auto;max-width:240px" alt="" src="lockups/lockup-01-mono-white.svg"></div>'
+             '<div class="tile w"><img style="width:100%;height:auto;max-width:240px" alt="" src="lockups/lockup-01-mono-black.svg"></div></div></div>'
+             '<div class="card lock"><h3>Compact, for 375px headers</h3><div class="pair">'
+             '<div class="tile l"><img alt="The Grand Strategist" src="lockups/lockup-01-compact-light.svg"></div>'
+             '<div class="tile d"><img alt="The Grand Strategist" src="lockups/lockup-01-compact-dark.svg"></div></div>'
+             '<div class="row"><div class="tile w"><img style="width:100%;height:auto;max-width:200px" alt="" src="lockups/lockup-01-compact-mono-navy.svg"></div>'
+             '<div class="tile n"><img style="width:100%;height:auto;max-width:200px" alt="" src="lockups/lockup-01-compact-mono-white.svg"></div>'
+             '<div class="tile w"><img style="width:100%;height:auto;max-width:200px" alt="" src="lockups/lockup-01-compact-mono-black.svg"></div></div></div>'
+             '<div class="card"><h3>Favicon set</h3><p class="why">Heavier-stroke cut of the Apex so it holds at 16px. '
+             '<code>favicon.svg</code> follows the browser theme; the PNGs sit on navy.</p><div class="row" style="align-items:flex-end">'
+             '<div class="tile l"><span class="s16">' + fav_inline(INK, GOLD_MARK, 16) + '</span><span class="s32">' + fav_inline(INK, GOLD_MARK, 32) + '</span><span class="cap">favicon.svg, light tab</span></div>'
+             '<div class="tile d"><span class="s16">' + fav_inline(PAPER, GOLD, 16) + '</span><span class="s32">' + fav_inline(PAPER, GOLD, 32) + '</span><span class="cap">dark tab</span></div>'
+             '<div class="tile w"><img width="32" height="32" alt="" src="../favicon/favicon-32.png"><img width="16" height="16" alt="" src="../favicon/favicon-32.png"><span class="cap">32px PNG</span></div></div>'
+             '<div class="row" style="align-items:flex-end"><div class="tile w"><img width="90" height="90" alt="" src="../favicon/apple-touch-icon-180.png"><span class="cap">180 (shown at 90)</span></div>'
+             '<div class="tile w"><img width="90" height="90" alt="" src="../favicon/icon-512.png"><span class="cap">512 app icon (at 90)</span></div></div></div></div>')
 
     # palette
     h.append('<h2>Palette</h2><p class="why">Burnished Gold is for navy backgrounds and large graphics only. '
@@ -562,9 +656,9 @@ code{font-size:13px}
     h.append('</div>')
 
     # lockups
-    h.append('<h2>Best three lockups</h2><p class="why">Icon and wordmark side by side, as they would sit in the '
-             'site header.</p>')
-    for key, ik, wk, _, _, _, why in LOCKUPS:
+    h.append('<h2>Lockups</h2><p class="why">Icon and wordmark side by side, as they would sit in the '
+             'site header. lockup-01 and lockup-01-compact are final.</p>')
+    for key, ik, wk, _, _, _, _, why in LOCKUPS:
         h.append('<div class="card lock" style="margin-bottom:16px"><h3>%s · %s + %s</h3><p class="why">%s</p>'
                  % (key, ik, wk, html.escape(why)))
         h.append('<div class="pair"><div class="tile l">%s</div><div class="tile d">%s</div></div>'

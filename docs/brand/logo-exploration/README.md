@@ -1,5 +1,8 @@
 # TGS logo exploration
 
+**FINAL CHOICE (15 Nov 2026): icon-02 Apex + wordmark-03 Two-tier, `lockups/lockup-01-*.svg`.** Compact version for 375px phone headers: `lockups/lockup-01-compact-*.svg` (icon + GRAND STRATEGIST on one line). Favicon set: `../favicon/` (`favicon.svg`, `favicon-32.png`, `apple-touch-icon-180.png`, `icon-192.png`, `icon-512.png`). The favicon cut uses slightly heavier strokes and nodes than icon-02 so it holds at 16px; the PNGs sit on a navy tile (`favicon-32.png` rounded, the others square with safe padding, mark inside the central 60%); `favicon.svg` is transparent and switches between navy and paper with the browser theme. Nothing from the exploration was deleted. The weak spots below apply to the other icons; ignore them for Apex.
+
+
 Exploration only. Nothing here is applied to the app, Tailwind config, components or database. Open `gallery.html` in a browser (double-click works; no build step).
 
 ## What is here
@@ -8,7 +11,8 @@ Exploration only. Nothing here is applied to the app, Tailwind config, component
 | --- | --- |
 | `icons/` | `icon-01.svg` to `icon-05.svg` (light, the default), plus `-light`, `-dark`, `-mono-navy`, `-mono-white`, `-mono-black` for each |
 | `wordmarks/` | `wordmark-01.svg` to `wordmark-05.svg`, plus the same five variants for each |
-| `lockups/` | `lockup-01` to `lockup-03` (icon + wordmark, horizontal), same five variants |
+| `lockups/` | `lockup-01` (final; icon now about as tall as the two text tiers, wider gap), `lockup-01-compact` (final, phones), `lockup-02`, `lockup-03`, same five variants each |
+| `../favicon/` | Final favicon set from icon-02 only |
 | `gallery.html` | Every mark on light and dark, large, 32px and 16px, one colour, palette and contrast |
 | `source/build.py` | Regenerates every file above (needs `fonttools` and the font files listed in its header) |
 | `source/contrast.md` | The contrast table, generated |
@@ -88,7 +92,7 @@ Body text is AAA in both themes. Burnished Gold fails as text on light backgroun
 
 All come from Google Fonts (github.com/google/fonts, `ofl/` folder). The font files are not committed; `source/build.py` says where to get them. Because the logos are outlined, the site needs none of these fonts loaded to show the logo.
 
-## Recommendation (not applied)
+## Recommendation (accepted)
 
 **Pick icon-02 Apex with wordmark-03 Two-tier, which is `lockup-01`.**
 
