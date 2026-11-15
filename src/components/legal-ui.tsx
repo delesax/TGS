@@ -19,9 +19,21 @@ export function Fact({ k }: { k: LegalKey }) {
 /** An email address from LEGAL as a mailto link, or the placeholder. */
 export function FactEmail({ k }: { k: "privacyEmail" | "contactEmail" }) {
   if (!legalHas(k)) return <Fact k={k} />;
+  // An email address has no spaces, so at large type on a 375px screen it can be wider than the line and
+  // push the page sideways. It may break after the "@" (and, as a last resort, anywhere).
+  const email = legalValue(k);
+  const at = email.indexOf("@");
   return (
-    <a href={`mailto:${legalValue(k)}`} className="font-semibold text-primary underline">
-      {legalValue(k)}
+    <a href={`mailto:${email}`} className="font-semibold text-primary underline [overflow-wrap:anywhere]">
+      {at > 0 ? (
+        <>
+          {email.slice(0, at + 1)}
+          <wbr />
+          {email.slice(at + 1)}
+        </>
+      ) : (
+        email
+      )}
     </a>
   );
 }
