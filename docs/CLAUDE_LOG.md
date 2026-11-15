@@ -37,12 +37,19 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 - **Decide the judge prompt version:** v2 is the default but is slightly less aligned than v1 in the real evaluation (`docs/SPRINT_7_PLAN.md`, W7); look at the numbers before leaving it. v1 is one setting away (Admin, Judging).
 - **Hosted CLI steps run from your terminal, not Claude's.** Claude's shell has no Supabase access token (`supabase link` fails with `AccessTokenRequiredError`). Run `npx supabase login` and `npx supabase link --project-ref <ref>`, then dry runs and applies with `--linked`, and paste back the output with any connection string removed. Hosted migrations: none pending as far as Claude knows (`20261113000800` applied by the owner on 13 Nov; Claude did not see the dry-run output).
 - **PLACEHOLDER strings:** edit the three in `src/lib/judging/notices.ts` before the first Campaign can close (parked legal item; Claude does not touch it).
-- **Decide the AI cap:** the default of 1,000 calls a day only judges about 800 Dispatches of a big Campaign on day one (measured). Raise `ai_daily_cap_global` for judging days, or accept a day's wait.
+- **AI cap: raised to 2,000 a day (owner-reported 16 Nov; Claude did not see it).** Screening can use all 2,000; judging, nudges and coaching stop at 80%, so judging now stops at 1,600 calls a day (it was 800). Still to watch: the Anthropic monthly limit of $30 (decision D8) is not enforced by this cap; a full 1,600-call judging day costs roughly £8.50 at the last eval's price. Re-check that the Admin home page reads "of 2,000 calls".
 - **Legal (parked):** the rate limiter keeps a SHA-256 hash of IP and email addresses for up to two days; the privacy and retention wording needs a review.
 - **Legal facts still to add:** fill the bracketed facts listed in `docs/SESSION_LOG_LEGAL_HARDENING.md` (the pages still show "[to be added]" for company number, registered office, ICO number and effective date); `LEGAL.reviewed` stays false until the solicitor signs off. Existing members have no positions consent until they give it.
 - **Account deletion stays OFF.** Decide whether it also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-16 — AI daily cap raised to 2,000 (owner-reported)
+
+- **Owner-reported, not seen by Claude** (no hosted access): `ai_daily_cap_global` was raised from 1,000 to 2,000 by the owner. Claude did not make or verify the change.
+- **What the code does with it** (read-only check, `20261111000200_judging_functions.sql:1247-1294`): the cap is one UK-day counter shared by all AI calls; screening may use all of it; rubric scoring, rationale wording, nudges and coaching are refused once the day's total reaches 80% (1,600 now). A close day of about 800 Dispatches therefore fits with room for that day's screening, nudges and retries; jobs that hit the cap are released, retried an hour later, never counted as failed, and the draft Verdict waits until all are scored (`src/lib/judging/compute.ts:106,154`).
+- **Other docs still quote the old default of 1,000** (`docs/LAUNCH_RUNBOOK.md`, `docs/GO_NO_GO.md` row 7, `docs/LOAD_TEST_RESULTS.md`); not changed in this entry.
+- No hosted command run, no model call.
 
 ### 2026-11-15 — Header logo larger; larger-THE variant (test only) (branch `ui/header-logo`)
 
