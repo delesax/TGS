@@ -4,7 +4,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { loadTestEnv } from "../test-env";
 import { expectNoHorizontalOverflow } from "./helpers";
 
-// One shared container (1280px max, 24px padding on phones and 32px from 768px up) for header, pages and footer;
+// One shared fluid container (1600px max, padding clamp(16px, 2.5vw, 40px)) for header, pages and footer;
 // a header search whose placeholder is never clipped; and a compact footer.
 
 const env = loadTestEnv();
@@ -32,32 +32,33 @@ async function placeholderFits(page: Page, selector: string) {
 }
 
 test.describe("shared container", () => {
-  for (const [width, left] of [
-    [1280, 0],
-    [1440, 80],
-    [1728, 224],
-    [1920, 320],
+  // Fluid: padding-inline clamp(16px, 2.5vw, 40px), 1600px maximum, centred. Left = the margin outside the container box.
+  for (const [width, left, pad] of [
+    [1280, 0, 32],
+    [1440, 0, 36],
+    [1728, 64, 40],
+    [1920, 160, 40],
+    [2560, 480, 40],
   ] as const) {
-    test(`at ${width}px the page container is centred and at most 1280px wide`, async ({ browser }) => {
+    test(`at ${width}px the page container is centred, at most 1600px wide, with ${pad}px side padding`, async ({ browser }) => {
       const { context, page } = await withDisplay(browser, width, "default");
       await page.goto("/");
       for (const selector of ["header > div", "main > div", "footer > div"]) {
         const box = (await page.locator(selector).first().boundingBox())!;
         expect(Math.round(box.x), `${selector} left edge`).toBe(left);
-        expect(Math.round(box.width), `${selector} width`).toBe(Math.min(1280, width));
+        expect(Math.round(box.width), `${selector} width`).toBe(Math.min(1600, width));
       }
-      // Side padding is 32px from 768px up.
-      expect(await page.locator("main > div").first().evaluate((el) => getComputedStyle(el).paddingLeft)).toBe("32px");
+      expect(await page.locator("main > div").first().evaluate((el) => getComputedStyle(el).paddingLeft)).toBe(`${pad}px`);
       await context.close();
     });
   }
 
-  test("phones use 24px side padding and the home headline wraps in at most three lines", async ({ browser }) => {
+  test("phones use 16px side padding and the home headline wraps in at most three lines", async ({ browser }) => {
     const { context, page } = await withDisplay(browser, 375, "default");
     await page.goto("/");
-    expect(await page.locator("main > div").first().evaluate((el) => getComputedStyle(el).paddingLeft)).toBe("24px");
+    expect(await page.locator("main > div").first().evaluate((el) => getComputedStyle(el).paddingLeft)).toBe("16px");
     await context.close();
-    for (const width of [375, 768, 1280, 1728, 1920]) {
+    for (const width of [375, 768, 1280, 1728, 1920, 2560]) {
       const { context: c, page: p } = await withDisplay(browser, width, "default");
       await p.goto("/");
       const lines = await p.getByRole("heading", { level: 1 }).evaluate((h) => Math.round(h.getBoundingClientRect().height / parseFloat(getComputedStyle(h).lineHeight)));
@@ -170,18 +171,20 @@ test.describe("header search", () => {
 });
 
 test.describe("compact footer", () => {
+  // One row (about 56 to 64px) from 1280px; two compact rows (at most about 110px) from 1024px with a mouse.
   for (const [width, max] of [
-    [1024, 215],
-    [1280, 215],
-    [1440, 215],
-    [1728, 215],
-    [1920, 215],
+    [1024, 115],
+    [1280, 66],
+    [1440, 66],
+    [1728, 66],
+    [1920, 66],
+    [2560, 66],
   ] as const) {
-    test(`at ${width}px the footer is about 160 to 200px tall (at most ${max}px) at default text`, async ({ browser }) => {
+    test(`at ${width}px the footer is at most ${max}px tall at default text`, async ({ browser }) => {
       const { context, page } = await withDisplay(browser, width, "default");
       await page.goto("/");
       const h = (await page.locator("footer").boundingBox())!.height;
-      expect(h).toBeGreaterThanOrEqual(120);
+      expect(h).toBeGreaterThanOrEqual(48);
       expect(h).toBeLessThanOrEqual(max);
       await context.close();
     });
@@ -194,7 +197,7 @@ test.describe("compact footer", () => {
       const h = (await page.locator("footer").boundingBox())!.height;
       // Touch screens (this suite emulates one) keep 44px link rows, so phones and tablets are taller than a mouse-driven desktop
       // (before the change: 494px at 320, 418px at 375 and 316px at 768).
-      expect(h).toBeLessThanOrEqual(width === 320 ? 380 : width === 375 ? 340 : 260);
+      expect(h).toBeLessThanOrEqual(width === 320 ? 300 : width === 375 ? 270 : 130);
       const nav = page.getByRole("navigation", { name: "Policies" });
       for (const name of ["Terms of use", "Privacy policy", "How we use AI", "Accessibility", "Contact us about your data"]) await expect(nav.getByRole("link", { name })).toBeVisible();
       const line = page.getByTestId("company-block");

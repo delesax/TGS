@@ -67,7 +67,7 @@ export default async function CampaignsPage() {
             {section.title}
           </h2>
           {groups[section.key].length ? (
-            <ul className="flex flex-col gap-3">
+            <ul className="grid items-stretch gap-3 md:grid-cols-2 min-[1500px]:grid-cols-3 min-[2000px]:grid-cols-4">
               {groups[section.key].map((c) => (
                 <CampaignCard key={c.id} campaign={c} now={now} />
               ))}

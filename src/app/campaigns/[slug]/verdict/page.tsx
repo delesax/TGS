@@ -150,6 +150,8 @@ export default async function VerdictPage({ params }: PageProps<"/campaigns/[slu
         </div>
       </section>
 
+      {/* Slot: the public "The winning case" section (feat/verdict-winning-case-public) goes here, directly under the Grand Strategist card and before "Why". */}
+
       <section aria-labelledby="rationale-h" className="flex flex-col gap-3">
         <h2 id="rationale-h">
           Why
