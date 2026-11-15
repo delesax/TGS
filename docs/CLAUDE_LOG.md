@@ -44,6 +44,14 @@ Checkouts: only `TGS/` (the `TGS-sprint5/` and `TGS-legal/` worktrees were remov
 
 ## Entries
 
+### 2026-11-15 — Header logo larger; larger-THE variant (test only) (branch `ui/header-logo`)
+
+- **Header lockup (approved artwork) 30 to 35% larger:** `--header-logo-h: clamp(44px, 44px + (100vw - 1024px) * 0.0192, 52px)` (about 270px wide at 1024, 319px from 1440), header row = logo + 20px. Header height before 69px (68 plus border) and after 65px at 1024, 66 at 1100, 70 at 1280, 73 at 1440 and above. Sticky, same lockup everywhere; mobile header and footer unchanged.
+- **Admin header (seven links) fits at the bigger size from 1024px**, so neither a smaller logo nor a higher Menu breakpoint was needed. Checked logged out, member and admin x 1024, 1100, 1280, 1440, 1728 x four text sizes (60 states): no overlap, no wrapping, no sideways scroll.
+- **Tests changed because they asserted the old header height** (72px maximum): `tests/e2e/header.spec.ts` and `tests/e2e/layout.spec.ts` now allow 77px.
+- **Larger-THE variant, NOT used in the app:** `docs/brand/lockup-01-header*.svg` (adaptive, light, dark, mono ink, mono paper). Same artwork; "THE" scaled 1.5x (about 8.5px tall at the 1440 header size, was 5.7px) and the side rules shortened to keep a 12-unit gap; no wider than the main lockup. Comparison: `docs/brand/header-logo-compare.png`; before and after header screenshots in `docs/brand/polish-screenshots/header-*`. To adopt it: copy `lockup-01-header.svg` over `public/brand/lockup-full.svg` (and the header-only copies if any), then rerun the header tests.
+- Note: the "THE" in the approved artwork is 10.8 units tall in a 99-unit-high lockup, so 10px at a 52px lockup is not possible without a much larger logo.
+
 ### 2026-11-15 — Finishing pass 2: fluid container, one-row footer, Campaign grid (branch `ui/font-picker`, DO NOT MERGE)
 
 - **UI only; no data, auth, routing or copy change, no new library.** `.page-container` is now fluid: width 100%, `padding-inline: clamp(16px, 2.5vw, 40px)`, max 1600px, centred (px, so text size does not change it). Side margins: 16px phones, 32px at 1280, 36px at 1440, 64px outside the container at 1728, 160px at 1920, 480px at 2560. Header hairline, hero glow and footer fill still run edge to edge; reading text keeps 68ch. Hero glow now overhangs by 16px (was 1rem = 17px, which caused a 1px sideways scroll with the new 16px phone padding).

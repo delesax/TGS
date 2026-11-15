@@ -241,6 +241,13 @@ html[data-font="lora"] {
  * is switched off under prefers-reduced-motion (see the media block at the end).
  */
 @layer components {
+  /* Desktop header logo: the full lockup scales with the window, 44px tall (about 270px wide) at 1024px up to 52px tall
+     (about 320px wide) at 1440px and above, never larger. The header row grows with it (logo + 20px). px, so it does not
+     change with the Display text size. */
+  :root {
+    --header-logo-h: clamp(44px, calc(44px + (100vw - 1024px) * 0.0192), 52px);
+    --header-h: calc(var(--header-logo-h) + 20px);
+  }
   /* One shared, fluid container for the header, page content and footer: full width with side padding of
      clamp(16px, 2.5vw, 40px) (32px at 1280px, 36px at 1440px, 40px from 1600px) and a 1600px maximum, centred. Backgrounds
      (header hairline, hero glow, footer fill, Apex motif) are not inside it, so they still run edge to edge. px, not rem,

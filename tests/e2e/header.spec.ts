@@ -62,9 +62,9 @@ test.describe("Site header", () => {
 
       // No link wraps onto a second line inside the row (each is one line tall).
       for (let i = 0; i < 7; i++) expect((await items.nth(i).boundingBox())!.height, `nav item ${i}`).toBeLessThanOrEqual(48);
-      // One slim row (64 to 72px) that stays in view; the search is in the same row.
+      // One slim row (64 to 77px) that stays in view; the search is in the same row.
       const header = (await page.getByRole("banner").boundingBox())!;
-      expect(header.height).toBeLessThanOrEqual(72);
+      expect(header.height).toBeLessThanOrEqual(77); // the lockup is 44px (1024) to 52px (1440+) tall, plus 20px
       expect(header.height).toBeGreaterThanOrEqual(60);
       expect(await page.getByRole("banner").evaluate((el) => getComputedStyle(el).position)).toBe("sticky");
       const search = width >= 1280 ? page.getByRole("searchbox", { name: /Search Campaigns/ }) : page.getByRole("banner").getByRole("link", { name: "Search", exact: true });
