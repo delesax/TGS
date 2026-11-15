@@ -37,11 +37,18 @@
       "summary": "20% VAT on private school fees since 1 January 2025; Supreme Court hearing listed for 1 and 2 December 2026. Facts checked 15 Nov 2026. The public text is in public_summary.",
       "argument_for": "Private schooling is a choice, the tax closes a loophole, and no mass move into state schools has followed.",
       "argument_against": "Families are being priced out, schools are closing, and the Treasury loses money if enough pupils move to the state sector.",
-      "sources": [],
+      "sources": [
+        "https://www.gov.uk/government/publications/vat-on-private-school-fees/ac8c20ce-4824-462d-b206-26a567724643",
+        "https://explore-education-statistics.service.gov.uk/find-statistics/school-pupils-and-their-characteristics/2025-26",
+        "https://caselaw.nationalarchives.gov.uk/ewca/civ/2026/170",
+        "https://www.supremecourt.uk/term-sittings",
+        "https://www.isc.co.uk/media-enquiries/isc-daily-news-summary/2026/june/isc-daily-news-summary-3-june-2026/",
+        "https://www.gbnews.com/money/tax-news-labour-vat-private-schools"
+      ],
       "is_sensitive": false,
       "opinion_not_advice": false,
       "public_summary": "Since 1 January 2025, private school fees across the UK have carried 20% VAT, ending a long-standing exemption. Labour promised the change in its 2024 manifesto. The government says it will raise more than £1.8 billion a year by 2029-30 for state schools, which educate 94% of children. Court challenges have failed so far: the Court of Appeal rejected them in February 2026, and the Supreme Court is listed to hear an appeal on 1 and 2 December 2026.\n\nSupporters say private schooling is a choice, the tax closes a loophole, and no mass move into state schools has followed. Critics say families are being priced out, schools are closing, and the Treasury loses money if enough pupils move to the state sector.\n\nThe numbers are disputed. The Department for Education counts 560,300 pupils in England's independent schools in January 2026, down 3.8% in a year and the second fall running; it adds that rolls are falling across all schools. The Independent Schools Council puts the fall at about 30,000 pupils since VAT began, against a government forecast of about 37,000 in the long run. The DfE says more private schools opened than closed in 2025. The ISC says 57 mainstream private schools closed that year, against about 42 in a typical year.",
-      "admin_notes": "Facts checked 15 Nov 2026. Planned: opens 22 Dec 2026 00:00 UTC, closes 29 Dec 2026 00:00 UTC (the owner's replacement for the Bank of England slot; the bank has no date fields, so set the dates in Admin, Campaigns). Re-check before opening: Supreme Court hearing 1-2 Dec 2026 (UKSC/2026/0045 and 0056); if a judgment is handed down before 22 Dec, update the legal sentence in the summary. Rules (generic open arena) and the field checklist: docs/campaigns/vat-on-private-school-fees.md. Sources not yet added: add the gov.uk, DfE and ISC pages the summary relies on."
+      "admin_notes": "Facts checked 15 Nov 2026. Planned: opens 22 Dec 2026 00:00 UTC, closes 29 Dec 2026 00:00 UTC (the owner's replacement for the Bank of England slot; the bank has no date fields, so set the dates in Admin, Campaigns). Re-check before opening: Supreme Court hearing 1-2 Dec 2026 (UKSC/2026/0045 and 0056); if a judgment is handed down before 22 Dec, update the legal sentence in the summary. Rules (generic open arena) and the field checklist: docs/campaigns/vat-on-private-school-fees.md."
     },
     {
       "slug": "bank-surcharge-energy-bill-support",
