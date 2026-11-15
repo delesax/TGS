@@ -19,3 +19,12 @@ Not demonstrated here: nothing in this batch is applied to the hosted database.
 3. **Signals.** Admin, Signals lists patterns (for example two accounts that voted for each other). It only reads; nothing changes. A Campaign's draft Verdict shows "For review: N integrity signals..." without blocking publishing.
 4. **Bound invite.** `npm run invite:create -- --email person@example.com` (local first). On `/signup`, any other address gets "This invite code was made for a different email address."; the right one works.
 5. **Email essentials.** Admin, Settings, "App email": tick or untick "Essential emails only", set the daily cap, give a reason. Admin, Audit log shows `site.email_controls_changed`. With the setting on, a reply produces no email; only moderation outcomes, Verdict published, appeal outcomes, judge assignments and voting-open notices do.
+
+## Invites and "ask to join" (local Supabase)
+
+1. `npx supabase db reset`, `npm run test:env`, then `npm run dev` (or the Playwright server) and sign in as an admin (`npm run admin:set -- <email>`).
+2. Open `/join` (signed out), ask with an email address. Ask again, and with an existing member's address: the answer is the same each time, and no email is sent.
+3. Admin, Invites: the request is listed with the email budget above it. Tick it, press "Approve and email". Open Mailpit (`http://127.0.0.1:54324`): the invitation has a link to `/signup?code=...`.
+4. Use the link with a different address: "made for a different email address". Use the right address (any capitals): "Check your email". Use the link again: refused.
+5. Paste addresses into the box and press "Approve without emailing": the links show once. Reload: they are gone and the row reads "Link shown to you, not emailed". Try Revoke and Re-issue on a row.
+6. Set `invite_daily_email_limit` to 1 (SQL) and approve three at once: the screen says how many go out now and how many wait for the next days; the queue rows carry later send times.
