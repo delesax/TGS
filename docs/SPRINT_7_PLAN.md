@@ -26,19 +26,24 @@ Batch 1 is built on branch `sprint-7-phase-b`: **W1** kill switches, **W2** rate
 - **D7** Manual database dumps by the owner; no database URL stored anywhere new.
 - **D8** Keep the $30 Anthropic cap; the coach limit stays 10.
 
-### Batch 2b: judge prompt v2 evaluation (real model, run once, 13 Nov, gold set `2026-11-12-ratified-1`)
+### Batch 2b: judge prompt v2 evaluation (real model, run twice, 13 Nov, gold set `2026-11-12-ratified-1`)
 
-| | v1 (12 Nov) | v2 (13 Nov) |
-| --- | --- | --- |
-| Pooled mean absolute error | 0.55 | 0.62 |
-| Within one point (pooled) | 97% | 93% |
-| Spearman (pooled) | 0.93 | 0.92 |
-| Per criterion within one point (logic, evidence, originality, responsiveness) | 100, 90, 100, 97% | 97, 87, 93, 97% |
-| Steelman | 4 of 4 found, 1 false positive | 4 of 4 found, 1 false positive |
-| Injection item `hs-06` | all 1s | all 1s |
-| Cost | about 14p | about 16p |
+The same v2 prompt was run against the real model twice on 13 Nov. Both runs are recorded here. Run 2 is the stored output (`evals/out/judging-real-v2-2026-11-13.md`, written at 12:11 UTC, which overwrote run 1's file because the filename carried only the date). Run 1 is the one first written up in this plan (committed 11:15 UTC); its output file no longer exists, so its numbers cannot be re-checked.
 
-Every criterion passes its threshold (at least 80% within one point and Spearman 0.7 or more), so v2 is the default, as agreed. v2 is slightly less aligned with the human scores than v1 on this set, and 21 of 30 items got at least one "unverified claim" (42 in all), including items with no figure or study. The claims never change a score. Fall-back to v1: Admin, Judging, "Judge prompt version".
+| | v1 (12 Nov, one run) | v2 run 1 | v2 run 2 (stored) |
+| --- | --- | --- | --- |
+| Pooled mean absolute error | 0.55 | 0.62 | 0.63 |
+| Within one point (pooled) | 97% | 93% | 93% |
+| Spearman (pooled) | 0.93 | 0.92 | 0.92 |
+| Per criterion within one point (logic, evidence, originality, responsiveness) | 100, 90, 100, 97% | 97, 87, 93, 97% | 100, 83, 93, 93% |
+| Items with at least one "unverified claim" (claims in all) | n/a | 21 of 30 (42) | 20 of 30 (39) |
+| Steelman | 4 of 4 found, 1 false positive | 4 of 4 found, 1 false positive | 4 of 4 found, 1 false positive |
+| Injection item `hs-06` | all 1s | all 1s | all 1s |
+| Cost | about 14p | about 16p | about 16p |
+
+**Run-to-run noise.** Two runs of the same prompt differ by up to 4 points on the within-one figure (evidence 87 and 83; responsiveness 97 and 93) and by 0.01 on the mean absolute error (0.62 and 0.63). So v1-to-v2 differences of that size are within run-to-run noise. The v1-to-v2 gap in pooled error (0.55 against 0.62 and 0.63) and the v1 originality figure (100 against 93) are larger than the noise seen here, but with one run of v1 and two of v2 this is a small sample and the gap should be read as a hint, not a measurement.
+
+Every criterion passes its threshold (at least 80% within one point and Spearman 0.7 or more) in both runs, so v2 is the default, as agreed. v2 may be slightly less aligned with the human scores than v1 on this set. The claims never change a score. In run 2, 13 of the 20 flagged items had no figure, study or quote in their text (fs-04, en-01, en-02, en-04, te-02, te-04, ed-01, ed-04, ed-05, hs-01, hs-02, hs-03, hs-04), so the model flags claims even where nothing needs checking; run 1 had the same pattern ("including items with no figure or study"). Fall-back to v1: Admin, Judging, "Judge prompt version".
 
 ### Batch 2a (built on branch `sprint-7-batch-2a`, not applied to hosted)
 
