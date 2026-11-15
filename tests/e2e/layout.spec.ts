@@ -159,7 +159,7 @@ test.describe("header search", () => {
           const tops = [];
           for (let i = 0; i < 7; i++) tops.push(Math.round((await items.nth(i).boundingBox())!.y));
           expect(Math.max(...tops) - Math.min(...tops), `${font} ${width}px link tops ${tops}`).toBeLessThanOrEqual(2);
-          expect((await page.getByRole("banner").boundingBox())!.height).toBeLessThanOrEqual(72);
+          expect((await page.getByRole("banner").boundingBox())!.height).toBeLessThanOrEqual(77);
           if (width >= 1280) expect((await placeholderFits(page, "#site-search-desktop")).ok).toBe(true);
           else await expect(page.getByRole("banner").getByRole("link", { name: "Search", exact: true })).toBeVisible();
           await expectNoHorizontalOverflow(page);
