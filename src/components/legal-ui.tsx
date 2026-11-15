@@ -18,6 +18,8 @@ export function Fact({ k, plain = false }: { k: LegalKey; plain?: boolean }) {
 }
 
 /** An email address from LEGAL as a mailto link, or the placeholder. */
+export function FactEmail({ k }: { k: "privacyEmail" | "contactEmail" }) {
+  if (!legalHas(k)) return <Fact k={k} />;
 export function FactEmail({ k, plain = false }: { k: "privacyEmail" | "contactEmail"; plain?: boolean }) {
   if (!legalHas(k)) return <Fact k={k} plain={plain} />;
   // An email address has no spaces, so at large type on a 375px screen it can be wider than the line and
