@@ -13,15 +13,15 @@ afterAll(async () => {
 });
 
 describe("npm run topics:load", () => {
-  it("creates all sixteen drafts, and loading twice creates no duplicates", async () => {
+  it("creates every topic in the bank as a draft, and loading twice creates no duplicates", async () => {
     const first = await loadTopics(service, rows);
-    expect(first.created).toHaveLength(16);
+    expect(first.created).toHaveLength(rows.length);
     const second = await loadTopics(service, rows);
     expect(second.created).toHaveLength(0);
-    expect(second.skipped).toHaveLength(16);
+    expect(second.skipped).toHaveLength(rows.length);
 
     const { data } = await service.from("campaigns").select("slug, status, rubric_published_at").in("slug", rows.map((r) => r.slug));
-    expect(data).toHaveLength(16);
+    expect(data).toHaveLength(rows.length);
     expect(new Set(data!.map((r) => r.status))).toEqual(new Set(["draft"]));
     expect(data!.every((r) => r.rubric_published_at === null)).toBe(true);
   });
@@ -33,6 +33,6 @@ describe("npm run topics:load", () => {
       .select("target_id")
       .eq("action", "campaign.created")
       .in("target_id", campaigns!.map((c) => c.id));
-    expect(entries).toHaveLength(16);
+    expect(entries).toHaveLength(rows.length);
   });
 });
