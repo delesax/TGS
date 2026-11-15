@@ -9,7 +9,7 @@ export function CampaignRubric({ rubric }: { rubric: PublishedRubric }) {
         <h2 id="rubric-h" className="text-2xl font-bold">
           How this Campaign is judged
         </h2>
-        <p className="text-base text-muted-foreground">Published {formatUkDateTime(rubric.publishedAt)}, before the Campaign opens. It does not change once the Campaign is running.</p>
+        <p className="text-base text-muted-foreground">Published {formatUkDateTime(rubric.publishedAt)}, before the Campaign opens. The criteria and weights do not change once the Campaign is running.</p>
       </div>
       <div className="flex flex-col gap-2">
         <h3 className="text-xl font-semibold">The four criteria (each scored 1 to 5)</h3>
@@ -22,7 +22,7 @@ export function CampaignRubric({ rubric }: { rubric: PublishedRubric }) {
         </ul>
         {rubric.steelmanBonusMax ? (
           <p className="text-lg">
-            <strong>Steelman bonus.</strong> A Dispatch that fairly restates the opposing view at its strongest before answering it can earn a bonus of up to {rubric.steelmanBonusMax} points.
+            <strong>Steelman bonus.</strong> A Strategist whose Dispatches fairly restate the opposing view at its strongest before answering it can earn a bonus of up to {rubric.steelmanBonusMax} points in total, once other Strategists have confirmed it.
           </p>
         ) : null}
       </div>

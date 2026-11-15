@@ -116,6 +116,7 @@ test("an admin creates a Campaign; a Strategist sees it, records a before positi
   await expect(page.getByRole("heading", { name: "How this Campaign is judged" })).toBeVisible();
   await expect(page.getByText("Responsiveness.")).toBeVisible();
   await expect(page.getByText(/Panel of judges: \d+%/)).toBeVisible();
+  await expect(page.getByText("The criteria and weights do not change once the Campaign is running.")).toBeVisible();
   await expect(page.getByText("Dispatches open when the Campaign opens")).toBeVisible();
 
   // Sprint 2 carry-over: the Campaign page's buttons fit at 375px.

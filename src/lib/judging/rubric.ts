@@ -1,6 +1,7 @@
 // The published rubric (CLAUDE.md rule 7), in plain words. The four criteria are the ones the AI judge scores
-// (prompts/judge-rubric.v1.md); the blend weights come from the database (public.judging_weights, pinned to a
-// Campaign when its rubric is published).
+// (prompts/judge-rubric.v2.md, the default; v1 is the fall-back, chosen by judging_settings.judge_prompt_version).
+// The wording here is a short paraphrase of the prompt's criteria, not a copy. The blend weights come from the
+// database (public.judging_weights, pinned to a Campaign when its rubric is published).
 
 export const RUBRIC_CRITERIA = [
   { key: "logic", label: "Logic", text: "Is the reasoning sound and the main claim clear?" },
