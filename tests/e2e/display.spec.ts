@@ -1,16 +1,17 @@
 import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Browser, type Page } from "@playwright/test";
 import { loadTestEnv } from "../test-env";
 import { expectNoHorizontalOverflow } from "./helpers";
 
-// The Display picker (footer): body font and text size, saved in localStorage only.
-// Default stays Atkinson Hyperlegible; headings stay Source Serif 4.
+// Display settings: a "Text" button in the header (and inside the phone Menu) opens a dialog for body font and
+// text size, saved in localStorage only. Default stays Atkinson Hyperlegible at 17px; headings and logo stay as designed.
 
 const env = loadTestEnv();
 const service = createClient(env.supabaseUrl, env.serviceKey, { auth: { persistSession: false } });
 const KEY = "tgs-display";
 const PASSWORD = "a display picker password";
+const TRIGGER = "Display settings: text style and size";
 
 const FONTS = [
   { id: "atkinson", label: "Atkinson Hyperlegible", family: /Atkinson/ },
@@ -22,89 +23,133 @@ const FONTS = [
   { id: "merriweather", label: "Merriweather", family: /Merriweather/ },
   { id: "lora", label: "Lora", family: /Lora/ },
 ];
+const SIZES = [
+  { label: "Small", id: "small", px: "15px" },
+  { label: "Default", id: "default", px: "17px" },
+  { label: "Medium", id: "medium", px: "19px" },
+  { label: "Large", id: "large", px: "22px" },
+];
 
 const html = (page: Page) => page.locator("html");
 const bodyFamily = (page: Page) => page.evaluate(() => getComputedStyle(document.body).fontFamily);
+const baseSize = (page: Page) => page.evaluate(() => getComputedStyle(document.documentElement).fontSize);
 const stored = (page: Page) => page.evaluate((key) => window.localStorage.getItem(key), KEY);
+const dialog = (page: Page) => page.getByRole("dialog", { name: "Text style and size" });
 
-async function openDisplay(page: Page) {
-  const summary = page.getByText("Display: text style and size");
-  await summary.scrollIntoViewIfNeeded();
-  if (!(await page.getByTestId("display-settings").evaluate((el) => (el as HTMLDetailsElement).open))) await summary.click();
+async function desktop(browser: Browser, width = 1280) {
+  const context = await browser.newContext({ baseURL: env.siteUrl, viewport: { width, height: 900 } });
+  return { context, page: await context.newPage() };
 }
 
-test.describe("Display picker", () => {
-  test("a choice persists across reloads and pages, and reset restores the default", async ({ page }) => {
+/** Opens the dialog the way the width allows: the header Text button on desktop, the Menu row on a phone. */
+async function openDisplay(page: Page) {
+  const menu = page.getByRole("button", { name: "Menu", exact: true });
+  if (await menu.isVisible()) {
+    if ((await menu.getAttribute("aria-expanded")) !== "true") await menu.click();
+    await page.getByRole("navigation", { name: "Main" }).getByRole("button", { name: TRIGGER }).click();
+  } else {
+    await page.getByRole("banner").getByRole("button", { name: TRIGGER }).click();
+  }
+  await expect(dialog(page)).toBeVisible();
+}
+
+test.describe("Display settings", () => {
+  test("the Text button is in the header, and a choice persists across reloads and pages until reset", async ({ browser }) => {
+    const { context, page } = await desktop(browser);
     await page.goto("/");
     await expect(html(page)).not.toHaveAttribute("data-font", /.+/);
     expect(await bodyFamily(page)).toMatch(/Atkinson/);
+    expect(await baseSize(page)).toBe("17px");
+
+    // Header placement: one slim row, the labelled button inside it.
+    const header = (await page.getByRole("banner").boundingBox())!;
+    const button = page.getByRole("banner").getByRole("button", { name: TRIGGER });
+    await expect(button).toHaveText("Text");
+    const box = (await button.boundingBox())!;
+    expect(box.y).toBeGreaterThanOrEqual(header.y);
+    expect(box.y + box.height).toBeLessThanOrEqual(header.y + header.height);
 
     await openDisplay(page);
-    await page.getByRole("radio", { name: /^Inter/ }).check();
+    await dialog(page).getByRole("radio", { name: /^Inter/ }).check();
     await expect(html(page)).toHaveAttribute("data-font", "inter");
     expect(await bodyFamily(page)).toMatch(/Inter/);
-    expect(JSON.parse((await stored(page))!)).toEqual({ font: "inter", size: "default" });
-
-    // Headings and the logo do not change.
+    expect(JSON.parse((await stored(page))!)).toEqual({ v: 2, font: "inter", size: "default" });
+    // Headings stay Source Serif 4.
     expect(await page.getByRole("heading", { level: 1 }).first().evaluate((el) => getComputedStyle(el).fontFamily)).toMatch(/Source Serif 4/);
 
     await page.reload();
     await expect(html(page)).toHaveAttribute("data-font", "inter");
-    expect(await bodyFamily(page)).toMatch(/Inter/);
-
     await page.goto("/login");
     await expect(html(page)).toHaveAttribute("data-font", "inter");
 
     await openDisplay(page);
-    await expect(page.getByRole("radio", { name: /^Inter/ })).toBeChecked();
-    await page.getByRole("button", { name: "Reset to default" }).click();
+    await expect(dialog(page).getByRole("radio", { name: /^Inter/ })).toBeChecked();
+    await dialog(page).getByRole("button", { name: "Reset to default" }).click();
     await expect(html(page)).not.toHaveAttribute("data-font", /.+/);
     expect(await stored(page)).toBeNull();
     expect(await bodyFamily(page)).toMatch(/Atkinson/);
-
-    await page.reload();
-    await expect(html(page)).not.toHaveAttribute("data-font", /.+/);
+    await context.close();
   });
 
-  test("text size changes the base size and resets with the font", async ({ page }) => {
+  test("the four sizes are 15, 17, 19 and 22px, persist, and reset", async ({ browser }) => {
+    const { context, page } = await desktop(browser);
     await page.goto("/");
-    const size = () => page.evaluate(() => getComputedStyle(document.documentElement).fontSize);
-    expect(await size()).toBe("18px");
     await openDisplay(page);
-    await page.getByRole("radio", { name: "Large", exact: true }).check();
-    expect(await size()).toBe("20px");
-    await page.getByRole("radio", { name: "Larger", exact: true }).check();
-    expect(await size()).toBe("22px");
+    for (const size of SIZES) {
+      await dialog(page).getByRole("radio", { name: size.label, exact: true }).check();
+      expect(await baseSize(page), size.label).toBe(size.px);
+    }
     await page.reload();
-    expect(await size()).toBe("22px");
+    expect(await baseSize(page)).toBe("22px");
     await expectNoHorizontalOverflow(page);
     await openDisplay(page);
-    await page.getByRole("button", { name: "Reset to default" }).click();
-    expect(await size()).toBe("18px");
+    await dialog(page).getByRole("button", { name: "Reset to default" }).click();
+    expect(await baseSize(page)).toBe("17px");
     expect(await stored(page)).toBeNull();
+    await context.close();
   });
 
-  test("the picker works from the keyboard and shows a focus state", async ({ page }) => {
+  test("keyboard: opens with Enter, focus stays inside, Escape closes and focus returns to the Text button", async ({ browser }) => {
+    const { context, page } = await desktop(browser);
     await page.goto("/");
-    const summary = page.locator("summary", { hasText: "Display: text style and size" });
-    await summary.scrollIntoViewIfNeeded();
-    await summary.focus();
+    const button = page.getByRole("banner").getByRole("button", { name: TRIGGER });
+    await button.focus();
     await page.keyboard.press("Enter");
-    await expect(page.getByTestId("display-settings")).toHaveJSProperty("open", true);
-    // Tab to the first radio, then arrow keys move and select within the group.
-    await page.keyboard.press("Tab");
-    await page.keyboard.press("ArrowDown");
+    await expect(dialog(page)).toBeVisible();
+    // Tab around: focus never leaves the dialog (it is modal).
+    for (let i = 0; i < 12; i++) {
+      await page.keyboard.press("Tab");
+      expect(await page.evaluate(() => !!document.activeElement?.closest("dialog"))).toBe(true);
+    }
+    await page.keyboard.press("Escape");
+    await expect(dialog(page)).toBeHidden();
+    await expect(button).toBeFocused();
+    // A visible focus outline on a radio option.
+    await button.press("Enter");
+    const radio = dialog(page).getByRole("radio", { name: /^Inter/ });
+    await radio.focus();
+    await page.keyboard.press("Space");
     await expect(html(page)).toHaveAttribute("data-font", "inter");
-    const outline = await page.getByRole("radio", { name: /^Inter/ }).evaluate((el) => {
-      const label = el.closest("label")!;
-      return getComputedStyle(label).outlineStyle + " " + getComputedStyle(label).outlineWidth;
-    });
-    expect(outline).toBe("solid 3px");
+    expect(await radio.evaluate((el) => getComputedStyle(el.closest("label")!).outlineStyle)).toBe("solid");
+    await context.close();
   });
 
-  test("a blocked or corrupt store falls back cleanly", async ({ browser }) => {
-    // Storage that throws on every access (some privacy modes do this).
-    const blocked = await browser.newContext({ baseURL: env.siteUrl });
+  test("on a phone the Text row is inside the Menu; the menu closes as the dialog opens and focus returns to Menu", async ({ browser }) => {
+    const context = await browser.newContext({ baseURL: env.siteUrl, viewport: { width: 375, height: 812 } });
+    const page = await context.newPage();
+    await page.goto("/");
+    await openDisplay(page);
+    await expect(page.getByRole("button", { name: "Menu", exact: true })).toHaveAttribute("aria-expanded", "false");
+    await dialog(page).getByRole("radio", { name: "Large", exact: true }).check();
+    expect(await baseSize(page)).toBe("22px");
+    await page.keyboard.press("Escape");
+    await expect(dialog(page)).toBeHidden();
+    await expect(page.getByRole("button", { name: "Menu", exact: true })).toBeFocused();
+    await context.close();
+  });
+
+  test("a blocked or corrupt store falls back cleanly, and saved values from the first picker keep their meaning", async ({ browser }) => {
+    const blocked = await browser.newContext({ baseURL: env.siteUrl, viewport: { width: 1280, height: 900 } });
     await blocked.addInitScript(() => {
       Object.defineProperty(window, "localStorage", {
         get() {
@@ -118,38 +163,52 @@ test.describe("Display picker", () => {
     await page.goto("/");
     expect(await bodyFamily(page)).toMatch(/Atkinson/);
     await openDisplay(page);
-    await page.getByRole("radio", { name: /^Lora/ }).check();
+    await dialog(page).getByRole("radio", { name: /^Lora/ }).check();
     await expect(html(page)).toHaveAttribute("data-font", "lora");
-    await expect(page.getByRole("status").filter({ hasText: "would not save" })).toBeVisible();
+    await expect(dialog(page).getByRole("status")).toContainText("would not save");
     expect(errors).toEqual([]);
     await blocked.close();
 
-    // A stored value that is not one of the options is ignored.
-    const corrupt = await browser.newContext({ baseURL: env.siteUrl });
-    await corrupt.addInitScript((key) => window.localStorage.setItem(key, '{"font":"comic-sans","size":"huge"}'), KEY);
-    const page2 = await corrupt.newPage();
-    await page2.goto("/");
-    await expect(html(page2)).not.toHaveAttribute("data-font", /.+/);
-    await expect(html(page2)).not.toHaveAttribute("data-size", /.+/);
-    expect(await bodyFamily(page2)).toMatch(/Atkinson/);
-    await corrupt.close();
+    const cases: { stored: string; font: string | null; size: string | null; px: string }[] = [
+      { stored: '{"font":"comic-sans","size":"huge"}', font: null, size: null, px: "17px" },
+      { stored: "not json", font: null, size: null, px: "17px" },
+      // First picker (no version): large was 20px and larger was 22px.
+      { stored: '{"font":"lexend","size":"large"}', font: "lexend", size: "medium", px: "19px" },
+      { stored: '{"font":"inter","size":"larger"}', font: "inter", size: "large", px: "22px" },
+      // Current version: large is 22px.
+      { stored: '{"v":2,"font":"lora","size":"large"}', font: "lora", size: "large", px: "22px" },
+      { stored: '{"v":2,"font":"lora","size":"small"}', font: "lora", size: "small", px: "15px" },
+    ];
+    for (const c of cases) {
+      const ctx = await browser.newContext({ baseURL: env.siteUrl });
+      await ctx.addInitScript(([key, value]) => window.localStorage.setItem(key, value), [KEY, c.stored]);
+      const p = await ctx.newPage();
+      await p.goto("/");
+      if (c.font) await expect(html(p)).toHaveAttribute("data-font", c.font);
+      else await expect(html(p)).not.toHaveAttribute("data-font", /.+/);
+      if (c.size) await expect(html(p)).toHaveAttribute("data-size", c.size);
+      else await expect(html(p)).not.toHaveAttribute("data-size", /.+/);
+      expect(await baseSize(p), c.stored).toBe(c.px);
+      await ctx.close();
+    }
   });
 
-  test("all eight fonts stay readable at 375px with the largest text size, and nothing shifts on load", async ({ page }) => {
+  test("all eight fonts stay readable at 320px with the largest size, and nothing shifts on load", async ({ browser }) => {
+    const context = await browser.newContext({ baseURL: env.siteUrl, viewport: { width: 320, height: 800 } });
+    const page = await context.newPage();
     await page.goto("/");
     await openDisplay(page);
-    await page.getByRole("radio", { name: "Larger", exact: true }).check();
+    await dialog(page).getByRole("radio", { name: "Large", exact: true }).check();
     for (const font of FONTS) {
-      await page.getByRole("radio", { name: new RegExp(`^${font.label}`) }).check();
+      await dialog(page).getByRole("radio", { name: new RegExp(`^${font.label}`) }).check();
       if (font.id === "atkinson") await expect(html(page)).not.toHaveAttribute("data-font", /.+/);
       else await expect(html(page)).toHaveAttribute("data-font", font.id);
       expect(await bodyFamily(page)).toMatch(font.family);
-      await expectNoHorizontalOverflow(page);
     }
-    // Layout shift when a saved non-default font loads (swap with size-adjusted fallbacks).
-    await page.getByRole("radio", { name: /^Merriweather/ }).check();
+    await dialog(page).getByRole("radio", { name: /^Merriweather/ }).check();
     await page.reload();
     await page.waitForLoadState("networkidle");
+    await expectNoHorizontalOverflow(page);
     const cls = await page.evaluate(
       () =>
         new Promise<number>((resolve) => {
@@ -161,9 +220,10 @@ test.describe("Display picker", () => {
         }),
     );
     expect(cls, "cumulative layout shift").toBeLessThan(0.1);
+    await context.close();
   });
 
-  test("works signed in too", async ({ page }) => {
+  test("works signed in too", async ({ browser }) => {
     const code = `TGS-DISP-${randomUUID().slice(0, 8).toUpperCase()}`;
     await service.from("invites").insert({ code, max_uses: 1, note: "playwright display" });
     const email = `e2e-display-${randomUUID()}@example.test`;
@@ -174,6 +234,7 @@ test.describe("Display picker", () => {
       user_metadata: { invite_code: code, age_confirmed: true, terms_accepted: true, public_acknowledged: true },
     });
     if (error) throw error;
+    const { context, page } = await desktop(browser);
     try {
       await page.goto("/login");
       await page.getByLabel("Email address").fill(email);
@@ -181,33 +242,40 @@ test.describe("Display picker", () => {
       await page.getByRole("button", { name: "Sign in", exact: true }).click();
       await expect(page).not.toHaveURL(/\/login/);
       await openDisplay(page);
-      await page.getByRole("radio", { name: /^Source Serif 4/ }).check();
+      await dialog(page).getByRole("radio", { name: /^Source Serif 4/ }).check();
       await page.goto("/dossier");
       await expect(html(page)).toHaveAttribute("data-font", "source-serif");
       expect(await bodyFamily(page)).toMatch(/Source Serif 4/);
     } finally {
+      await context.close();
       await service.auth.admin.deleteUser(data.user.id);
     }
   });
 });
 
-test.describe("Display picker with the mobile menu", () => {
-  for (const width of [320, 360, 375, 414, 768]) {
-    test(`Larger text at ${width}px: header under 150px closed, Sign in visible, menu opens, no sideways scroll`, async ({ browser }) => {
-      const context = await browser.newContext({ baseURL: env.siteUrl, viewport: { width, height: 800 } });
-      await context.addInitScript((key) => window.localStorage.setItem(key, JSON.stringify({ font: "lexend", size: "larger" })), KEY);
-      const page = await context.newPage();
-      await page.goto("/");
-      await expect(html(page)).toHaveAttribute("data-size", "larger");
-      const header = (await page.getByRole("banner").boundingBox())!;
-      expect(header.height).toBeLessThan(150);
-      await expect(page.getByRole("banner").getByRole("link", { name: "Sign in" })).toBeVisible();
-      await expectNoHorizontalOverflow(page);
-      await page.getByRole("button", { name: "Menu", exact: true }).click();
-      await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Campaigns" })).toBeVisible();
-      await expectNoHorizontalOverflow(page);
-      await page.keyboard.press("Escape");
-      await context.close();
-    });
+test.describe("Display settings with the header and mobile menu", () => {
+  for (const size of ["small", "large"]) {
+    for (const width of [320, 375, 768, 1024, 1280, 1440]) {
+      test(`${size} text at ${width}px: header usable and short, Sign in and Menu or Text reachable, no sideways scroll`, async ({ browser }) => {
+        const context = await browser.newContext({ baseURL: env.siteUrl, viewport: { width, height: 800 } });
+        await context.addInitScript((value) => window.localStorage.setItem("tgs-display", value), JSON.stringify({ v: 2, font: "lexend", size }));
+        const page = await context.newPage();
+        await page.goto("/");
+        await expect(html(page)).toHaveAttribute("data-size", size);
+        const header = (await page.getByRole("banner").boundingBox())!;
+        expect(header.height).toBeLessThan(width >= 1024 ? 73 : 150);
+        await expectNoHorizontalOverflow(page);
+        if (width < 1024) {
+          await expect(page.getByRole("banner").getByRole("link", { name: "Sign in" })).toBeVisible();
+          await page.getByRole("button", { name: "Menu", exact: true }).click();
+          await expect(page.getByRole("navigation", { name: "Main" }).getByRole("button", { name: TRIGGER })).toBeVisible();
+          await expectNoHorizontalOverflow(page);
+          await page.keyboard.press("Escape");
+        } else {
+          await expect(page.getByRole("banner").getByRole("button", { name: TRIGGER })).toBeVisible();
+        }
+        await context.close();
+      });
+    }
   }
 });

@@ -64,7 +64,7 @@ export function MobileNav({ children }: { children: React.ReactNode }) {
         ref={panelRef}
         hidden={!open}
         onClick={(event) => {
-          if ((event.target as HTMLElement).closest("a")) close(false);
+          if ((event.target as HTMLElement).closest("a, [data-close-menu]")) close(false);
         }}
         onSubmit={() => close(false)}
         className="absolute inset-x-0 top-full z-40 max-h-[calc(100dvh-4rem)] overflow-y-auto border-b border-border bg-background shadow-lg"

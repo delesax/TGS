@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 // Every size keeps a 48px minimum tap target (WCAG 2.5.8 asks for 24px; we go further for older users).
 const buttonVariants = cva(
-  "inline-flex min-h-[46px] items-center justify-center gap-2 rounded-[10px] px-5 text-base font-semibold whitespace-nowrap transition-[box-shadow,background-color,border-color,color] duration-200 motion-reduce:transition-none focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-60 [&_svg]:size-5 [&_svg]:shrink-0",
+  "inline-flex min-h-[46px] items-center justify-center gap-2 rounded-[10px] px-5 text-center text-base font-semibold max-w-full transition-[box-shadow,background-color,border-color,color] duration-200 motion-reduce:transition-none focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-60 [&_svg]:size-5 [&_svg]:shrink-0",
   {
     variants: {
       variant: {

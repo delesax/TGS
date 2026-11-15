@@ -152,7 +152,8 @@ test.describe("Mobile menu", () => {
         expect(closed.height).toBeLessThan(150);
         await expectNoHorizontalOverflow(page);
         await menuButton(page).click();
-        await expect(mainNav(page).locator("a, button")).toHaveCount(7);
+        // Seven destinations plus the "Text" row (display settings).
+        await expect(mainNav(page).locator("a, button")).toHaveCount(8);
         for (const name of ["Home", "Campaigns", "Leaderboard", "Dossier", "Admin", "Account"]) await expect(mainNav(page).getByRole("link", { name })).toBeVisible();
         await expect(mainNav(page).getByRole("button", { name: "Sign out" })).toBeVisible();
         await expectNoHorizontalOverflow(page);

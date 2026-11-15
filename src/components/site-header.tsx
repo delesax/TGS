@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Search } from "lucide-react";
 import { getViewer } from "@/lib/auth";
 import { signOut } from "@/app/(auth)/actions";
+import { DisplayDialog } from "@/components/display-dialog";
+import { DisplayTrigger } from "@/components/display-trigger";
 import { HeaderSearch } from "@/components/header-search";
 import { MobileNav } from "@/components/mobile-nav";
 import { NavLink } from "@/components/nav-link";
@@ -35,32 +37,32 @@ export async function SiteHeader() {
         <nav aria-label="Main" className="hidden lg:block">
           <ul className="flex items-center gap-x-0.5">
             <li>
-              <NavLink href="/" className="lg:min-h-10 lg:px-2.5 lg:text-base">Home</NavLink>
+              <NavLink href="/" className="lg:min-h-[42px] lg:px-[10px] lg:text-[16px]">Home</NavLink>
             </li>
             <li>
-              <NavLink href="/campaigns" className="lg:min-h-10 lg:px-2.5 lg:text-base">Campaigns</NavLink>
+              <NavLink href="/campaigns" className="lg:min-h-[42px] lg:px-[10px] lg:text-[16px]">Campaigns</NavLink>
             </li>
             <li>
-              <NavLink href="/leaderboard" className="lg:min-h-10 lg:px-2.5 lg:text-base">Leaderboard</NavLink>
+              <NavLink href="/leaderboard" className="lg:min-h-[42px] lg:px-[10px] lg:text-[16px]">Leaderboard</NavLink>
             </li>
             <li>
-              <NavLink href="/dossier" className="lg:min-h-10 lg:px-2.5 lg:text-base">Dossier</NavLink>
+              <NavLink href="/dossier" className="lg:min-h-[42px] lg:px-[10px] lg:text-[16px]">Dossier</NavLink>
             </li>
             {viewer ? (
               <>
                 {viewer.isAdmin ? (
                   <li>
-                    <NavLink href="/admin" className="lg:min-h-10 lg:px-2.5 lg:text-base">Admin</NavLink>
+                    <NavLink href="/admin" className="lg:min-h-[42px] lg:px-[10px] lg:text-[16px]">Admin</NavLink>
                   </li>
                 ) : null}
                 <li>
-                  <NavLink href="/profile" className="lg:min-h-10 lg:px-2.5 lg:text-base">Account</NavLink>
+                  <NavLink href="/profile" className="lg:min-h-[42px] lg:px-[10px] lg:text-[16px]">Account</NavLink>
                 </li>
                 <li>
                   <form action={signOut} className="flex">
                     <button
                       type="submit"
-                      className="h-10 rounded-md px-2.5 text-base font-semibold text-foreground underline underline-offset-4 hover:bg-muted"
+                      className="h-[42px] rounded-md px-[10px] text-[16px] font-semibold text-foreground underline underline-offset-4 hover:bg-muted"
                     >
                       Sign out
                     </button>
@@ -69,17 +71,18 @@ export async function SiteHeader() {
               </>
             ) : (
               <li>
-                <NavLink href="/login" className="lg:min-h-10 lg:px-2.5 lg:text-base">Sign in</NavLink>
+                <NavLink href="/login" className="lg:min-h-[42px] lg:px-[10px] lg:text-[16px]">Sign in</NavLink>
               </li>
             )}
           </ul>
         </nav>
         <div className="hidden items-center gap-1 lg:flex">
+          <DisplayTrigger variant="header" />
           <Link
             href="/search"
             aria-label="Search"
             title="Search"
-            className="grid size-10 place-items-center rounded-[10px] text-foreground transition-colors duration-200 hover:bg-muted motion-reduce:transition-none xl:hidden"
+            className="grid size-[40px] place-items-center rounded-[10px] text-foreground transition-colors duration-200 hover:bg-muted motion-reduce:transition-none xl:hidden"
           >
             <Search aria-hidden className="size-5" />
           </Link>
@@ -128,6 +131,9 @@ export async function SiteHeader() {
                     </li>
                   </>
                 ) : null}
+                <li>
+                  <DisplayTrigger variant="menu" />
+                </li>
               </ul>
             </nav>
           </MobileNav>
@@ -156,6 +162,7 @@ export async function SiteHeader() {
           </button>
         </form>
       </div>
+      <DisplayDialog />
     </header>
   );
 }

@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { DisplaySettings } from "@/components/display-settings";
 import { Fact, FactEmail } from "@/components/legal-ui";
 import { PwaSupport } from "@/components/pwa";
 import { LEGAL } from "@/lib/legal";
@@ -32,7 +31,6 @@ export function SiteFooter() {
             ))}
           </ul>
         </nav>
-        <DisplaySettings />
         <address data-testid="company-block" className="flex flex-col gap-1 text-base not-italic text-muted-foreground [overflow-wrap:anywhere]">
           <p className="font-semibold text-foreground">{LEGAL.companyName} · Invite-only pilot</p>
           <p>

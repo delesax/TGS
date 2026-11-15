@@ -78,7 +78,8 @@ test.describe("Site header", () => {
     const page = await signedInAt(browser, 375, 812);
     // signedInAt left the menu open: seven destinations, none wrapped into the header.
     const nav = page.getByRole("navigation", { name: "Main" });
-    await expect(nav.locator("a, button")).toHaveCount(7);
+    // Seven destinations plus the "Text" row (display settings).
+    await expect(nav.locator("a, button")).toHaveCount(8);
     const open = (await page.getByRole("banner").boundingBox())!;
     const panel = (await page.locator("#mobile-menu").boundingBox())!;
     expect(panel.x).toBeGreaterThanOrEqual(0);

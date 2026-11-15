@@ -94,8 +94,8 @@ test.describe("legal pages and the footer", () => {
     await expect(page.getByRole("table", { name: "How long we keep each kind of data" })).toBeVisible();
     await expect(page.getByRole("table", { name: "Cookies and similar storage used by the site" })).toBeVisible();
     await expectNoHorizontalOverflow(page);
-    // Body type is at least 18px.
-    const size = await page.locator("main p, p").first().evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+    // Body type is at least 18px. Measured on page content (not the hidden settings dialog in the header).
+    const size = await page.locator("main p").first().evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
     expect(size).toBeGreaterThanOrEqual(18);
   });
 

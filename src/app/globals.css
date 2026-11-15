@@ -89,7 +89,7 @@
  * Body font chosen in the Display picker (src/lib/display.ts, src/components/display-settings.tsx).
  * <html data-font="..."> is set before first paint from localStorage; no attribute means the default,
  * Atkinson Hyperlegible. Headings stay Source Serif 4 (--font-serif). data-size scales every rem,
- * which is 18px by default (see html below).
+ * which is 17px by default (see html below).
  */
 :root {
   --body-font: var(--font-atkinson), ui-sans-serif, system-ui, sans-serif;
@@ -157,10 +157,13 @@ html[data-font="lora"] {
     font-size: 106.25%; /* 17px base (the Default size) */
     -webkit-text-size-adjust: 100%;
   }
-  html[data-size="large"] {
-    font-size: 125%; /* 20px */
+  html[data-size="small"] {
+    font-size: 93.75%; /* 15px */
   }
-  html[data-size="larger"] {
+  html[data-size="medium"] {
+    font-size: 118.75%; /* 19px */
+  }
+  html[data-size="large"] {
     font-size: 137.5%; /* 22px */
   }
   body {

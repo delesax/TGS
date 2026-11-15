@@ -39,11 +39,11 @@ export function HeaderSearch() {
         enterKeyHint="search"
         maxLength={200}
         placeholder="Search"
-        className="h-10 w-40 rounded-[10px] border border-input bg-background/60 pl-9 pr-9 text-base placeholder:text-muted-foreground transition-[width,box-shadow] duration-200 focus:w-60 motion-reduce:transition-none focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        className="h-[40px] w-[160px] rounded-[10px] border border-input bg-background/60 pl-9 pr-9 text-[16px] placeholder:text-muted-foreground transition-[width,box-shadow] duration-200 focus:w-[240px] motion-reduce:transition-none focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring"
       />
       <kbd
         aria-hidden
-        className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 rounded border border-border px-1.5 text-xs text-muted-foreground"
+        className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 rounded border border-border px-[6px] text-[12px] text-muted-foreground"
       >
         /
       </kbd>

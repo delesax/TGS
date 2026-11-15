@@ -67,7 +67,7 @@ export function Countdown({
       ) : (
         <>
           <p className="sr-only">{describeDuration(left)}</p>
-          <div aria-hidden className="flex gap-2 sm:gap-3" data-seconds-left={left}>
+          <div aria-hidden className="flex flex-wrap gap-2 sm:gap-3" data-seconds-left={left}>
             {units.map((u) => (
               <div
                 key={u.name}
