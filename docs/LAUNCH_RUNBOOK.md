@@ -15,7 +15,7 @@ Do these in order. Nothing here has been done by Claude. Tick each one and write
 5. **Provider accounts.** Move the Vercel, Supabase, Resend and Anthropic accounts into the company before any commercial use. Until then there are no sponsors and no payments (decision D1).
 6. **Campaign 1: `under-16-social-media-ban`** (opens 1 December 2026, 00:00 UTC). Before 1 December: Admin, Campaigns, Edit. Replace the placeholder summary, check the rules, **publish the rubric** ("Publish the rubric", once the rule 7 change is live; it cannot be undone), then set Publish to **"Schedule it"** and save. Nothing is needed at midnight: the scheduler opens it within a minute.
 7. **Decide the three flagged Campaigns** (each has an owner decision flag and cannot be scheduled until you clear it): `bank-of-england-rate-decision-november` (is the topic still timely?), `rosebank-after-jackdaw`, and `assisted-dying-or-fix-care-first` (sensitive: it needs the real content note).
-8. **Edit the three PLACEHOLDER strings** in `src/lib/judging/notices.ts` before the first Campaign can close (8 December 2026 at the earliest). This is a parked legal item and is not touched by Claude.
+8. **Judging notices (done).** The owner's confirmed wording for the three Verdict-page notices in `src/lib/judging/notices.ts` was merged on 16 Nov (PR #64) and the PLACEHOLDER markers are gone. Any further change to that wording is the owner's call; Claude does not touch it.
 9. **Member post test** (needs a second, non-admin account). Account deletion stays OFF and the legal items stay parked.
    1. In a terminal in the project folder: `npm run invite:create -- --email <mailbox> --note "TEST account"` (one use, bound to that address; it writes to hosted and prints the host first). **The sign-up link it prints uses the LOCAL site address, so do not use it as printed:** open `https://thegrandstrategist.com/signup?code=<printed code>` instead. Use a mailbox that is not a plus-variant of your admin address (Signals would flag it).
    2. In a private window sign up with the code, confirm the email, choose a handle.
@@ -69,14 +69,13 @@ Nothing below has been done by Claude. Tick them off in order; none needs a code
 
 ### Launch day (T)
 1. Create the first 10 to 20 invites in **Admin, Invites** (paste the addresses, then "Approve and email"; each person gets a single-use link bound to their own address, valid 7 days from the moment it is sent; the screen shows the day's email budget and queues any extra for the next days). "Approve without emailing" shows the links once instead. The command `npm run invite:create` still works for a one-off (a plain code, optionally `--email`), and older codes keep working. Keep the first wave to about 25 sign-ups a day while Resend's free 100 a day is shared with Supabase's own sign-up emails.
-1. Create the first 10 to 20 invites (`npm run invite:create`, or Admin). Prefer binding an invite to an email address where you know it (decision D3b). **The script's sign-up link uses the local site address, so do not send it as printed:** send `https://thegrandstrategist.com/signup?code=<printed code>`.
 2. For the first two hours look every 15 minutes at: Admin, Health; Admin, Signals; `/admin/audit`; the Supabase and Vercel dashboards for errors.
 3. Email: if the day's app email is over 80% of the Resend figure, flip emails off (Admin, Settings, switches). They stay queued and send on resume.
 4. AI: if calls used pass 80% of the daily cap before evening, tell members judging will be slower. Judging stops at 80% by design and resumes the next UK day.
 5. Next wave only after a clean day: no 5xx you cannot explain, queues drained, no unresolved Signals you would act on.
 
 ### Invite waves
-10 to 20 a wave, about 100 in total. If a Campaign closes with many Dispatches, remember the AI cap: with the default cap of 1,000 calls a day a close of 1,500 Dispatches judges about 800 on day one and the rest on day two (measured in `docs/LOAD_TEST_RESULTS.md`). Either raise the cap in Admin, Settings, or tell members to expect a day's delay.
+10 to 20 a wave, about 100 in total. If a Campaign closes with many Dispatches, remember the AI cap: with the cap at 1,000 calls a day (the owner reports it is now 2,000, which judges up to 1,600 a day; see the log) a close of 1,500 Dispatches judges about 800 on day one and the rest on day two (measured in `docs/LOAD_TEST_RESULTS.md`). Either raise the cap in Admin, Settings, or tell members to expect a day's delay.
 
 ## Kill switches (no deploy, effective at once, each writes an audit entry with your reason)
 Admin, Settings, "Site switches" (database function `set_site_switches`):
