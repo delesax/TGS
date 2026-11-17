@@ -10,7 +10,7 @@ Built from the repo on `main` (`8dce90c`), the unmerged branches, the worktrees 
 | `docs-launch-decisions-16-nov`, `log-ai-cap-2000`, `log-vat-topic-loaded`, `docs-launch-hygiene` | Docs only (16 Nov decisions, AI cap 2,000, VAT topic loaded, runbook note) | `main` (11 behind) | **already merged into this branch; delete after it merges** |
 | `docs-w7-eval-notes` | W7 eval notes plus a small code change (`src/lib/judging/eval-report.ts`, tested; `scripts/eval-judging.ts`) | `main` (11 behind) | rebase (log conflict, keep both), then merge; independent |
 | `invites-admin-lite` | Admin invites small version: new migration `20261116000200_admin_invites.sql`, admin screen, tests | the merged `invites-join-requests` (9 behind `main`) | rebase; hosted migration before merge. Owned by the other session |
-| `feat/verdict-winning-case` | Winner's summary backend and admin, prompt v2, stricter validator, eval script; migration `20261116000100_verdict_winner_summary.sql` | `main` (11 behind) | **rename the migration (version clash, see 2)**, rebase, hosted migration, then merge |
+| `feat/verdict-winning-case` | Winner's summary backend and admin, prompt v2, stricter validator, eval script; migration `20261117000100_verdict_winner_summary.sql` (renamed 17 Nov, rebased onto `main`) | `main` | hosted migration, then merge |
 | `feat/verdict-winning-case-public` | Public "The winning case" section, two Verdict fixes | the **old** tip of `feat/verdict-winning-case` | rebase onto the new tip after it lands; merge last |
 | `ui/font-picker-backup-pre-rebase`, `ui/header-logo`, `fix-main-factemail`, `fix-legal-ui-merge` | Local leftovers (merged or superseded) | – | local branches removed in this pass where verified |
 
@@ -24,7 +24,7 @@ Migrations on `main` after the last one the log says is applied to hosted (`2026
 | --- | --- |
 | `20261116000100_join_requests_invites.sql` (on `main`, PR #66) | **Not known to be applied to hosted.** Its header says "migration first, then the code", but the code is already merged and deployed. If it is not applied, `/admin/invites` and the "ask to join" form will error on live. Dele: check and apply (commands in section 9) |
 | `20261116000200_admin_invites.sql` (branch `invites-admin-lite`) | Not on `main`; apply before that branch merges |
-| `20261116000100_verdict_winner_summary.sql` (branch `feat/verdict-winning-case`) | **Version clash:** it has the same version number (`20261116000100`) as the join-requests migration on `main`. The Supabase CLI keys migrations by that prefix, so a push would fail on a duplicate. Rename it to a later version (suggested `20261117000100_verdict_winner_summary.sql`) before applying; cc will do it on the owner's go (S) |
+| `20261117000100_verdict_winner_summary.sql` (branch `feat/verdict-winning-case`) | **Version clash fixed 17 Nov:** it was `20261116000100`, the same version as the join-requests migration on `main` (the Supabase CLI keys migrations by that prefix, so a push would have failed on a duplicate). Renamed, SQL unchanged; still not applied to hosted |
 
 Apply order: `20261116000100_join_requests_invites`, then `20261116000200_admin_invites` (if that branch merges), then the renamed verdict migration. Always a dry run first from Dele's terminal: `npx supabase db push --dry-run --include-all --linked`.
 
@@ -101,7 +101,7 @@ SEO 91 is one audit: campaign and verdict pages have no meta description. Home m
 | Item | Owner | Blocks 1 Dec? | Next step |
 | --- | --- | --- | --- |
 | Hosted has `20261116000100_join_requests_invites` | Dele | **Yes, if not applied** (live admin invites and join form fail) | Run the dry run; apply if listed (commands in section 9) |
-| Verdict migration version clash with `20261116000100` | cc (after Dele's go) | No for 1 Dec (the feature is for about 12 Dec), yes for merging that branch | Rename to `20261117000100_verdict_winner_summary.sql`, update references, rerun suites |
+| Verdict migration version clash with `20261116000100` | cc (after Dele's go) | No for 1 Dec (the feature is for about 12 Dec), yes for merging that branch | Done 17 Nov: renamed to `20261117000100_verdict_winner_summary.sql`, references updated, suites rerun |
 | Judge prompt version set to 1 on hosted | Dele | **Yes** (before 8 Dec) | Admin, Judging, "Judge prompt version" 1, with a reason |
 | Campaign 2 format to Open arena | Dele | No (before it is scheduled) | Admin, Campaigns |
 | Vercel env names present and correct, `EMAIL_TRANSPORT` and `AI_PROVIDER` not test values | Dele | **Yes** | Check against section 3 |
