@@ -149,10 +149,12 @@ test.describe("ask to join, and invites from the admin screen", () => {
     await expect(page.getByText("Enter your email address", { exact: false }).first()).toBeVisible();
   });
 
-  test("the sign-up page links to it", async ({ page }) => {
+  test("the sign-up page does not link to it (not advertised until after the first wave), and the page is not indexed", async ({ page }) => {
     await page.goto("/signup");
-    await page.getByRole("link", { name: "Ask to join" }).click();
-    await expect(page).toHaveURL(/\/join$/);
+    await expect(page.getByRole("link", { name: "Ask to join" })).toHaveCount(0);
+    await expect(page.getByText("No invite yet?")).toHaveCount(0);
+    await page.goto("/join");
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
   });
 
   test("an admin approves and emails: the invitation arrives, its link signs the right address up once, and a wrong address or a reuse is refused", async ({ page, browser }) => {

@@ -5,7 +5,8 @@ import { Page } from "@/components/page";
 import { getViewer } from "@/lib/auth";
 import { JoinForm } from "./join-form";
 
-export const metadata: Metadata = { title: "Ask to join" };
+// Not linked from anywhere and not indexed: the owner decided it is not advertised until after the first wave.
+export const metadata: Metadata = { title: "Ask to join", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
 export default async function JoinPage() {
