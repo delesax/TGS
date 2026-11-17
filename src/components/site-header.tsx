@@ -13,10 +13,10 @@ import { NavLink } from "@/components/nav-link";
  * Persistent header on every page (UX lesson: a signed-in user must always be
  * able to get back to Home, Campaigns, Dossier and their account).
  *
- * From the lg breakpoint (1024px) the header is wider than the 4xl page
- * content, because an admin's seven links plus the logo need about 950px and
- * "Sign out" used to wrap onto a second row and push the search box down.
- * Below lg nothing changes.
+ * From the lg breakpoint (1024px) the header is one slim sticky row that shares the page's fluid container (.page-container
+ * in globals.css): logo left, links centred, Text button and search right. An admin's seven links plus the logo fit from
+ * 1024px at every text size; below 1024px the links move into the Menu panel. The logo height and the row height come from
+ * --header-logo-h and --header-h (globals.css).
  */
 export async function SiteHeader() {
   const viewer = await getViewer();

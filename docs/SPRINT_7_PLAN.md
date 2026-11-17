@@ -9,6 +9,12 @@ Parked, not touched here: `legal-hardening` work, `src/lib/legal.ts`, the PLACEH
 Batch 1 is built on branch `sprint-7-phase-b`: **W1** kill switches, **W2** rate limiter and event log, **W3** open redirect, **W6** health route and page, **W8** injection corpus, **W11** HSTS (CSP left for later), **W12** patch upgrades. Two migrations (`20261113000100`, `20261113000200`), local only, not applied to hosted. One change from the plan: per-IP limits are generous (sign-in 100 per 10 minutes, sign-up 60 per hour, reset 30 per hour) because a pilot class shares one address; the sharp limits are per email and per user.
 **Batch 2b (branch `sprint-7-batch-2b`, not merged, migration `20261113000700` not applied):** W7 judge prompt v2, W9 local load tests (`docs/LOAD_TEST_RESULTS.md`), W13 backups (`docs/BACKUP_RESTORE.md`), W14 (`docs/LAUNCH_RUNBOOK.md`, `docs/GO_NO_GO.md`, `docs/INCIDENT_CHECKLIST.md`), CSP report-only and Resend pacing. W4, W5, W10 and W15 are built in batch 2a (see "Decided 13 Nov").
 
+## Decided 16 Nov (owner)
+
+- **Judge prompt: v1 for launch.** The launch uses prompt v1 (the frozen prompt evaluated on 12 Nov). v2 stays in the code as an option; a re-tune of v2 is for after launch (the real evaluation put it slightly below v1, and its "unverified claims" list flagged items with nothing to check). The setting is `judging_settings.judge_prompt_version` (Admin, Judging, "Judge prompt version"); the database default is still 2, so the owner has to set it to 1 on hosted. v1 produces no unverified claims: judges and admins see only the plain counts of links, figures and named studies in "Check before relying", and nothing public mentions claims.
+- **Steelman settings approved as they stand in `judging_settings`:** bonus at most 5 points in total, 2.5 for each qualifying Dispatch, a Dispatch needs 2 confirmations from other people and the AI's detection at 0.60 confidence or more, and each person can confirm at most 3 steelmen per Campaign. (Code defaults from migrations `20261111000100` and `20261113000300`; the hosted row has not been read by Claude.)
+- **Campaign 2 is an open arena.** `in-person-exams-ai-cheating` (8 to 15 Dec) runs as an open arena, not Oxford-style, so it needs no For or Against side and no rounds. The topic bank file still says Oxford and the hosted draft was loaded as Oxford: the Format must be changed in Admin before it is scheduled.
+
 ## Decided 13 Nov (owner)
 
 - **D1** Launch on Vercel Hobby. No sponsors or payments until the project moves to the company account.

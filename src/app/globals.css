@@ -5,7 +5,7 @@
  * TGS design tokens (shadcn/ui naming). Brand palette: Deep Ink Navy, Warm
  * Paper, Night Navy and Burnished Gold (see docs/brand/logo-exploration/README.md).
  * Light by default; the dark set follows the device setting (no toggle for the
- * pilot). 17px Default text (Small 15, Medium 19 and Large 22px from the header's Text control) and
+ * pilot). 17px Default text (Small 15, Medium 19 and Large 22px from the Display dialog, opened by the header's Text button) and
  * tap targets of at least 44px for older readers.
  * Contrast (WCAG 2.2, ratios in the comment after each pair): every text pair
  * meets AA, most meet AAA. Burnished Gold (--gold) is an accent for graphics and

@@ -28,7 +28,7 @@ Run on 2026-11-13 against local Supabase on this laptop (Docker). Hosted was nev
 ## CPU, memory and connections
 
 - after burst post: supabase_db_tgs 3.01% 353MiB / 7.749GiB; supabase_auth_tgs 0.00% 24.98MiB / 7.749GiB; supabase_rest_tgs 0.12% 147.3MiB / 7.749GiB
-- FINDING: with the default daily AI cap (1000), a closed Campaign of 1,500 Dispatches is only partly judged in one UK day (800 scored, the rest wait for the next day). Judging stops at 80% of the cap by design.
+- FINDING (measured at the default cap; the owner reports 16 Nov that it is now 2,000, which doubles the judging ceiling to 1,600 a day): with the default daily AI cap (1000), a closed Campaign of 1,500 Dispatches is only partly judged in one UK day (800 scored, the rest wait for the next day). Judging stops at 80% of the cap by design.
 - Judging drain uses the fake provider, so it measures the database and queue only. In production the limit is the real model: 10 Dispatches per run, one run a minute, about 600 an hour.
 - after judging: supabase_db_tgs 1.00% 378.3MiB / 7.749GiB; supabase_auth_tgs 0.00% 26.14MiB / 7.749GiB; supabase_rest_tgs 0.19% 148.8MiB / 7.749GiB
 - after email: supabase_db_tgs 1.22% 384MiB / 7.749GiB; supabase_auth_tgs 0.00% 25.83MiB / 7.749GiB; supabase_rest_tgs 0.14% 148.4MiB / 7.749GiB
