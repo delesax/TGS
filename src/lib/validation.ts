@@ -76,12 +76,12 @@ export function fieldErrors(error: z.ZodError): Record<string, string> {
 }
 
 /**
- * Only allow redirects to paths on this site. A path is refused if it holds any
+ * Only allow redirects to paths on this site (the default after sign-in is the home page). A path is refused if it holds any
  * control character (tab, line break, NUL...) or a backslash anywhere, because
  * browsers and URL parsers strip or rewrite those, so "/\t/evil.com" would
  * become "//evil.com". As a last check it must still resolve to our own origin.
  */
-export function safeNextPath(next: unknown, fallback = "/dossier"): string {
+export function safeNextPath(next: unknown, fallback = "/"): string {
   if (typeof next !== "string" || !next.startsWith("/") || next.startsWith("//")) return fallback;
   if (/[\u0000-\u001f\u007f\\]/.test(next)) return fallback;
   try {

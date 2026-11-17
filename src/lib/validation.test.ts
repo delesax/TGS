@@ -53,24 +53,29 @@ describe("signUpSchema", () => {
 describe("safeNextPath", () => {
   it.each([
     ["/profile", "/profile"],
-    ["https://evil.example", "/dossier"],
-    ["//evil.example", "/dossier"],
-    ["/\\evil.example", "/dossier"],
-    [null, "/dossier"],
+    ["https://evil.example", "/"],
+    ["//evil.example", "/"],
+    ["/\\evil.example", "/"],
+    [null, "/"],
     // Control characters are stripped by browsers and URL parsers, which would turn these into "//evil.example".
-    ["/\t/evil.example", "/dossier"],
-    ["/\n/evil.example", "/dossier"],
-    ["/\r/evil.example", "/dossier"],
-    ["/\u0000/evil.example", "/dossier"],
-    ["/ok\tpath", "/dossier"],
-    ["/a/\\evil.example", "/dossier"],
-    ["", "/dossier"],
+    ["/\t/evil.example", "/"],
+    ["/\n/evil.example", "/"],
+    ["/\r/evil.example", "/"],
+    ["/\u0000/evil.example", "/"],
+    ["/ok\tpath", "/"],
+    ["/a/\\evil.example", "/"],
+    ["", "/"],
     // Ordinary paths, queries and encoded characters still work.
     ["/campaigns/some-slug?tab=votes#top", "/campaigns/some-slug?tab=votes#top"],
     ["/%2F%2Fevil.example", "/%2F%2Fevil.example"],
     ["/%09/evil.example", "/%09/evil.example"],
   ])("%j -> %j", (input, expected) => {
     expect(safeNextPath(input)).toBe(expected);
+  });
+
+  it("defaults to the home page, and a caller-supplied fallback is still used", () => {
+    expect(safeNextPath(undefined)).toBe("/");
+    expect(safeNextPath("https://evil.example", "/onboarding")).toBe("/onboarding");
   });
 
   it("never lets a new URL() leave our origin, whatever the input", () => {
