@@ -98,7 +98,7 @@ test("…and for a signed-in Strategist coming back (cached app files)", async (
   // is blocked here to keep the measurement honest. It never caches pages anyway.
   const context = await browser.newContext({ viewport: { width: 375, height: 812 }, serviceWorkers: "block" });
   const page = await context.newPage();
-  await page.goto("/login");
+  await page.goto("/login?next=/dossier");
   await page.getByLabel("Email address").fill(debateEmail(0));
   await page.getByLabel("Password").fill(DEBATE_PASSWORD);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();

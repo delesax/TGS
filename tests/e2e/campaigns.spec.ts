@@ -29,7 +29,7 @@ async function makeUser(prefix: string, admin = false) {
 }
 
 async function signIn(page: Page, email: string) {
-  await page.goto("/login");
+  await page.goto("/login?next=/dossier");
   await page.getByLabel("Email address").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();

@@ -31,7 +31,7 @@ test("a Strategist adds a passkey and signs in with it", async ({ page, context 
       options: { protocol: "ctap2", transport: "internal", hasResidentKey: true, hasUserVerification: true, isUserVerified: true },
     });
 
-    await page.goto("/login");
+    await page.goto("/login?next=/dossier");
     await page.getByLabel("Email address").fill(email);
     await page.getByLabel("Password").fill(password);
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
@@ -47,7 +47,7 @@ test("a Strategist adds a passkey and signs in with it", async ({ page, context 
     await page.getByRole("button", { name: "Sign out" }).click();
     await expect(page.getByRole("link", { name: "Sign in" }).first()).toBeVisible();
 
-    await page.goto("/login");
+    await page.goto("/login?next=/dossier");
     await page.getByRole("button", { name: "Sign in with a passkey" }).click();
     await expect(page.getByRole("heading", { level: 1, name: "Your Dossier" })).toBeVisible();
     await expect(page.getByRole("heading", { level: 2, name: `@${handle}` })).toBeVisible();

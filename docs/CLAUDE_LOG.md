@@ -17,6 +17,7 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 | `feat/verdict-winning-case-public` (16 Nov) | **Pushed, not merged.** Public "The winning case" section, weights-reason punctuation fix, no duplicate Grand Strategist in Awards. Stacked on the old tip of the branch above: rebase after it lands | see `git log origin/feat/verdict-winning-case-public` | n/a |
 | `invites-admin-lite` (other session) | **Pushed, not merged.** Admin invites small version, migration `20261116000200_admin_invites.sql`. Needs a rebase onto `main` | `3e54da6` | Migration not applied |
 | `docs/launch-audit-2026-11-17` (17 Nov) | **Pushed.** Launch audit (`docs/LAUNCH_AUDIT_2026-11-17.md`), first-Verdict runbook, brand README, refreshed log; contains `docs-launch-decisions-16-nov`, `log-ai-cap-2000`, `log-vat-topic-loaded` and `docs-launch-hygiene` | see `git log origin/docs/launch-audit-2026-11-17` | n/a |
+| `ui/signin-lands-home` (17 Nov) | **Pushed, not merged.** Sign-in now lands on the home page `/` by default; an explicit `next`, protected-page return, sign-up confirmation (`/onboarding`) and password reset (`/reset-password`) still work. `safeNextPath` is still same-origin and path-only | see `git log origin/ui/signin-lands-home` | n/a |
 | `docs-w7-eval-notes` | **Pushed, not merged.** W7 two-run notes and a small tested eval-report change | `4687c10` | n/a |
 
 Checkouts and local stacks: the shared `TGS/` checkout (default Supabase project `tgs`, ports 543xx, site 3100), `TGS-brand/` (project `tgs-ui`, ports 553xx, site 3200) and `TGS-summary/` (project `tgs-sum`, ports 563xx, site 3300). Never point a worktree at the shared default ports from another worktree.
@@ -39,6 +40,12 @@ Checkouts and local stacks: the shared `TGS/` checkout (default Supabase project
 - **Account deletion stays OFF.** Decide whether it also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-17 — Sign-in lands on the home page (branch `ui/signin-lands-home`)
+
+- **Behaviour change, no migration, nothing applied to hosted, not merged.** `safeNextPath` in `src/lib/validation.ts` now defaults to `/` (was `/dossier`). That default feeds the password sign-in action, the passkey sign-in and the sign-in page's hidden `next` field and already-signed-in redirect. Explicit `next` values are honoured as before; the email confirmation route keeps its `/onboarding` default and reset links still end on `/reset-password`. The same-origin, path-only validation is unchanged.
+- **Tests:** unit expectations updated; new `tests/e2e/signin-landing.spec.ts` (no `next` lands on `/`; valid `next` honoured; protected-page return; external, protocol-relative, backslash and `javascript:` targets ignored).
+- **Local stack:** this worktree used its own Supabase stack (project `tgs-home`, ports 573xx, site 3400); the uncommitted `supabase/config.toml` edit is not part of the branch.
 
 ### 2026-11-17 — Launch audit and documentation refresh (branch `docs/launch-audit-2026-11-17`)
 

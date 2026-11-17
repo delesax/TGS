@@ -33,7 +33,7 @@ async function makeUser(prefix: string, admin = false) {
 
 async function signIn(browser: Browser, email: string): Promise<Page> {
   const page = await (await browser.newContext({ viewport: { width: 375, height: 812 } })).newPage();
-  await page.goto("/login");
+  await page.goto("/login?next=/dossier");
   await page.getByLabel("Email address").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
