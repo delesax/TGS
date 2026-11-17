@@ -62,7 +62,7 @@ Nothing below has been done by Claude. Tick them off in order; none needs a code
 - Dump: `bash scripts/backup-dump.sh`. Copy the three files off the laptop. Check the printed counts for users and profiles look right.
 - Open `/api/health` on the live site: `{"ok":true}`.
 - Admin, Health (`/admin/health`): queues empty, every job has run recently, AI calls today near zero.
-- Admin, Judging: the judge prompt version reads 2 (or 1 if you chose the fall-back; see "Judge prompt" below).
+- Admin, Judging: the judge prompt version reads **1** (the launch setting, decided 16 Nov; see "Judge prompt" below).
 - Try the three processor addresses without the secret (for example with `curl -X POST` and no header): each must answer 401.
 - Do one real sign-up, confirmation, sign-in and password reset with a spare address.
 - Announce nothing.
@@ -90,7 +90,7 @@ Admin, Settings, "Site switches" (database function `set_site_switches`):
 Email essentials and the global cap are a separate form (`set_email_controls`). A banner on the site shows while a switch is on.
 
 ## Judge prompt
-Version 2 is the default after the real evaluation (see `docs/SPRINT_7_PLAN.md`, W7). v2 adds a list of claims the model cannot check, shown to judges and admins as "Check before relying". It never changes a score. To go back to v1 with no deploy: Admin, Judging, "Judge prompt version", choose 1 and give a reason (database function `set_judge_prompt_version`). The next processor run uses it.
+**The launch uses version 1** (decided 16 Nov; v2 is re-tuned after launch). The database default is still 2, so set it to 1 once: Admin, Judging, "Judge prompt version", choose 1 and give a reason (database function `set_judge_prompt_version`). With v1 there are no flagged claims; judges and admins still see the plain counts in "Check before relying". Version 2 (see `docs/SPRINT_7_PLAN.md`, W7) adds a list of claims the model cannot check, shown to judges and admins as "Check before relying". It never changes a score. To go back to v1 with no deploy: Admin, Judging, "Judge prompt version", choose 1 and give a reason (database function `set_judge_prompt_version`). The next processor run uses it.
 
 ## Rolling back
 - **Code**: Vercel dashboard, Deployments, the previous Ready deployment, Promote to Production (Instant Rollback; confirm it is offered on Hobby when you first look). Note the deployment you leave (the "Production deployment to promote" you noted as an owner action, shown as a rollback candidate on the Deployments page).
