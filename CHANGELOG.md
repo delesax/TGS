@@ -1,5 +1,9 @@
 # Changelog
 
+## Invites: one sign-up message, `/join` not linked (17 November 2026)
+
+- A mistyped, used, expired, revoked or wrong-address invite code now shows one message on sign-up: "This code doesn't match this email. Use the address the invite was sent to." The "Ask to join" link was removed from the sign-up page and `/join` is not indexed (owner decision: not advertised until after the first wave). No migration. `docs/INVITES_PLAN.md` records the plan, the owner's answers and the state of `main`.
+
 ## Invites and "ask to join" (16 November 2026). Awaiting review
 
 Branch `invites-join-requests`. **One new migration, `20261116000100_join_requests_invites.sql`, tested on local Supabase only, not applied to hosted. Deploy order: migration first, then the code** (the migration is additive; the code on main keeps working until the new code lands).
