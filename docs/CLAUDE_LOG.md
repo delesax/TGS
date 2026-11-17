@@ -17,9 +17,10 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 | `feat/verdict-winning-case-public` (16 Nov) | **Pushed, not merged.** Public "The winning case" section, weights-reason punctuation fix, no duplicate Grand Strategist in Awards. Stacked on the old tip of the branch above: rebase after it lands | see `git log origin/feat/verdict-winning-case-public` | n/a |
 | `invites-admin-lite` (other session) | **Pushed, not merged.** Admin invites small version, migration `20261116000200_admin_invites.sql`. Needs a rebase onto `main` | `3e54da6` | Migration not applied |
 | `docs/launch-audit-2026-11-17` (17 Nov) | **Pushed.** Launch audit (`docs/LAUNCH_AUDIT_2026-11-17.md`), first-Verdict runbook, brand README, refreshed log; contains `docs-launch-decisions-16-nov`, `log-ai-cap-2000`, `log-vat-topic-loaded` and `docs-launch-hygiene` | see `git log origin/docs/launch-audit-2026-11-17` | n/a |
+| `ui/admin-form-widths` (17 Nov) | **Pushed, not merged.** Admin form controls stop stretching: new `src/app/admin/layout.tsx` (`.admin-area`) plus one CSS block in `globals.css`; layout only, no per-page edits, so no overlap with `invites-admin-lite` | see `git log origin/ui/admin-form-widths` | n/a |
 | `docs-w7-eval-notes` | **Pushed, not merged.** W7 two-run notes and a small tested eval-report change | `4687c10` | n/a |
 
-Checkouts and local stacks: the shared `TGS/` checkout (default Supabase project `tgs`, ports 543xx, site 3100), `TGS-brand/` (project `tgs-ui`, ports 553xx, site 3200) and `TGS-summary/` (project `tgs-sum`, ports 563xx, site 3300). Never point a worktree at the shared default ports from another worktree.
+Checkouts and local stacks: `TGS-admin/` (project `tgs-adm`, ports 583xx, site 3500), the shared `TGS/` checkout (default Supabase project `tgs`, ports 543xx, site 3100), `TGS-brand/` (project `tgs-ui`, ports 553xx, site 3200) and `TGS-summary/` (project `tgs-sum`, ports 563xx, site 3300). Never point a worktree at the shared default ports from another worktree.
 
 ## Open for the owner
 
@@ -39,6 +40,13 @@ Checkouts and local stacks: the shared `TGS/` checkout (default Supabase project
 - **Account deletion stays OFF.** Decide whether it also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-17 — Admin form widths (branch `ui/admin-form-widths`)
+
+- **Layout only; nothing applied to hosted, nothing merged.** From 640px up, Admin text inputs and selects stop at 36rem, textareas at 56rem, and buttons inside forms are content width (`src/app/admin/layout.tsx` wraps every Admin page in `.admin-area`; one unlayered block at the end of `src/app/globals.css`). Tables, status cards, the tab bar, header, footer, colours and fonts are untouched. Below 640px controls fill the width as before. Judging at 1280px: number field 1216px to 612px, Save button 1216px to 154px.
+- **Overlap with `invites-admin-lite`:** none in files (it edits `admin/invites/*` and `admin-nav.tsx`; this branch adds `admin/layout.tsx` and edits `globals.css` only).
+- **Gates, own stack (`tgs-adm`, freshly reset):** lint and typecheck clean; 385 unit; 382 RLS; Playwright 147 pass on the second full run (the first run had one failure in `password-reset.spec.ts` "an ordinary signed-in session cannot use the reset page", which passed 6 of 6 when that file was re-run; cause not found, not related to CSS); admin contrast script 0 failures over 112 states (14 Admin pages, light and dark, default and Large text, 375 and 1280px).
+- Number fields are 36rem wide (the brief's range for inputs); narrower number fields would be a one-line follow-up.
 
 ### 2026-11-17 — Launch audit and documentation refresh (branch `docs/launch-audit-2026-11-17`)
 

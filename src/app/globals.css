@@ -499,3 +499,23 @@ textarea.field {
     background: color-mix(in srgb, var(--muted) 55%, transparent);
   }
 }
+
+/*
+ * Admin form widths (layout only). src/app/admin/layout.tsx wraps every Admin page in .admin-area.
+ * From 640px up, text inputs and selects stop at a readable width, textareas a little wider, and
+ * buttons in forms are as wide as their label. Tables, status cards and the tab bar are not touched.
+ * Below 640px controls fill the width, as before. Unlayered on purpose, so it wins over the
+ * w-full utility on the shared Button.
+ */
+@media (min-width: 640px) {
+  .admin-area .field {
+    max-width: 36rem;
+  }
+  .admin-area textarea.field {
+    max-width: 56rem;
+  }
+  .admin-area form button.w-full {
+    width: auto;
+    align-self: flex-start;
+  }
+}
