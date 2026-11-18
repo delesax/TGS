@@ -99,6 +99,12 @@ export const judgeRationaleSchema = z.strictObject({
 });
 export type JudgeRationaleOutput = z.infer<typeof judgeRationaleSchema>;
 
+export const judgeSummarySchema = z.strictObject({
+  summary: z.string().trim().min(200).max(1500),
+  best_dispatch: z.string().regex(/^D\d{1,2}$/),
+});
+export type JudgeSummaryOutput = z.infer<typeof judgeSummarySchema>;
+
 // JSON schemas sent to the API (structured outputs). Kept simple: object
 // shapes and enums; ranges are checked by zod afterwards.
 const obj = (properties: Record<string, unknown>) => ({
@@ -137,6 +143,7 @@ export const JSON_SCHEMAS = {
     steelman: obj({ present: { type: "boolean" }, confidence: num, note: str }),
   }),
   judge_rationale: obj({ rationale: str }),
+  judge_summary: obj({ summary: str, best_dispatch: str }),
 } as const;
 
 /** Prompt v2 of the judge: the v1 shape plus the list of claims to check. */

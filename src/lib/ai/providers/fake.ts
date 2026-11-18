@@ -287,6 +287,26 @@ const wait = (signal: AbortSignal) =>
     signal.addEventListener("abort", () => reject(new Error("aborted")), { once: true });
   });
 
+/**
+ * A summary built only from the words in the Dispatches shown (so it passes the engine's checks): the first block's
+ * text, then the others, until it is about 100 words long. Test marker: [[summary-quote]] in a Dispatch makes the fake
+ * invent a quotation, and [[summary-number]] a figure, so the checks can be exercised.
+ */
+function fakeJudgeSummary(blocks: Record<string, string>) {
+  const labels = Object.keys(blocks).filter((k) => /^D\d+$/.test(k));
+  const texts = labels.map((l) => blocks[l].split("\n\nSources cited:")[0]);
+  const words: string[] = [];
+  for (let guard = 0; words.length < 100 && guard < 40; guard++) {
+    for (const t of texts) words.push(...t.split(/\s+/).filter(Boolean));
+    if (!texts.length) break;
+  }
+  let summary = words.slice(0, Math.max(100, Math.min(words.length, 120))).join(" ");
+  const all = texts.join(" ");
+  if (all.includes("[[summary-quote]]")) summary += ' They said "nobody has ever said this exact sentence".';
+  if (all.includes("[[summary-number]]")) summary += " About 7412 people agree.";
+  return { summary, best_dispatch: labels[0] ?? "D1" };
+}
+
 export const fakeProvider: AiProvider = {
   name: "fake",
   async complete(req: ProviderRequest): Promise<ProviderResponse> {
@@ -311,7 +331,9 @@ export const fakeProvider: AiProvider = {
                 }
               : req.task === "judge_rationale"
                 ? { rationale: blocks.draft ?? "" }
-                : fakeCoach(blocks.draft ?? "");
+                : req.task === "judge_summary"
+                  ? fakeJudgeSummary(blocks)
+                  : fakeCoach(blocks.draft ?? "");
     return { text: JSON.stringify(output), ...tokens };
   },
 };

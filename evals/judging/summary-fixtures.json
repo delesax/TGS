@@ -1,0 +1,70 @@
+{
+  "note": "Synthetic, realistic winner Dispatch sets for the winner's-summary spot check (scripts/eval-summary.ts --fixtures). Each case is ONE author's own Dispatches, including rebuttals that restate the other side. Not a gold set: there are no human labels. Written for testing; not real members' text.",
+  "cases": [
+    {
+      "title": "Should phones be banned in schools?",
+      "note": "Winner argues AGAINST a ban and steelmans the pro-ban view in a rebuttal. Several Dispatches, one with a source.",
+      "dispatches": [
+        {
+          "id": "ph-1",
+          "kind": "argument",
+          "body": "Phones should not be banned outright in schools. Pupils need them to reach a parent in an emergency, and many use them for homework and revision. A blanket ban punishes the majority for what a minority does."
+        },
+        {
+          "id": "ph-2",
+          "kind": "rebuttal",
+          "body": "Restating your view to check I have it right: phones distract pupils and fuel bullying, and a ban saves teachers time. That is a fair case. But a ban in school hours does nothing about bullying at 10pm, which is when most of it happens. The time teachers spend enforcing rules is real, so a pouch policy for lesson time might help with that without a full ban."
+        },
+        {
+          "id": "ph-3",
+          "kind": "evidence",
+          "body": "The Birmingham study compared 30 schools and found no clear difference in wellbeing or grades between schools with strict and lax phone rules.",
+          "sources": [{ "url": "https://example.org/birmingham-phone-study", "title": "Birmingham phone policy study" }]
+        }
+      ]
+    },
+    {
+      "title": "Should the state pension age rise faster?",
+      "note": "Winner argues FOR a faster rise, steelmans the fairness objection, then answers it. Four Dispatches.",
+      "dispatches": [
+        {
+          "id": "pn-1",
+          "kind": "argument",
+          "body": "The state pension age should rise faster because people are living longer and the ratio of workers to pensioners is falling. If we do nothing, younger workers carry a heavier tax burden. A faster rise, phased in with ten years' notice, spreads the cost more fairly between generations."
+        },
+        {
+          "id": "pn-2",
+          "kind": "evidence",
+          "body": "The Office for Budget Responsibility projects pension spending rising from about 5% to over 7% of GDP by the 2070s.",
+          "sources": [{ "url": "https://example.org/obr-fiscal-risks", "title": "OBR fiscal risks report" }]
+        },
+        {
+          "id": "pn-3",
+          "kind": "rebuttal",
+          "body": "You argue that healthy life expectancy differs by more than fifteen years between the richest and poorest areas, so one pension age is unfair. I accept that gap is real and it matters. But it is an argument for protection, not for delay. A means-tested bridge for people in poor health would deal with it directly."
+        },
+        {
+          "id": "pn-4",
+          "kind": "rebuttal",
+          "body": "You say people have paid in all their lives. They have, and that is why I propose a long notice period rather than a sudden change. The question is who pays in twenty years, and the current arrangement leaves that to younger workers."
+        }
+      ]
+    },
+    {
+      "title": "Should the four-day week become the norm?",
+      "note": "Winner argues AGAINST a national norm and steelmans the pilot results. Two Dispatches.",
+      "dispatches": [
+        {
+          "id": "fd-1",
+          "kind": "argument",
+          "body": "The four-day week should not become the national default. The firms in the 2022 UK pilot volunteered, so they were the ones most likely to succeed. Hospitals, care homes and schools cannot compress hours without hiring more staff, which costs money."
+        },
+        {
+          "id": "fd-2",
+          "kind": "rebuttal",
+          "body": "To be fair to the other side, the 2022 pilot of 61 companies found most kept the four-day week afterwards, with revenue broadly stable and lower staff sickness. The wellbeing gains look real. But a norm that works for software firms may simply shift the burden onto public services. Let sectors opt in rather than making it the default."
+        }
+      ]
+    }
+  ]
+}

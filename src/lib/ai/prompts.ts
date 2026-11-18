@@ -12,6 +12,8 @@ export const PROMPTS = {
   coach: { name: "coach", version: 1 },
   judge_rubric: { name: "judge-rubric", version: 1 },
   judge_rationale: { name: "judge-rationale", version: 1 },
+  // The winner's summary (admin-approved before publication). Logged under the ai_usage feature "judge_rationale".
+  judge_summary: { name: "judge-summary", version: 2 },
 } as const;
 
 export type PromptKey = keyof typeof PROMPTS;
@@ -23,7 +25,7 @@ export type PromptKey = keyof typeof PROMPTS;
  * unverified_claims). Which one the judge uses is the judging setting
  * `judge_prompt_version`, so it can be switched back without a deploy.
  */
-export const AVAILABLE_VERSIONS: Partial<Record<PromptKey, readonly number[]>> = { judge_rubric: [1, 2] };
+export const AVAILABLE_VERSIONS: Partial<Record<PromptKey, readonly number[]>> = { judge_rubric: [1, 2], judge_summary: [1, 2] };
 
 const cache = new Map<string, string>();
 

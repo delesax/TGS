@@ -39,7 +39,7 @@ export function buildUserMessage(context: Record<string, string>, blocks: { labe
 /** Pulls the untrusted blocks back out (used by the fake provider, which reads only the data). */
 export function extractBlocks(message: string): Record<string, string> {
   const out: Record<string, string> = {};
-  const re = new RegExp(`<${TAG} label="([a-z_]+)">\\n([\\s\\S]*?)\\n</${TAG}>`, "g");
+  const re = new RegExp(`<${TAG} label="([A-Za-z0-9_]+)">\\n([\\s\\S]*?)\\n</${TAG}>`, "g");
   for (const m of message.matchAll(re)) out[m[1]] = m[2];
   return out;
 }

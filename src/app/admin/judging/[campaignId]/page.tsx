@@ -16,6 +16,7 @@ import { AdminNav } from "../../admin-nav";
 import { assignJudge, decideAppeal, editRationale, overrideAiScore, publishVerdict, recomputeVerdict, requeueRubric, unassignJudge } from "../actions";
 import { AdminForm } from "../forms";
 import { stage, type StatusRow } from "../status";
+import { SummaryBlock, loadSummaryState } from "./summary-block";
 
 export const metadata: Metadata = { title: "Judging a Campaign" };
 export const dynamic = "force-dynamic";
@@ -92,6 +93,8 @@ export default async function AdminCampaignJudgingPage({ params }: PageProps<"/a
   ]);
   const h = (id: string) => (handles.get(id) ? `@${handles.get(id)}` : "a former Strategist");
   const hidden = { campaignId };
+  const draftSummaryState = draft ? await loadSummaryState(draft.id) : null;
+  const liveSummaryState = live ? await loadSummaryState(live.id) : null;
   const closed = status.status === "closed" || Date.parse(status.ends_at) <= now;
   const canChange = !live || live.status === "appealed";
 
@@ -210,8 +213,12 @@ export default async function AdminCampaignJudgingPage({ params }: PageProps<"/a
                 />
               </AdminForm>
             </details>
+            <SummaryBlock verdictId={draft.id} campaignId={campaignId} isDraft winnerId={draft.winner_id} state={draftSummaryState!} dispatches={dispatches} />
             {!draft.needs_attention ? (
               <AdminForm action={publishVerdict} label="Publish the Verdict" hidden={{ ...hidden, verdictId: draft.id, slug: status.slug }} submitLabel="Publish the Verdict" pendingLabel="Publishing…">
+                <p className="help" data-testid="publish-summary-status">
+                  {draftSummaryState?.approved ? "Winner's summary: approved. It will be shown on the Verdict." : "Winner's summary: none approved. None will be shown."}
+                </p>
                 <CheckboxField name="confirm" label="I have reviewed the scores, awards and rationale. Publish now, name the Grand Strategist, issue the awards and email participants." />
               </AdminForm>
             ) : null}
@@ -257,6 +264,7 @@ export default async function AdminCampaignJudgingPage({ params }: PageProps<"/a
         ) : (
           <p className="text-base">Nothing published yet.</p>
         )}
+        {live && liveSummaryState ? <SummaryBlock verdictId={live.id} campaignId={campaignId} isDraft={false} winnerId={live.winner_id} state={liveSummaryState} dispatches={dispatches} /> : null}
         {appeals.length ? (
           <ul className="flex flex-col gap-3">
             {appeals.map((a) => (

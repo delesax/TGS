@@ -97,7 +97,7 @@ export default function PrivacyPage() {
 
         <h2 id="automated-checks" className="mt-4 scroll-mt-4">Automated checks and AI help</h2>
         <p>
-          We use an AI service from Anthropic to help keep debates safe and to help you write better. There are three uses.
+          We use an AI service from Anthropic to help keep debates safe and to help you write better. There are four uses.
         </p>
         <ul className="list-disc space-y-3 pl-6">
           <li>
@@ -111,7 +111,14 @@ export default function PrivacyPage() {
             <strong>Coach (optional).</strong> If you press &ldquo;Get feedback&rdquo;, we send your draft. The coach asks questions. It never writes your
             text.
           </li>
+          <li>
+            <strong>Winner&apos;s summary (admin only).</strong> For some Verdicts, an admin can ask for a short draft summary of the winner&apos;s own
+            Dispatches, as described next.
+          </li>
         </ul>
+        <p data-testid="verdict-summary-sentence">
+          For some Verdicts, an AI model drafts a short summary of the winner&apos;s own Dispatches. An admin reads and approves it before it is published, and it is labelled as AI-assisted. It does not affect scores or rankings.
+        </p>
         <p>
           We send only the text and the Campaign&apos;s question and type. We do not send your name, email address or profile. We do send your text exactly as
           you wrote it, so anything in it, such as another person&apos;s name, goes too.

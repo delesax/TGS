@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import { TIMEOUT_MS, resolveModel } from "./config";
+import { TIMEOUT_MS, estimateCostUsd, resolveModel } from "./config";
 import { normaliseHandle, screenHandleWithStub } from "./handle-stub";
 import { containsReplacementText, decideScreeningOutcome } from "./policy";
 import { loadPrompt, type PromptKey } from "./prompts";
@@ -9,6 +9,7 @@ import {
   coachSchema,
   dispatchScreenSchema,
   judgeRationaleSchema,
+  judgeSummarySchema,
   judgeRubricSchema,
   judgeRubricSchemaV2,
   JUDGE_RUBRIC_V2_JSON_SCHEMA,
@@ -103,11 +104,12 @@ async function guarded<T>(
   userId: string | null,
   inputLength: number,
   run: (provider: AiProvider) => Promise<CallOk<T> | CallFailed>,
+  maxChars?: number,
 ): Promise<CallOk<T> | CallFailed> {
   if (!deps.settings.ai_enabled) return { ok: false, why: "off", record: null };
   if (!deps.provider) return { ok: false, why: "no_provider", record: null };
   // Longer input is refused, never cut short (a cut could hide the abuse).
-  if (inputLength > deps.settings.ai_input_max_chars) return { ok: false, why: "too_long", record: null };
+  if (inputLength > (maxChars ?? deps.settings.ai_input_max_chars)) return { ok: false, why: "too_long", record: null };
   const reserved = await deps.reserve(feature, userId);
   if (reserved !== "ok") return { ok: false, why: (["off", "global_cap", "user_cap", "coach_cap"].includes(reserved) ? reserved : "error") as Unavailable, record: null };
   const result = await run(deps.provider);
@@ -353,4 +355,121 @@ export async function judgeRationaleWith(deps: EngineDeps, template: string): Pr
   );
   if (!result.ok) return result;
   return { ok: true, rationale: result.value.rationale, record: result.record };
+}
+
+
+// ---------------------------------------------------------------------------
+// The winner's summary ("The winning case")
+// ---------------------------------------------------------------------------
+
+/** The winner's Dispatches are longer than a screening input, so this feature has its own ceiling (whole Dispatches only). */
+export const SUMMARY_INPUT_MAX_CHARS = 24_000;
+export const SUMMARY_WORDS = { min: 60, max: 170 } as const;
+
+export type SummaryDispatchInput = { id: string; kind: string; body: string; sources?: { url: string; title?: string | null }[] | null };
+export type SummaryInput = { topic: string; dispatches: SummaryDispatchInput[] };
+export type SummaryResult =
+  | { ok: true; summary: string; bestDispatchId: string; inputDispatchIds: string[]; usage: { inputTokens: number; outputTokens: number; estimatedCostUsd: number }; record: CallRecord }
+  | { ok: false; why: Unavailable | "no_dispatches"; record: CallRecord | null };
+
+const squash = (t: string) => t.toLowerCase().replace(/[\u2018\u2019`]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/\s+/g, " ").trim();
+/** Phrases that state what someone meant, wanted or aimed at. Allowed only when the Dispatches use the same words. */
+const MOTIVE_PHRASES = /\b(?:aimed at|aims? to|intended to|intends? to|designed to|meant to|seeks? to|hopes? to|hoping to|wants? to|wanted to|in an attempt to|so as to|motivated by|their (?:real |true )?(?:aim|goal|motive|intention|intent) (?:is|was))\b/gi;
+const numbersIn = (t: string) => [...t.matchAll(/\d+(?:[.,]\d+)*/g)].map((m) => m[0].replace(/,/g, ""));
+const urlsIn = (t: string) => [...t.matchAll(/https?:\/\/[^\s)"]+/g)].map((m) => m[0].replace(/[.,;]+$/, ""));
+
+/**
+ * The mechanical checks on a summary, separate from the model call so they are tested on their own.
+ * `source` is everything the model was shown (the winner's Dispatch text and their cited sources).
+ * Returns the reasons it fails, or an empty list.
+ */
+export function summaryProblems(summary: string, source: string): string[] {
+  const problems: string[] = [];
+  const words = summary.trim().split(/\s+/).length;
+  if (words < SUMMARY_WORDS.min || words > SUMMARY_WORDS.max) problems.push(`word count ${words}`);
+  const src = squash(source);
+  // Quotations must be copied exactly from the Dispatches.
+  for (const m of summary.matchAll(/["\u201c]([^"\u201d]{3,})["\u201d]/g)) {
+    if (!src.includes(squash(m[1]))) problems.push(`invented quotation: ${m[1].slice(0, 40)}`);
+  }
+  // No figure the Dispatches do not contain.
+  const known = new Set(numbersIn(source));
+  for (const n of numbersIn(summary)) if (!known.has(n)) problems.push(`number not in the Dispatches: ${n}`);
+  // No web address the Dispatches do not contain.
+  const knownUrls = new Set(urlsIn(source));
+  for (const u of urlsIn(summary)) if (!knownUrls.has(u)) problems.push(`address not in the Dispatches: ${u.slice(0, 40)}`);
+  // No handles or mention tokens.
+  if (/@\{user:|@[A-Za-z0-9_]{3,}/.test(summary)) problems.push("names a member");
+  // No internal Dispatch labels (D1, D2, "Dispatch 3"): they belong only in the best_dispatch field.
+  const label = summary.match(/\bD\s?\d+\b|\bDispatch\s+\d+\b/i);
+  if (label) problems.push(`internal label in the summary: ${label[0]}`);
+  // No stated motive or intent the Dispatches do not themselves state (detectable phrases only; the prompt does the rest).
+  for (const m of summary.matchAll(MOTIVE_PHRASES)) {
+    if (!src.includes(squash(m[0]))) problems.push(`inferred motive or intent: ${m[0]}`);
+  }
+  return problems;
+}
+
+/** Everything shown to the model for one Dispatch, so the checks compare against exactly that. */
+function summaryBlockText(d: SummaryDispatchInput): string {
+  const cited = (d.sources ?? []).map((s) => `${s.title ? s.title + " " : ""}${s.url}`.trim());
+  return cited.length ? `${d.body}\n\nSources cited: ${cited.join("; ")}` : d.body;
+}
+
+/** Whole Dispatches, oldest first, up to the ceiling. Nothing is cut mid-text. */
+export function pickSummaryDispatches(dispatches: SummaryDispatchInput[], maxChars = SUMMARY_INPUT_MAX_CHARS): SummaryDispatchInput[] {
+  const picked: SummaryDispatchInput[] = [];
+  let total = 0;
+  for (const d of dispatches) {
+    const len = summaryBlockText(d).length;
+    if (total + len > maxChars) continue;
+    picked.push(d);
+    total += len;
+  }
+  return picked;
+}
+
+/**
+ * Drafts the winner's summary from the winner's OWN Dispatches only (no names, ids, replies or other members' text are
+ * sent). The result is a DRAFT: an admin must approve it before it can appear anywhere. Spend is logged under the existing
+ * ai_usage feature "judge_rationale"; the prompt version (judge-summary.vN) and tokens are returned for the draft row.
+ */
+export async function judgeSummaryWith(deps: EngineDeps, input: SummaryInput): Promise<SummaryResult> {
+  const picked = pickSummaryDispatches(input.dispatches);
+  if (!picked.length) return { ok: false, why: "no_dispatches", record: null };
+  const labels = new Map(picked.map((d, i) => [`D${i + 1}`, d.id]));
+  const blocks = picked.map((d, i) => ({ label: `D${i + 1}`, text: summaryBlockText(d) }));
+  const source = blocks.map((b) => b.text).join("\n\n");
+  const context: Record<string, string> = { question: input.topic };
+  picked.forEach((d, i) => (context[`D${i + 1}_kind`] = d.kind));
+  const model = resolveModel("judging", deps.settings, deps.env);
+  const user = buildUserMessage(context, blocks);
+  const result = await guarded(
+    deps,
+    "judge_rationale",
+    null,
+    user.length,
+    (p) =>
+      callStructured(p, {
+        task: "judge_summary",
+        prompt: "judge_summary",
+        model,
+        user,
+        schema: judgeSummarySchema,
+        timeoutMs: deps.timeouts?.judging ?? TIMEOUT_MS.judging,
+        maxTokens: 2000,
+        accept: (v) => labels.has(v.best_dispatch) && summaryProblems(v.summary, source).length === 0,
+      }),
+    SUMMARY_INPUT_MAX_CHARS + 4000,
+  );
+  if (!result.ok) return result;
+  const r = result.record;
+  return {
+    ok: true,
+    summary: result.value.summary,
+    bestDispatchId: labels.get(result.value.best_dispatch)!,
+    inputDispatchIds: picked.map((d) => d.id),
+    usage: { inputTokens: r.inputTokens, outputTokens: r.outputTokens, estimatedCostUsd: estimateCostUsd(r.model, r.inputTokens, r.outputTokens) },
+    record: r,
+  };
 }

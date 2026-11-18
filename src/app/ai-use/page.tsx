@@ -42,6 +42,9 @@ export default function AiUsePage() {
           writes your text. We do not keep your draft, and only you see the result. Read the full details in the{" "}
           <InlineLink href="/privacy#automated-checks">Privacy policy</InlineLink>.
         </p>
+        <p data-testid="verdict-summary-sentence">
+          For some Verdicts, an AI model drafts a short summary of the winner&apos;s own Dispatches. An admin reads and approves it before it is published, and it is labelled as AI-assisted. It does not affect scores or rankings.
+        </p>
       </Prose>
     </Page>
   );

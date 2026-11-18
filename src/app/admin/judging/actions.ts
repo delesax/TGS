@@ -5,6 +5,7 @@ import { z } from "zod";
 import type { FormState } from "@/components/form";
 import { getViewer } from "@/lib/auth";
 import { recomputeForAdmin } from "@/lib/judging/processor";
+import { draftWinnerSummary } from "@/lib/judging/summary";
 import { createClient } from "@/lib/supabase/server";
 
 // Judging admin actions. Each checks the admin role here and again in the
@@ -33,6 +34,9 @@ const MESSAGES: Record<string, string> = {
   WINDOWS_ORDER: "The judging window must be at least as long as the peer voting window.",
   BAD_SCORES: "Each score must be a whole number from 1 to 5.",
   RATIONALE_LENGTH: "The rationale must be 1 to 8,000 characters.",
+  SUMMARY_LENGTH: "The summary must be 20 to 250 words and at most 1,500 characters.",
+  BAD_DISPATCH: "Choose one of the winner's visible Dispatches.",
+  WINNER_MISMATCH: "The winner changed. Draft the summary again.",
 };
 
 function problem(message: string | undefined, fallback: string): FormState {
@@ -212,4 +216,43 @@ export async function setJudgePromptVersion(_prev: FormState, fd: FormData): Pro
   if (error) return problem(error.message, "We could not change the judge prompt version.");
   revalidatePath("/admin/judging");
   return { success: "Saved. The next scoring run uses it. The change is in the audit log." };
+}
+
+// ---------------------------------------------------------------------------
+// The winner's summary (AI draft, admin approval). Drafting is on demand only.
+// ---------------------------------------------------------------------------
+
+export async function draftSummary(_prev: FormState, fd: FormData): Promise<FormState> {
+  const viewer = await admin();
+  if (!viewer) return { formError: "Only admins can do this." };
+  const campaignId = String(fd.get("campaignId") ?? "");
+  const result = await draftWinnerSummary(String(fd.get("verdictId") ?? ""), viewer.userId);
+  if (!result.ok) return { formError: result.message };
+  return done(campaignId, "Draft summary ready below. Read it, edit it if needed, then approve it. Nothing is public until you publish the Verdict.");
+}
+
+export async function approveSummary(_prev: FormState, fd: FormData): Promise<FormState> {
+  if (!(await admin())) return { formError: "Only admins can do this." };
+  if (fd.get("confirm") !== "on") return { formError: "Tick the box to confirm.", fieldErrors: { confirm: "Tick this to approve." } };
+  const campaignId = String(fd.get("campaignId") ?? "");
+  const dispatchId = String(fd.get("dispatchId") ?? "");
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("approve_verdict_summary", {
+    p_verdict_id: String(fd.get("verdictId") ?? ""),
+    p_text: String(fd.get("summary") ?? ""),
+    p_dispatch_id: dispatchId || null,
+  });
+  if (error) return problem(error.message, "We could not approve the summary.");
+  return done(campaignId, "Summary approved. It will appear on the Verdict when you publish it. The approval is in the audit log.");
+}
+
+export async function removeSummary(_prev: FormState, fd: FormData): Promise<FormState> {
+  if (!(await admin())) return { formError: "Only admins can do this." };
+  const campaignId = String(fd.get("campaignId") ?? "");
+  const why = z.string().trim().min(10).max(500).safeParse(fd.get("reason"));
+  if (!why.success) return { formError: "Give a reason of at least 10 characters. It is kept in the audit log." };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("remove_verdict_summary", { p_verdict_id: String(fd.get("verdictId") ?? ""), p_reason: why.data });
+  if (error) return problem(error.message, "We could not remove the summary.");
+  return done(campaignId, "Summary removed. It no longer appears on the Verdict. The reason is in the audit log.");
 }
