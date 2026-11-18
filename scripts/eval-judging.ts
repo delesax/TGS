@@ -14,7 +14,8 @@
  * below the market rate so the pound figure errs high. It stops at once if
  * the API rejects the key, and exits with an error if any item could not be
  * scored (the report is still written). Error details never include the key.
- * Tests and CI never run this. Writes a report to evals/out/.
+ * Tests and CI never run this. Writes a report to evals/out/, named with the UTC date and time so a later
+ * run never overwrites an earlier one (a prompt v2 report also lists every unverified claim, per item).
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import gold from "../evals/judging/gold-set.json";
@@ -24,6 +25,7 @@ import { loadPrompt, promptVersion } from "../src/lib/ai/prompts";
 import { agreement, passes, type Agreement } from "../src/lib/judging/metrics";
 import { scriptDeps } from "./lib/ai-deps";
 import { countCheckSignals } from "../src/lib/judging/check-before-relying";
+import { claimsSection, evalReportPath } from "../src/lib/judging/eval-report";
 import { loadEnv } from "./lib/env";
 
 loadEnv();
@@ -161,9 +163,10 @@ async function main() {
         `| ${r.item.id} | ${r.item.kind} | ${CRITERIA.map((c) => r.item.labels[c]).join("/")} | ${r.got ? CRITERIA.map((c) => r.got![c]).join("/") : r.why} | ${r.item.steelman ? "yes" : "no"}/${r.steelman === null ? "-" : r.steelman ? "yes" : "no"} | ${r.rationale.replace(/\|/g, "/")} |`,
     ),
     "",
+    ...(PROMPT === 2 ? claimsSection(rows) : []),
   ];
   mkdirSync("evals/out", { recursive: true });
-  const file = `evals/out/judging-${real ? "real" : "fake"}${PROMPT === 2 ? "-v2" : ""}-${new Date().toISOString().slice(0, 10)}.md`;
+  const file = evalReportPath({ real, prompt: PROMPT, now: new Date() });
   writeFileSync(file, lines.join("\n"));
   console.log(lines.slice(2, lines.indexOf("| id | kind | human (L/E/O/R) | AI (L/E/O/R) | steelman human/AI | AI rationale |") - 1).join("\n"));
   console.log(`\nFull table: ${file}`);
