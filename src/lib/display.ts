@@ -3,8 +3,11 @@
  * localStorage under one key; nothing is sent to the server and nothing is
  * stored in the database. The same lists drive the picker, the tiny script
  * that applies the choice before first paint, and the CSS in globals.css
- * (html[data-font] and html[data-size]).
+ * (html[data-font] and html[data-size]). The theme choice (Automatic, Light or Dark) lives in the same value; its
+ * rules and the script that applies it are in src/lib/theme.ts and src/lib/theme-init.ts.
  */
+
+import { DEFAULT_THEME_MODE, isThemeMode, type ThemeMode } from "@/lib/theme";
 
 export const DISPLAY_KEY = "tgs-display";
 
@@ -34,7 +37,7 @@ export const SIZE_OPTIONS = [
 export type SizeId = (typeof SIZE_OPTIONS)[number]["id"];
 export const DEFAULT_SIZE: SizeId = "default";
 
-export type Display = { font: FontId; size: SizeId };
+export type Display = { font: FontId; size: SizeId; theme: ThemeMode };
 
 const FONT_IDS: readonly string[] = FONT_OPTIONS.map((f) => f.id);
 const SIZE_IDS: readonly string[] = SIZE_OPTIONS.map((s) => s.id);
@@ -46,28 +49,35 @@ const SIZE_IDS: readonly string[] = SIZE_OPTIONS.map((s) => s.id);
  */
 const LEGACY_SIZES: Record<string, SizeId> = { large: "medium", larger: "large" };
 
-/** Reads a stored value safely: anything unknown or malformed falls back to the defaults. */
+/**
+ * Reads a stored value safely: anything unknown or malformed falls back to the defaults. The theme field was added
+ * without a version bump: a v2 value with no theme (everyone who saved a font or size before) is valid and means
+ * Automatic, so their font and size are kept. An unknown or invalid theme also means Automatic.
+ */
 export function parseDisplay(raw: string | null): Display {
-  const fallback: Display = { font: DEFAULT_FONT, size: DEFAULT_SIZE };
+  const fallback: Display = { font: DEFAULT_FONT, size: DEFAULT_SIZE, theme: DEFAULT_THEME_MODE };
   if (!raw) return fallback;
   try {
-    const value = JSON.parse(raw) as { v?: unknown; font?: unknown; size?: unknown };
+    const value = JSON.parse(raw) as { v?: unknown; font?: unknown; size?: unknown; theme?: unknown };
     const size = typeof value.size === "string" ? (value.v === 2 ? value.size : (LEGACY_SIZES[value.size] ?? value.size)) : DEFAULT_SIZE;
     return {
       font: typeof value.font === "string" && FONT_IDS.includes(value.font) ? (value.font as FontId) : DEFAULT_FONT,
       size: SIZE_IDS.includes(size) ? (size as SizeId) : DEFAULT_SIZE,
+      theme: isThemeMode(value.theme) ? value.theme : DEFAULT_THEME_MODE,
     };
   } catch {
     return fallback;
   }
 }
 
-/** What gets saved: the current version plus the two choices. */
+/** What gets saved: the current version plus the choices that are not the default theme. */
 export function serializeDisplay(display: Display): string {
-  return JSON.stringify({ v: 2, ...display });
+  // Automatic is the absence of a theme field, so a font-and-size-only choice is stored exactly as it always was.
+  const { theme, ...rest } = display;
+  return JSON.stringify({ v: 2, ...rest, ...(theme === DEFAULT_THEME_MODE ? {} : { theme }) });
 }
 
-/** Sets or clears the two attributes on <html>. Defaults are the absence of the attribute. */
+/** Sets or clears the font and size attributes on <html>. Defaults are the absence of the attribute. (The theme attributes are set by applyThemeMode in theme.ts.) */
 export function applyDisplay(display: Display, root: HTMLElement = document.documentElement) {
   if (display.font === DEFAULT_FONT) root.removeAttribute("data-font");
   else root.setAttribute("data-font", display.font);

@@ -1,3 +1,5 @@
+// Real clock on purpose (not "./fixtures"): these measure elapsed time on a throttled phone, and the pinned clock's fake timers distort that.
+// They assert nothing about colour, so the Automatic theme at night does not matter here.
 import { writeFileSync, mkdirSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 import { DEBATE_PASSWORD, DEBATE_SLUG, debateEmail, seedDebate } from "../../scripts/lib/debate-seed";

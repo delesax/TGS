@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { loadTestEnv } from "../test-env";
 import { expectNoHorizontalOverflow } from "./helpers";
 

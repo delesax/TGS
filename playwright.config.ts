@@ -19,6 +19,9 @@ export default defineConfig({
   reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
   use: {
     baseURL: env.siteUrl,
+    // Fixed zone and a light device, so Automatic theme tests are not decided by the machine's settings (see tests/e2e/fixtures.ts).
+    timezoneId: "Europe/London",
+    colorScheme: "light",
     trace: "retain-on-failure",
   },
   projects: [

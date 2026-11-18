@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
-import { expect, test, type Browser, type Page } from "@playwright/test";
+import { expect, test, type Browser, type Page } from "./fixtures";
 import { loadTestEnv } from "../test-env";
 import { expectNoHorizontalOverflow, openMenu } from "./helpers";
 

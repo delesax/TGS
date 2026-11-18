@@ -4,89 +4,105 @@
 /*
  * TGS design tokens (shadcn/ui naming). Brand palette: Deep Ink Navy, Warm
  * Paper, Night Navy and Burnished Gold (see docs/brand/logo-exploration/README.md).
- * Light by default; the dark set follows the device setting (no toggle for the
- * pilot). 17px Default text (Small 15, Medium 19 and Large 22px from the Display dialog, opened by the header's Text button) and
+ * Light and dark are one palette (light-dark() below). The theme is Automatic (dark from 19:00 to 07:00 by the
+ * device's clock, or when the device is set to dark), Light or Dark, chosen in the Display dialog (opened by the
+ * header's Text button) and applied as <html data-theme>; with no JavaScript it follows the device. 17px Default text (Small 15, Medium 19 and Large 22px from the Display dialog, opened by the header's Text button) and
  * tap targets of at least 44px for older readers.
  * Contrast (WCAG 2.2, ratios in the comment after each pair): every text pair
  * meets AA, most meet AAA. Burnished Gold (--gold) is an accent for graphics and
  * for text on navy only; on light backgrounds use --gold-text (Deep Gold).
  */
 :root {
-  color-scheme: light dark;
+  /* ONE palette, defined once. Each colour is light-dark(light value, dark value), and light-dark() picks by the used
+     color-scheme, which follows <html data-theme> (set before first paint by src/lib/theme-init.ts, kept live by
+     src/components/theme-sync.tsx). Only the three values that are not plain colours (two shadows and the motif
+     opacity) are written for both themes below and chosen by the small mapping blocks after the palette. */
+  color-scheme: light;
   --radius: 0.625rem;
-  --background: #f7f5f0; /* Paper */
-  --foreground: #0b1f3a; /* Ink: 15.2:1 on Paper */
-  --card: #ffffff;
-  --card-foreground: #0b1f3a; /* 16.5:1 */
-  --muted: #efece4;
-  --muted-foreground: #4a5a70; /* Slate: 6.5:1 on Paper, 6.0:1 on muted */
-  --primary: #0b1f3a;
-  --primary-foreground: #ffffff; /* 16.5:1 */
-  --secondary: #e3e8ef;
-  --secondary-foreground: #0b1f3a; /* 13.4:1 */
-  --accent: #f4ebd0; /* pale gold tint, used for notices */
-  --accent-foreground: #4a3600; /* 9.7:1 on accent */
-  --destructive: #b42318; /* 6.0:1 on Paper */
-  --destructive-foreground: #ffffff; /* 6.6:1 */
-  --destructive-soft: #fdecea; /* error box fill; destructive text 5.8:1 */
-  --success: #166534; /* 6.5:1 on Paper */
-  --success-soft: #e6f2e8; /* success box fill; success text 6.2:1 */
-  --border: #8e96a3; /* 2.7:1 on Paper, 3.0:1 on white */
-  --input: #4a5a70; /* 6.5:1 */
-  --ring: #886b29; /* Deep Gold focus ring: 4.6:1 on Paper, 5.0:1 on white */
+  --background: light-dark(#f7f5f0, #060f1d); /* Paper | Night */
+  --foreground: light-dark(#0b1f3a, #f7f5f0); /* Ink: 15.2:1 on Paper | 17.6:1 on Night */
+  --card: light-dark(#ffffff, #0b1f3a); /* | Ink */
+  --card-foreground: light-dark(#0b1f3a, #f7f5f0); /* 16.5:1 | 15.2:1 */
+  --muted: light-dark(#efece4, #0f2038);
+  --muted-foreground: light-dark(#4a5a70, #a7b2c4); /* Slate: 6.5:1 on Paper, 6.0:1 on muted | Mist: 9.0:1 on Night, 7.6:1 on muted */
+  --primary: light-dark(#0b1f3a, #f7f5f0); /* buttons are Ink on Paper, Paper on Night */
+  --primary-foreground: light-dark(#ffffff, #0b1f3a); /* 16.5:1 | 15.2:1 */
+  --secondary: light-dark(#e3e8ef, #14284a);
+  --secondary-foreground: light-dark(#0b1f3a, #f7f5f0); /* 13.4:1 | 13.5:1 */
+  --accent: light-dark(#f4ebd0, #2a2412); /* pale gold tint, used for notices */
+  --accent-foreground: light-dark(#4a3600, #e8d5a0); /* 9.7:1 on accent | 10.6:1 */
+  --destructive: light-dark(#b42318, #f97066); /* 6.0:1 on Paper | 6.9:1 on Night */
+  --destructive-foreground: light-dark(#ffffff, #060f1d); /* 6.6:1 | 6.9:1 */
+  --destructive-soft: light-dark(#fdecea, #3a1614); /* error box fill; destructive text 5.8:1 in both */
+  --success: light-dark(#166534, #4ade80); /* 6.5:1 on Paper | 11.0:1 on Night */
+  --success-soft: light-dark(#e6f2e8, #0f2a1a); /* success box fill; success text 6.2:1 | 8.8:1 */
+  --border: light-dark(#8e96a3, #5a6b85); /* 2.7:1 on Paper, 3.0:1 on white | 3.5:1 on Night, 3.1:1 on card */
+  --input: light-dark(#4a5a70, #8391a8); /* 6.5:1 | 6.0:1 on Night */
+  --ring: light-dark(#886b29, #c8a24a); /* focus ring: Deep Gold 4.6:1 on Paper, 5.0:1 on white | Burnished Gold 8.0:1 on Night */
   /* Gold tokens: accent only */
   --gold: #c8a24a; /* Burnished Gold: fills and graphics; never text on light */
-  --gold-text: #886b29; /* Deep Gold: gold text and borders on light, 4.6:1 */
-  --gold-mark: #ad8935; /* Mark Gold: gold inside graphics on light, 3.0:1 */
+  --gold-text: light-dark(#886b29, #c8a24a); /* Deep Gold: gold text and borders on light, 4.6:1 | 8.0:1 on Night, 6.9:1 on Ink */
+  --gold-mark: light-dark(#ad8935, #c8a24a); /* Mark Gold: gold inside graphics on light, 3.0:1 */
   /* Surfaces: page (--background) < card (--card) < raised (--raised, popovers and the featured card) */
-  --raised: #ffffff;
-  --hairline: rgb(11 31 58 / 0.12); /* decorative card edge; controls keep --input / --border (3:1) */
-  --control: #76808f; /* control borders: 3.3:1 to 4.0:1 on Paper, white, muted and secondary */
-  --shadow-card: 0 1px 2px rgb(11 31 58 / 0.05), 0 10px 28px -16px rgb(11 31 58 / 0.22);
-  --shadow-raised: 0 2px 4px rgb(11 31 58 / 0.06), 0 22px 48px -20px rgb(11 31 58 / 0.32);
+  --raised: light-dark(#ffffff, #0f2744);
+  --hairline: light-dark(rgb(11 31 58 / 0.12), rgb(247 245 240 / 0.1)); /* decorative card edge; controls keep --input / --border (3:1) */
+  --control: light-dark(#76808f, #66789a); /* control borders: 3.3:1 to 4.0:1 on Paper, white, muted and secondary | 3.3:1 to 4.3:1 on Night, card, muted and secondary */
   --on-gold: #060f1d; /* text on a gold button: 8.0:1 */
-  --gold-edge: #886b29; /* edge of a gold button on light backgrounds: 4.6:1 on Paper */
-  --glow-blue: rgb(40 90 170 / 0.1);
-  --glow-gold: rgb(200 162 74 / 0.14);
-  --motif: #0b1f3a;
-  --motif-opacity: 0.07;
+  --gold-edge: light-dark(#886b29, #c8a24a); /* edge of a gold button: 4.6:1 on Paper | 8.0:1 on Night */
+  --glow-blue: light-dark(rgb(40 90 170 / 0.1), rgb(60 110 210 / 0.24));
+  --glow-gold: light-dark(rgb(200 162 74 / 0.14), rgb(200 162 74 / 0.1));
+  --motif: light-dark(#0b1f3a, #f7f5f0);
+  /* Not plain colours, so written for both themes and picked by the mapping blocks below */
+  --shadow-card-light: 0 1px 2px rgb(11 31 58 / 0.05), 0 10px 28px -16px rgb(11 31 58 / 0.22);
+  --shadow-card-dark: 0 0 0 1px rgb(247 245 240 / 0.03), 0 14px 32px -18px rgb(0 0 0 / 0.7);
+  --shadow-raised-light: 0 2px 4px rgb(11 31 58 / 0.06), 0 22px 48px -20px rgb(11 31 58 / 0.32);
+  --shadow-raised-dark: 0 0 0 1px rgb(247 245 240 / 0.05), 0 26px 56px -22px rgb(0 0 0 / 0.85);
+  --motif-opacity-light: 0.07;
+  --motif-opacity-dark: 0.09;
+  --shadow-card: var(--shadow-card-light);
+  --shadow-raised: var(--shadow-raised-light);
+  --motif-opacity: var(--motif-opacity-light);
 }
 
+/* The Theme choice. data-theme is "light" or "dark" and is already resolved (Automatic included) by the head script. */
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --shadow-card: var(--shadow-card-dark);
+  --shadow-raised: var(--shadow-raised-dark);
+  --motif-opacity: var(--motif-opacity-dark);
+}
+/* No-JavaScript fallback (the head script did not run, so there is no data-theme): follow the device, same palette. */
+:root:not([data-theme]) {
+  color-scheme: light dark;
+}
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #060f1d; /* Night */
-    --foreground: #f7f5f0; /* 17.6:1 */
-    --card: #0b1f3a; /* Ink */
-    --card-foreground: #f7f5f0; /* 15.2:1 */
-    --muted: #0f2038;
-    --muted-foreground: #a7b2c4; /* Mist: 9.0:1 on Night, 7.6:1 on muted */
-    --primary: #f7f5f0; /* buttons are Paper on Night */
-    --primary-foreground: #0b1f3a; /* 15.2:1 */
-    --secondary: #14284a;
-    --secondary-foreground: #f7f5f0; /* 13.5:1 */
-    --accent: #2a2412;
-    --accent-foreground: #e8d5a0; /* 10.6:1 on accent */
-    --destructive: #f97066; /* 6.9:1 on Night */
-    --destructive-foreground: #060f1d; /* 6.9:1 */
-    --destructive-soft: #3a1614; /* destructive text 5.8:1 */
-    --success: #4ade80; /* 11.0:1 on Night */
-    --success-soft: #0f2a1a; /* success text 8.8:1 */
-    --border: #5a6b85; /* 3.5:1 on Night, 3.1:1 on card */
-    --input: #8391a8; /* 6.0:1 on Night */
-    --ring: #c8a24a; /* Burnished Gold focus ring: 8.0:1 on Night */
-    --gold: #c8a24a;
-    --gold-text: #c8a24a; /* 8.0:1 on Night, 6.9:1 on Ink */
-    --gold-mark: #c8a24a;
-    --raised: #0f2744;
-    --hairline: rgb(247 245 240 / 0.1);
-    --control: #66789a; /* 3.3:1 to 4.3:1 on Night, card, muted and secondary */
-    --shadow-card: 0 0 0 1px rgb(247 245 240 / 0.03), 0 14px 32px -18px rgb(0 0 0 / 0.7);
-    --shadow-raised: 0 0 0 1px rgb(247 245 240 / 0.05), 0 26px 56px -22px rgb(0 0 0 / 0.85);
-    --gold-edge: #c8a24a;
-    --glow-blue: rgb(60 110 210 / 0.24);
-    --glow-gold: rgb(200 162 74 / 0.1);
-    --motif: #f7f5f0;
-    --motif-opacity: 0.09;
+  :root:not([data-theme]) {
+    --shadow-card: var(--shadow-card-dark);
+    --shadow-raised: var(--shadow-raised-dark);
+    --motif-opacity: var(--motif-opacity-dark);
+  }
+}
+
+/* Header logo: the light and dark lockups are separate files (same viewBox), shown by data-theme. Unlayered, so these beat the
+   utility classes on the images. No JavaScript (no data-theme): follow the device, like the palette. */
+.logo-dark {
+  display: none;
+}
+:root[data-theme="dark"] .logo-light {
+  display: none;
+}
+:root[data-theme="dark"] .logo-dark {
+  display: block;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .logo-light {
+    display: none;
+  }
+  :root:not([data-theme]) .logo-dark {
+    display: block;
   }
 }
 

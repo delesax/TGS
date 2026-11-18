@@ -4,7 +4,9 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteNotice } from "@/components/site-notice";
 import { PwaSupport } from "@/components/pwa";
 import { SiteFooter } from "@/components/site-footer";
+import { ThemeSync } from "@/components/theme-sync";
 import { DISPLAY_INIT_SCRIPT } from "@/lib/display";
+import { THEME_INIT_SCRIPT } from "@/lib/theme-init";
 import "./globals.css";
 
 // Atkinson Hyperlegible was designed for low-vision readers and is the default body face; Source Serif for headings.
@@ -54,19 +56,19 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f7f5f0" },
-    { media: "(prefers-color-scheme: dark)", color: "#060f1d" },
-  ],
+  // No themeColor here: the one theme-color meta is set from the resolved theme by THEME_INIT_SCRIPT and kept in
+  // sync by ThemeSync (a media-based pair would follow the device and ignore the Theme choice).
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    // suppressHydrationWarning: the script below sets data-font and data-size on <html> before React hydrates.
+    // suppressHydrationWarning: the scripts below set data-font, data-size, data-theme and data-theme-mode on <html> before React hydrates.
     <html lang="en-GB" className={`${fontVariables} h-full antialiased`} suppressHydrationWarning>
       <head>
         {/* Applies a saved Display choice before first paint (no cookies read, so pages stay cacheable). */}
         <script dangerouslySetInnerHTML={{ __html: DISPLAY_INIT_SCRIPT }} />
+        {/* Resolves the Theme choice (Automatic, Light, Dark) to data-theme before first paint, and adds the theme-color meta. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="flex min-h-full flex-col">
         <SiteHeader />
@@ -76,6 +78,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </main>
         <SiteFooter />
         <PwaSupport />
+        <ThemeSync />
       </body>
     </html>
   );

@@ -34,7 +34,10 @@ export async function SiteHeader() {
       <div className="page-container flex flex-wrap items-center justify-between gap-x-2 gap-y-0 py-[3px] lg:h-[var(--header-h)] lg:flex-nowrap lg:gap-2 lg:py-0">
         <Link href="/" className="flex min-h-[46px] max-w-full min-w-0 shrink items-center no-underline lg:min-h-10 lg:shrink-0 lg:whitespace-nowrap">
           {/* The same two-tier lockup at every width: 46px tall (about 282px wide) below lg, so it fits a 320px screen. */}
-          <Image src="/brand/lockup-full.svg" alt="The Grand Strategist" width={295} height={48} priority unoptimized className="block h-[46px] w-auto max-w-full object-contain object-left lg:h-[var(--header-logo-h)]" />
+          {/* Two files with the same viewBox and size, swapped by html[data-theme] in globals.css (an <img> SVG cannot see page
+              attributes). Only the visible one is exposed, so the accessible name is still "The Grand Strategist". */}
+          <Image src="/brand/lockup-light.svg" alt="The Grand Strategist" width={295} height={48} priority unoptimized className="logo-light block h-[46px] w-auto max-w-full object-contain object-left lg:h-[var(--header-logo-h)]" />
+          <Image src="/brand/lockup-dark.svg" alt="The Grand Strategist" width={295} height={48} unoptimized loading="eager" className="logo-dark block h-[46px] w-auto max-w-full object-contain object-left lg:h-[var(--header-logo-h)]" />
         </Link>
         <nav aria-label="Main" className="hidden lg:block">
           <ul className="flex items-center gap-x-0.5">

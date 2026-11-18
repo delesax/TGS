@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
-import { expect, test, type Browser } from "@playwright/test";
+import { expect, test, type Browser } from "./fixtures";
 import { collectControls, offenceReasons } from "../../scripts/lib/control-audit";
 import { loadTestEnv } from "../test-env";
 
