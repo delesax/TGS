@@ -89,7 +89,7 @@ test.describe("Sprint 7 batch 2a: signals, judging and email settings, bound inv
     await page.getByLabel(/I understand that my Dispatches are public/).check();
     await page.getByLabel(/I agree to the/).check();
     await page.getByRole("button", { name: "Create account" }).click();
-    await expect(page.getByText(/made for a different email address/)).toBeVisible();
+    await expect(page.getByText("This code doesn't match this email. Use the address the invite was sent to.")).toBeVisible();
     await page.getByLabel("Email address").fill(bound);
     await page.getByRole("button", { name: "Create account" }).click();
     await expect(page.getByRole("heading", { level: 1, name: "Check your email" })).toBeVisible();

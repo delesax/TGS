@@ -60,6 +60,17 @@ export function parseEmailList(text: string): { emails: string[]; invalid: strin
   return { emails, invalid };
 }
 
+/** The short plain-text message an admin pastes into their own email or chat, with the link in it. */
+export function inviteMessage(link: string, expiryDays?: number): string {
+  return [
+    "You are invited to The Grand Strategist: a place to argue a question before a deadline and be judged on the quality of the argument.",
+    "",
+    `Create your account: ${link}`,
+    "",
+    `Use the email address this was sent to. The invite works once${expiryDays ? ` and lasts ${expiryDays} days` : ""}.`,
+  ].join("\n");
+}
+
 export type IssueResult = {
   request_id: string | null;
   email: string;
