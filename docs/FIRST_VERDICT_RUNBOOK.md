@@ -1,6 +1,6 @@
 # Admin runbook: the first Verdict (Campaign 1 closes 8 December 2026 00:00 UTC; draft about 12 December)
 
-Written from the code and the Sprint 5 demo (`docs/DEMO_SPRINT_5.md`) on 17 Nov 2026. It has not been rehearsed on hosted. Everything here is done by an admin in the browser; nothing needs a deploy.
+Written from the code and the Sprint 5 demo (`docs/DEMO_SPRINT_5.md`) on 17 Nov 2026. It was rehearsed once on a local stack on 18 Nov 2026 (see "Not verified"), not on hosted. Everything here is done by an admin in the browser; nothing needs a deploy.
 
 ## Timeline (from the judging functions)
 
@@ -20,7 +20,7 @@ Written from the code and the Sprint 5 demo (`docs/DEMO_SPRINT_5.md`) on 17 Nov 
 
 ## Publishing the Verdict
 
-1. **Admin, Judging, the Campaign.** Read the status board: panel submitted (e.g. 2/2), AI scores (all Dispatches), votes, picks. If AI scores are missing, wait (the cap or an hour's retry) or use "Re-queue" on the stuck item. If a score looks wrong, an admin can override it with a reason; the override is audited.
+1. **Admin, Judging, the Campaign.** Read the status board: panel submitted (e.g. 2/2), AI scores (all Dispatches), votes, picks. If AI scores are missing, wait (the cap or an hour's retry) or use "Re-run AI scoring" (one button per Dispatch, shown once the Campaign has closed) on the stuck item. If a score looks wrong, an admin can override it with a reason; the override is audited.
 2. **Review the draft:** weights used, the ranking (every Strategist by current handle), proposed awards, the rationale, and any "Needs attention" items. A tie or missing input is shown as "needs attention", never silently re-weighted.
 3. **Only if you must change the weights:** tick "Override the weights", set them, give a **reason** (required), and recompute. The public page then says "Set by an admin for this Verdict: <reason>."
 4. **Edit the rationale** if needed ("Edit the rationale"; the before and after are audited). The scores are never changed by editing the wording.
@@ -35,10 +35,12 @@ Written from the code and the Sprint 5 demo (`docs/DEMO_SPRINT_5.md`) on 17 Nov 
 
 ## After publishing
 
-- **Appeals:** a participant can appeal once during the window. Admin, Judging, the Campaign: decide each ("Reject" returns it to Published; "Uphold" keeps it under appeal until you record the outcome with reasons).
+- **Appeals:** a participant can appeal once during the window. Admin, Judging, the Campaign: decide each with the form "Decide the appeal by @handle": choose "Reject: the Verdict stands" or "Uphold: recompute and publish a revised Verdict", write the reasons (required, kept in the audit log) and press "Record decision". Until a second admin exists the decided appeal shows "(decided by the admin who published the Verdict)"; that is expected with one admin.
 - **Removing a published summary** (once the feature is live): "Remove the summary" with a reason of at least 10 characters; the removed text is kept in the audit entry `verdict.summary_removed`.
 - **Audit trail:** Admin, Audit log shows `verdict.computed`, `verdict.rationale_edited`, `verdict.published`, `verdict.appealed`, `verdict.appeal_decided`, `panel.submitted`, `ai_rubric.scored` and, with the feature, the `verdict.summary_*` entries.
 
 ## Not verified
+
+**Rehearsed locally on 18 Nov 2026** (fake AI provider, a seeded test Campaign with 11 Dispatches, on the branch that contains the winning-case feature): drafting, approving, publishing, the public page (Grand Strategist, winning case, Why, Awards, how the scores add up, AI notice, appeal form), the Leaderboard, an appeal and its rejection, removing the summary, and the audit entries `verdict.computed`, `verdict.published`, `verdict.appealed`, `verdict.appeal_decided`, `panel.submitted`, `ai_rubric.scored` and `verdict.summary_*` all behaved as described above. Two wording slips found and fixed in this file: the button is "Re-run AI scoring" (not "Re-queue") and the appeal form is as described under "After publishing". Locally, Judge prompt version reads 2 (the database default) and the Admin home AI cap shows the local default, not 2,000. `verdict.rationale_edited` was not exercised.
 
 This runbook has not been followed on hosted, and the appeal-window and finalisation timings come from the code and the demo, not from a hosted run. The Campaign 1 judge assignment and the live AI cap are owner-reported only.
