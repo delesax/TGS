@@ -157,6 +157,12 @@ Checkouts and local stacks: `TGS-admin/` (project `tgs-adm`, ports 583xx, site 3
 - **Not done:** `src/lib/judging/notices.ts` was not edited by Claude. It showed an uncommitted change in the working tree (not Claude's; briefly stashed and restored during a branch switch, and it is not in this branch).
 
 **Owner-reported:** nothing new.
+### 2026-11-15 — Verdict winning case, public side (branch `feat/verdict-winning-case-public`, stacked on the UI tip and on `feat/verdict-winning-case`; DO NOT MERGE before them)
+
+- **Public "The winning case"** under the Grand Strategist card and before "Why": approved summary, label ("Summary drafted by AI from the winner's Dispatches and reviewed by an admin" or "Written by an admin"), "Read the Dispatch" only while that Dispatch is still visible. Nothing renders without an approved summary. The query (`getWinningCase`) is separate from the Verdict query and returns null on any error, so the page works if the new columns are not yet in the database.
+- **Two fixes:** the weights-override reason loses trailing punctuation and spaces before the closing full stop (`cleanOverrideReason`, unit tested); the public Awards list no longer repeats the Grand Strategist (kept in the admin preview) and the Awards heading hides when nothing is left.
+- **Privacy page** now says "four uses" (adds the winner's summary as an admin-only use; the approved sentence is unchanged). Neither the privacy page nor "How we use AI" says anything about AI rubric scoring or the Verdict rationale; only the Verdict page notices (still PLACEHOLDER) do. Owner to decide.
+- **Checks (own stack `tgs-ui`):** Verdict page 72 states (9 widths x light/dark x 4 sizes): no sideways scroll or clipping; Lighthouse mobile performance 100, accessibility 100. Lint, typecheck, 380 unit, 377 RLS on a reset database, 142 Playwright pass. The real-model check of the summary (`scripts/eval-summary.ts`) was NOT run: the shell could not use the API key; run it from the owner's terminal.
 
 ### 2026-11-15 — Finishing pass 2: fluid container, one-row footer, Campaign grid (branch `ui/font-picker`, DO NOT MERGE)
 
