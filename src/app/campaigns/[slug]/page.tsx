@@ -6,6 +6,7 @@ import { Countdown } from "@/components/countdown";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getViewer } from "@/lib/auth";
+import { metaDescription } from "@/lib/meta-description";
 import { hasPositionsConsent } from "@/lib/positions-consent";
 import { CampaignRubric } from "@/components/campaign-rubric";
 import { getCampaign, getMyPosition, getPublishedRubric, getServerNow } from "@/lib/campaign-data";
@@ -19,7 +20,8 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: PageProps<"/campaigns/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const campaign = await getCampaign({ slug });
-  return { title: campaign?.title ?? "Campaign not found" };
+  const description = metaDescription(campaign?.summary);
+  return { title: campaign?.title ?? "Campaign not found", ...(description ? { description } : {}) };
 }
 
 export default async function CampaignPage({ params }: PageProps<"/campaigns/[slug]">) {

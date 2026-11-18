@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { getViewer } from "@/lib/auth";
 import { getCampaign, getServerNow } from "@/lib/campaign-data";
 import { formatUkDateTime } from "@/lib/campaigns";
+import { metaDescription } from "@/lib/meta-description";
 import { getHandles, getJudgingWindow, getLiveVerdict } from "@/lib/judging/data";
 import { AI_ASSISTED_RATIONALE_NOTICE, AI_JUDGING_NOTICE, APPEAL_NOTICE } from "@/lib/judging/notices";
 import { referencedUsers } from "@/lib/judging/rationale";
@@ -19,7 +20,8 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: PageProps<"/campaigns/[slug]/verdict">): Promise<Metadata> {
   const { slug } = await params;
   const campaign = await getCampaign({ slug });
-  return { title: campaign ? `Verdict: ${campaign.title}` : "Verdict not found" };
+  const description = campaign && campaign.status !== "draft" ? metaDescription(campaign.summary, "Verdict: ") : null;
+  return { title: campaign ? `Verdict: ${campaign.title}` : "Verdict not found", ...(description ? { description } : {}) };
 }
 
 export default async function VerdictPage({ params }: PageProps<"/campaigns/[slug]/verdict">) {
