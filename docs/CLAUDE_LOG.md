@@ -53,6 +53,26 @@ Audit first, then one shared CSS block. `scripts/control-widths.ts` (with `scrip
 - **Guard:** `tests/e2e/control-widths.spec.ts` (7 tests): sampled pages (sign-in, sign-up, forgot password, contact, search, Account, email settings, Campaign composer) at 768, 1280 and 1920px, plus a 375px check that phones still fill the width. Fails on all six desktop tests without the CSS.
 - **Not included:** the position form's cap (`fix/position-form-width`, not merged when this was built), so on this branch it is still full width.
 - Screenshots (outside the repo): `/Users/deleolaoye/Project/TGS-controls-shots/` (`before/`, `after/`, ten pages at 1280px, plus the audit outputs).
+### 2026-11-18 — Position form width cap (branch `fix/position-form-width`) (log written by Claude)
+
+The position form on a Campaign page (radio cards, amber consent notice and checkbox, "Record my position" / "Change my position") stretched across the whole 1600px page. It now stops at 36rem (`max-w-xl`, one class on the form in `position-form.tsx`), as a whole, so notice, radios and button stay aligned. Below 640px it is still the full width of the page. "Clear my position" is unchanged (it already sizes to its text).
+
+- **Test:** new `tests/e2e/position-form.spec.ts` (9 tests): at 375, 768, 1280 and 1920px, Default and Large text, the form, button, notice and radio cards are no wider than 36rem for the page's current text size; on phones they equal the page's content width; no horizontal overflow; the empty-submit error state; the saved state with the Clear button (under half the cap); the cleared state. It fails on 6 of 9 without the class. Signs in once and reuses the session (nine separate sign-ins hit the sign-in rate limit).
+- **Screenshots** (outside the repo): `/Users/deleolaoye/Project/TGS-position-shots/`, 36 files: initial, error and saved states, at 375/768/1280px, light and dark, Default and Large text. No horizontal scroll in any.
+- Not changed: header, footer, brand, wording, the notice text.
+### 2026-11-18 — Footer height limit at 1280px (branch `fix/footer-limit`) (log written by Claude)
+
+Test-only. `tests/e2e/layout.spec.ts` "compact footer at 1280px" limit raised from 66px to 80px. No footer markup, wording or "[to be added]" string changed.
+
+- **Measured at 1280px, default text, Atkinson:** macOS 64.75px (small print 2 lines), Linux image 77.1px (small print wraps to 3 lines). The link column is 46.75px on both. The cause is the small print, not the contact link: at exactly 1280px it shares the row with the links and has the least room. From 1440px both platforms measure 64.75px, so those limits stay 66.
+- **Why 80px still catches a regression:** it allows that one extra line of small print on either platform, but not a real extra row. With the footer's row changed to stacked rows (a temporary edit, reverted) the footer measured 104.2px on both platforms and the 1280px test failed on both.
+### 2026-11-18 — Large-text header overflow fixed (branch `fix/header-large-text-overflow`)
+
+- **Cause:** the desktop header is one no-wrap row (logo, up to seven links, Text button, search) with no spare room at 1024px. Linux text renders about 3% wider than macOS, so on Linux the admin row ran past the page container: up to 42.4px (Lora), 35.4px (Merriweather), 33.4px (Source Serif) at 1024px, which showed as 4 to 17px of horizontal page scroll; Lexend at 1280px ran 30.3px into the side padding. On the Mac the same rows already ran up to 19.4px past the container edge, hidden by its 25px side padding.
+- **Fix (spacing only, `src/components/site-header.tsx`):** link side padding 7px to 4px at `lg` and 9px to 7px at `xl`, and the gap between the three header groups 12px to 8px at `lg`. Logo, fonts, text sizes, the Text button and the search are unchanged. Slack after the fix on Linux: at least 14.7px (Lexend 1280px) and 16.6px (Lora 1024px), in all eight fonts at Large text from 1024 to 1440px.
+- **Guard:** new test in `tests/e2e/layout.spec.ts` checks every font at Large text at six widths that the whole header row stays inside the container (1px tolerance). It fails on the old header and passes on the fix; the three failing `layout.spec.ts:145` variants also pass in the Linux image now.
+- **Checks (own stack, freshly reset):** lint and typecheck clean; 431 unit; 398 RLS; 163 Playwright passed. In the Linux image, `layout.spec.ts` is 41 passed, 1 failed: the separate footer limit at 1280px (77px on Linux against 66px), which this branch does not change.
+- **Still open:** the 1280px footer limit (a stale limit; raise it to about 80 or give the company column more width), and the `moderation.spec.ts:190` flake.
 
 ### 2026-11-18 — Final state of the standing-rules run (log written by Claude)
 
