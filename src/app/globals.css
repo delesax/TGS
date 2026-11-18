@@ -519,3 +519,25 @@ textarea.field {
     align-self: flex-start;
   }
 }
+
+/*
+ * Control widths on every other page (layout only). Same idea and the same cascade position as .admin-area above: from 640px up,
+ * inside <main> (so never the header, its search or the Display dialog), text inputs and selects stop at 36rem, textareas at
+ * 56rem, option and radio cards at 36rem, and buttons (and button-styled links) are as wide as their label, never wider than 20rem
+ * (a longer label wraps). Below 640px controls fill the width, as before. Unlayered on purpose, so it wins over the w-full
+ * utility on the shared Button and the width of .field. The Admin block above is more specific and still decides Admin pages.
+ * scripts/control-widths.ts audits this; tests/e2e/control-widths.spec.ts guards it.
+ */
+@media (min-width: 640px) {
+  main .field,
+  main .option-card {
+    max-width: 36rem;
+  }
+  main textarea.field {
+    max-width: 56rem;
+  }
+  main [data-slot="button"] {
+    width: fit-content;
+    max-width: 20rem;
+  }
+}

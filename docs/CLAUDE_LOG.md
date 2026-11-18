@@ -43,6 +43,17 @@ Checkouts and local stacks: one checkout, `TGS/` (the default Supabase project `
 
 ## Entries
 
+### 2026-11-18 — Control widths on every other page (branch `fix/control-widths`) (log written by Claude)
+
+Audit first, then one shared CSS block. `scripts/control-widths.ts` (with `scripts/lib/control-audit.ts`) seeds a local open Campaign with Dispatches, a closed Campaign with a published Verdict (peer voting and the appeal window open), then visits 55 page states (signed out, Strategist, participant, new user, admin; Display dialog, install pill, reply, report and edit forms, empty and 404 states, `/join` on and off) at 375, 768, 1024, 1280, 1440, 1920 and 2560px and records every button, button-styled link, input, select, textarea and option card with its width and content width. Run: see the header of the script.
+
+- **Before:** 71 offending page-and-element pairs (43 distinct controls): sign-in, sign-up, reset, join, contact, onboarding, Account, composer, report, appeal, "Show more Dispatches" and similar buttons 530 to 1500px wide; Account, composer and search inputs up to 1450px; composer and appeal textareas up to 1520px; the three AI-use option cards. None on Admin pages (already capped).
+- **Fix:** one unlayered block at the end of `globals.css`, same cascade position as `.admin-area`: from 640px, inside `<main>`, `.field` and `.option-card` max 36rem, `textarea.field` 56rem, `[data-slot=button]` `width: fit-content; max-width: 20rem` (a longer label wraps; only "Confirmed: fairly restates the other side" does). No per-page edits; Admin's more specific block still decides Admin pages. Header, search and the Display dialog are outside `<main>`.
+- **After:** 0 offenders. Below 640px nothing changed: 1,659 controls compared at 375px, 0 differences. No control that was not an offender changed width at 768px and up. The audit treats a button exactly 20rem wide with a wrapped label as the cap working (named exception); it counts a button's 1px borders as padding.
+- **Guard:** `tests/e2e/control-widths.spec.ts` (7 tests): sampled pages (sign-in, sign-up, forgot password, contact, search, Account, email settings, Campaign composer) at 768, 1280 and 1920px, plus a 375px check that phones still fill the width. Fails on all six desktop tests without the CSS.
+- **Not included:** the position form's cap (`fix/position-form-width`, not merged when this was built), so on this branch it is still full width.
+- Screenshots (outside the repo): `/Users/deleolaoye/Project/TGS-controls-shots/` (`before/`, `after/`, ten pages at 1280px, plus the audit outputs).
+
 ### 2026-11-18 — Final state of the standing-rules run (log written by Claude)
 
 - **Everything asked for is merged to `main` (now `7a87799`) or done; nothing applied to hosted, no hosted Supabase or Vercel access used.** PRs: #58 winner's summary, #61 W7 notes, #69 audit, #71 invites copy and one message, #72 meta descriptions, #76 and following log branches, #80 ask-to-join switch, #81 public winning case, plus the runbook rehearsal.
