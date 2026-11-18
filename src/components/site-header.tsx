@@ -15,7 +15,9 @@ import { NavLink } from "@/components/nav-link";
  *
  * From the lg breakpoint (1024px) the header is one slim sticky row that shares the page's fluid container (.page-container
  * in globals.css): logo left, links centred, Text button and search right. An admin's seven links plus the logo fit from
- * 1024px at every text size; below 1024px the links move into the Menu panel. The logo height and the row height come from
+ * 1024px at every text size, in every font and on Linux text rendering, which is about 3% wider than macOS (the link padding, 4px at lg and
+ * 7px at xl, and the 8px gap between the three groups are what keep the right-hand group inside the container); below 1024px
+ * the links move into the Menu panel. The logo height and the row height come from
  * --header-logo-h and --header-h (globals.css).
  */
 export async function SiteHeader() {
@@ -29,7 +31,7 @@ export async function SiteHeader() {
       >
         Skip to main content
       </a>
-      <div className="page-container flex flex-wrap items-center justify-between gap-x-2 gap-y-0 py-[3px] lg:h-[var(--header-h)] lg:flex-nowrap lg:gap-3 lg:py-0">
+      <div className="page-container flex flex-wrap items-center justify-between gap-x-2 gap-y-0 py-[3px] lg:h-[var(--header-h)] lg:flex-nowrap lg:gap-2 lg:py-0">
         <Link href="/" className="flex min-h-[46px] max-w-full min-w-0 shrink items-center no-underline lg:min-h-10 lg:shrink-0 lg:whitespace-nowrap">
           {/* The same two-tier lockup at every width: 46px tall (about 282px wide) below lg, so it fits a 320px screen. */}
           <Image src="/brand/lockup-full.svg" alt="The Grand Strategist" width={295} height={48} priority unoptimized className="block h-[46px] w-auto max-w-full object-contain object-left lg:h-[var(--header-logo-h)]" />
@@ -37,32 +39,32 @@ export async function SiteHeader() {
         <nav aria-label="Main" className="hidden lg:block">
           <ul className="flex items-center gap-x-0.5">
             <li>
-              <NavLink href="/" className="lg:min-h-[42px] lg:px-[7px] lg:text-[15px] lg:whitespace-nowrap xl:px-[9px] xl:text-[16px]">Home</NavLink>
+              <NavLink href="/" className="lg:min-h-[42px] lg:px-[4px] lg:text-[15px] lg:whitespace-nowrap xl:px-[7px] xl:text-[16px]">Home</NavLink>
             </li>
             <li>
-              <NavLink href="/campaigns" className="lg:min-h-[42px] lg:px-[7px] lg:text-[15px] lg:whitespace-nowrap xl:px-[9px] xl:text-[16px]">Campaigns</NavLink>
+              <NavLink href="/campaigns" className="lg:min-h-[42px] lg:px-[4px] lg:text-[15px] lg:whitespace-nowrap xl:px-[7px] xl:text-[16px]">Campaigns</NavLink>
             </li>
             <li>
-              <NavLink href="/leaderboard" className="lg:min-h-[42px] lg:px-[7px] lg:text-[15px] lg:whitespace-nowrap xl:px-[9px] xl:text-[16px]">Leaderboard</NavLink>
+              <NavLink href="/leaderboard" className="lg:min-h-[42px] lg:px-[4px] lg:text-[15px] lg:whitespace-nowrap xl:px-[7px] xl:text-[16px]">Leaderboard</NavLink>
             </li>
             <li>
-              <NavLink href="/dossier" className="lg:min-h-[42px] lg:px-[7px] lg:text-[15px] lg:whitespace-nowrap xl:px-[9px] xl:text-[16px]">Dossier</NavLink>
+              <NavLink href="/dossier" className="lg:min-h-[42px] lg:px-[4px] lg:text-[15px] lg:whitespace-nowrap xl:px-[7px] xl:text-[16px]">Dossier</NavLink>
             </li>
             {viewer ? (
               <>
                 {viewer.isAdmin ? (
                   <li>
-                    <NavLink href="/admin" className="lg:min-h-[42px] lg:px-[7px] lg:text-[15px] lg:whitespace-nowrap xl:px-[9px] xl:text-[16px]">Admin</NavLink>
+                    <NavLink href="/admin" className="lg:min-h-[42px] lg:px-[4px] lg:text-[15px] lg:whitespace-nowrap xl:px-[7px] xl:text-[16px]">Admin</NavLink>
                   </li>
                 ) : null}
                 <li>
-                  <NavLink href="/profile" className="lg:min-h-[42px] lg:px-[7px] lg:text-[15px] lg:whitespace-nowrap xl:px-[9px] xl:text-[16px]">Account</NavLink>
+                  <NavLink href="/profile" className="lg:min-h-[42px] lg:px-[4px] lg:text-[15px] lg:whitespace-nowrap xl:px-[7px] xl:text-[16px]">Account</NavLink>
                 </li>
                 <li>
                   <form action={signOut} className="flex">
                     <button
                       type="submit"
-                      className="h-[42px] whitespace-nowrap rounded-md px-[7px] text-[15px] xl:px-[9px] xl:text-[16px] font-semibold text-foreground underline underline-offset-4 hover:bg-muted"
+                      className="h-[42px] whitespace-nowrap rounded-md px-[4px] text-[15px] xl:px-[7px] xl:text-[16px] font-semibold text-foreground underline underline-offset-4 hover:bg-muted"
                     >
                       Sign out
                     </button>
@@ -71,7 +73,7 @@ export async function SiteHeader() {
               </>
             ) : (
               <li>
-                <NavLink href="/login" className="lg:min-h-[42px] lg:px-[7px] lg:text-[15px] lg:whitespace-nowrap xl:px-[9px] xl:text-[16px]">Sign in</NavLink>
+                <NavLink href="/login" className="lg:min-h-[42px] lg:px-[4px] lg:text-[15px] lg:whitespace-nowrap xl:px-[7px] xl:text-[16px]">Sign in</NavLink>
               </li>
             )}
           </ul>

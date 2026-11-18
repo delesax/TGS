@@ -43,6 +43,14 @@ Checkouts and local stacks: one checkout, `TGS/` (the default Supabase project `
 
 ## Entries
 
+### 2026-11-18 — Large-text header overflow fixed (branch `fix/header-large-text-overflow`)
+
+- **Cause:** the desktop header is one no-wrap row (logo, up to seven links, Text button, search) with no spare room at 1024px. Linux text renders about 3% wider than macOS, so on Linux the admin row ran past the page container: up to 42.4px (Lora), 35.4px (Merriweather), 33.4px (Source Serif) at 1024px, which showed as 4 to 17px of horizontal page scroll; Lexend at 1280px ran 30.3px into the side padding. On the Mac the same rows already ran up to 19.4px past the container edge, hidden by its 25px side padding.
+- **Fix (spacing only, `src/components/site-header.tsx`):** link side padding 7px to 4px at `lg` and 9px to 7px at `xl`, and the gap between the three header groups 12px to 8px at `lg`. Logo, fonts, text sizes, the Text button and the search are unchanged. Slack after the fix on Linux: at least 14.7px (Lexend 1280px) and 16.6px (Lora 1024px), in all eight fonts at Large text from 1024 to 1440px.
+- **Guard:** new test in `tests/e2e/layout.spec.ts` checks every font at Large text at six widths that the whole header row stays inside the container (1px tolerance). It fails on the old header and passes on the fix; the three failing `layout.spec.ts:145` variants also pass in the Linux image now.
+- **Checks (own stack, freshly reset):** lint and typecheck clean; 431 unit; 398 RLS; 163 Playwright passed. In the Linux image, `layout.spec.ts` is 41 passed, 1 failed: the separate footer limit at 1280px (77px on Linux against 66px), which this branch does not change.
+- **Still open:** the 1280px footer limit (a stale limit; raise it to about 80 or give the company column more width), and the `moderation.spec.ts:190` flake.
+
 ### 2026-11-18 — Final state of the standing-rules run (log written by Claude)
 
 - **Everything asked for is merged to `main` (now `7a87799`) or done; nothing applied to hosted, no hosted Supabase or Vercel access used.** PRs: #58 winner's summary, #61 W7 notes, #69 audit, #71 invites copy and one message, #72 meta descriptions, #76 and following log branches, #80 ask-to-join switch, #81 public winning case, plus the runbook rehearsal.
