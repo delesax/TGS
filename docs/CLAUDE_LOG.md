@@ -43,6 +43,12 @@ Checkouts and local stacks: `TGS-admin/` (project `tgs-adm`, ports 583xx, site 3
 
 ## Entries
 
+### 2026-11-18 — Three stacked PRs had landed in their base branches, not `main` (log written by Claude)
+
+- **What happened:** after the PRs were opened, #58, #61, #69, #72 and #76 reached `main`. The PRs stacked on a branch that had already merged (public winning case on `feat/verdict-winning-case`; the join switch on `invites-small-pieces`; the runbook rehearsal on `docs/launch-audit-2026-11-17`) merged into that base branch instead, so their work was **not on `main`**. Check `git cherry origin/main origin/<branch>` after merging a base, and retarget the stacked PR to `main` first.
+- **Redone on `main` as new branches (nothing forced, nothing merged):** `feat/join-form-switch-on-main` (sign-up message and `/join` noindex and no sign-up link, then the `JOIN_FORM_ENABLED` switch; unit 428, RLS 398, Playwright 162), `feat/winning-case-public-on-main` (public "The winning case" section; unit 423, RLS 398, Playwright 160), `docs/first-verdict-runbook-on-main` (runbook rehearsal; unit 420, RLS 398, Playwright 160). Lint and typecheck clean on all three; RLS on a fresh reset each time. Conflicts were `docs/CLAUDE_LOG.md`, `CHANGELOG.md` (both sides kept), `docs/DEMO_SPRINT_7.md` (`main`'s text) and the verdict page imports (kept both the meta-description and winning-case imports).
+- **Until `feat/join-form-switch-on-main` merges, `main` has `/join` live, indexable and linked from sign-up with no switch.** Do not apply `20261116000100` to hosted before it merges, or set `JOIN_FORM_ENABLED` deliberately afterwards. The old branches (`invites-small-pieces`, `feat/join-form-switch`, `feat/verdict-winning-case`, `feat/verdict-winning-case-public`, `docs/first-verdict-runbook-rehearsed`) are superseded by these and can be deleted after the new ones merge.
+
 ### 2026-11-18 — Standing-rules run: tasks 0 to 5 and a cross-session sweep (log written by Claude)
 
 - **Nothing merged, nothing applied to hosted, no hosted Supabase or Vercel access used.** Each task used its own worktree and local Supabase stack; the shared default stack was never reset.
