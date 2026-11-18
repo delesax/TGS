@@ -43,6 +43,14 @@ Checkouts and local stacks: one checkout, `TGS/` (the default Supabase project `
 
 ## Entries
 
+### 2026-11-18 — Position form width cap (branch `fix/position-form-width`) (log written by Claude)
+
+The position form on a Campaign page (radio cards, amber consent notice and checkbox, "Record my position" / "Change my position") stretched across the whole 1600px page. It now stops at 36rem (`max-w-xl`, one class on the form in `position-form.tsx`), as a whole, so notice, radios and button stay aligned. Below 640px it is still the full width of the page. "Clear my position" is unchanged (it already sizes to its text).
+
+- **Test:** new `tests/e2e/position-form.spec.ts` (9 tests): at 375, 768, 1280 and 1920px, Default and Large text, the form, button, notice and radio cards are no wider than 36rem for the page's current text size; on phones they equal the page's content width; no horizontal overflow; the empty-submit error state; the saved state with the Clear button (under half the cap); the cleared state. It fails on 6 of 9 without the class. Signs in once and reuses the session (nine separate sign-ins hit the sign-in rate limit).
+- **Screenshots** (outside the repo): `/Users/deleolaoye/Project/TGS-position-shots/`, 36 files: initial, error and saved states, at 375/768/1280px, light and dark, Default and Large text. No horizontal scroll in any.
+- Not changed: header, footer, brand, wording, the notice text.
+
 ### 2026-11-18 — Final state of the standing-rules run (log written by Claude)
 
 - **Everything asked for is merged to `main` (now `7a87799`) or done; nothing applied to hosted, no hosted Supabase or Vercel access used.** PRs: #58 winner's summary, #61 W7 notes, #69 audit, #71 invites copy and one message, #72 meta descriptions, #76 and following log branches, #80 ask-to-join switch, #81 public winning case, plus the runbook rehearsal.

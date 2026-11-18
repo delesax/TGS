@@ -31,7 +31,7 @@ export function PositionForm({
 
   return (
     <>
-    <ActionForm action={action} aria-label={legend}>
+    <ActionForm action={action} aria-label={legend} className="max-w-xl">
       <FormMessage state={state} />
       <input type="hidden" name="campaignId" value={campaignId} />
       <input type="hidden" name="slug" value={slug} />
