@@ -69,6 +69,11 @@ Checkouts and local stacks: `TGS-admin/` (project `tgs-adm`, ports 583xx, site 3
 - **Overlap with `invites-admin-lite`:** none in files (it edits `admin/invites/*` and `admin-nav.tsx`; this branch adds `admin/layout.tsx` and edits `globals.css` only).
 - **Gates, own stack (`tgs-adm`, freshly reset):** lint and typecheck clean; 385 unit; 382 RLS; Playwright 147 pass on the second full run (the first run had one failure in `password-reset.spec.ts` "an ordinary signed-in session cannot use the reset page", which passed 6 of 6 when that file was re-run; cause not found, not related to CSS); admin contrast script 0 failures over 112 states (14 Admin pages, light and dark, default and Large text, 375 and 1280px).
 - Number fields are 36rem wide (the brief's range for inputs); narrower number fields would be a one-line follow-up.
+### 2026-11-17 — Winner-summary migration renumbered (branch `feat/verdict-winning-case`)
+
+- **Hosted records `20261116000100` as `join_requests_invites`, so the verdict migration is now `20261117000100_verdict_winner_summary.sql`** (`git mv`, SQL unchanged). Only references to the old name were this log and `docs/LAUNCH_AUDIT_2026-11-17.md`; both updated. Rebased onto `main` `b03b233` (the only conflicts were in this log; both sides kept). Highest migration on `main` was `20261116000100`. Nothing applied to hosted.
+- **Own stack (`tgs-sum`, fresh reset):** migrations apply in order, `20261116000100_join_requests_invites` then `20261117000100_verdict_winner_summary`. Lint and typecheck clean; 408 unit; 398 RLS; 150 Playwright on a freshly reset database.
+- **Test-run notes:** with several Docker stacks running at once, auth timed out and RLS files failed at random; they passed once the machine was quiet. Repeated Playwright runs on the same database (not reset between runs) also failed at random; a fresh reset gave 150 of 150. `feat/verdict-winning-case-public` is stacked on the old tip of this branch and needs a rebase onto it.
 
 ### 2026-11-17 — Launch audit and documentation refresh (branch `docs/launch-audit-2026-11-17`)
 
