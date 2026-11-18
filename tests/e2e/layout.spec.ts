@@ -200,9 +200,12 @@ test.describe("header search", () => {
 
 test.describe("compact footer", () => {
   // One row (about 56 to 64px) from 1280px; two compact rows (at most about 110px) from 1024px with a mouse.
+  // At exactly 1280px the small print sits beside the links with the least room, so Linux text (about 3% wider than macOS) wraps it
+  // to a third line: 64.75px on macOS, 77.1px on Linux (the link column is 46.75px on both). 80px allows that one extra line of
+  // small print on either platform, but fails when the footer grows a real extra row (stacked rows measure about 104px or more).
   for (const [width, max] of [
     [1024, 115],
-    [1280, 66],
+    [1280, 80],
     [1440, 66],
     [1728, 66],
     [1920, 66],

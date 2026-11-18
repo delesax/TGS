@@ -43,6 +43,12 @@ Checkouts and local stacks: one checkout, `TGS/` (the default Supabase project `
 
 ## Entries
 
+### 2026-11-18 — Footer height limit at 1280px (branch `fix/footer-limit`) (log written by Claude)
+
+Test-only. `tests/e2e/layout.spec.ts` "compact footer at 1280px" limit raised from 66px to 80px. No footer markup, wording or "[to be added]" string changed.
+
+- **Measured at 1280px, default text, Atkinson:** macOS 64.75px (small print 2 lines), Linux image 77.1px (small print wraps to 3 lines). The link column is 46.75px on both. The cause is the small print, not the contact link: at exactly 1280px it shares the row with the links and has the least room. From 1440px both platforms measure 64.75px, so those limits stay 66.
+- **Why 80px still catches a regression:** it allows that one extra line of small print on either platform, but not a real extra row. With the footer's row changed to stacked rows (a temporary edit, reverted) the footer measured 104.2px on both platforms and the 1280px test failed on both.
 ### 2026-11-18 — Large-text header overflow fixed (branch `fix/header-large-text-overflow`)
 
 - **Cause:** the desktop header is one no-wrap row (logo, up to seven links, Text button, search) with no spare room at 1024px. Linux text renders about 3% wider than macOS, so on Linux the admin row ran past the page container: up to 42.4px (Lora), 35.4px (Merriweather), 33.4px (Source Serif) at 1024px, which showed as 4 to 17px of horizontal page scroll; Lexend at 1280px ran 30.3px into the side padding. On the Mac the same rows already ran up to 19.4px past the container edge, hidden by its 25px side padding.
