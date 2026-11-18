@@ -43,6 +43,13 @@ Checkouts and local stacks: one checkout, `TGS/` (the default Supabase project `
 
 ## Entries
 
+### 2026-11-18 — Footer height limit at 1280px (branch `fix/footer-limit`) (log written by Claude)
+
+Test-only. `tests/e2e/layout.spec.ts` "compact footer at 1280px" limit raised from 66px to 80px. No footer markup, wording or "[to be added]" string changed.
+
+- **Measured at 1280px, default text, Atkinson:** macOS 64.75px (small print 2 lines), Linux image 77.1px (small print wraps to 3 lines). The link column is 46.75px on both. The cause is the small print, not the contact link: at exactly 1280px it shares the row with the links and has the least room. From 1440px both platforms measure 64.75px, so those limits stay 66.
+- **Why 80px still catches a regression:** it allows that one extra line of small print on either platform, but not a real extra row. With the footer's row changed to stacked rows (a temporary edit, reverted) the footer measured 104.2px on both platforms and the 1280px test failed on both.
+
 ### 2026-11-18 — Final state of the standing-rules run (log written by Claude)
 
 - **Everything asked for is merged to `main` (now `7a87799`) or done; nothing applied to hosted, no hosted Supabase or Vercel access used.** PRs: #58 winner's summary, #61 W7 notes, #69 audit, #71 invites copy and one message, #72 meta descriptions, #76 and following log branches, #80 ask-to-join switch, #81 public winning case, plus the runbook rehearsal.
