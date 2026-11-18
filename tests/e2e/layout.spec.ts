@@ -167,14 +167,45 @@ test.describe("header search", () => {
         await context.close();
       });
     }
+
+    // The header's right-hand group (Text button, search) must stay inside the page container, not eat into its side padding.
+    // Linux text rendering is about 3% wider than macOS, so this is checked in every font at Large text, with a 1px tolerance.
+    test("every font at large text keeps the whole header row inside the container (1024 to 1440px)", async ({ browser }) => {
+      test.setTimeout(120_000);
+      const context = await browser.newContext({ baseURL: env.siteUrl, viewport: { width: 1440, height: 900 } });
+      const page = await context.newPage();
+      await page.goto("/login");
+      await page.getByLabel("Email address").fill(email);
+      await page.getByLabel("Password").fill("a layout password");
+      await page.getByRole("button", { name: "Sign in", exact: true }).click();
+      await expect(page).not.toHaveURL(/\/login/);
+      for (const font of FONTS) {
+        await page.evaluate((value) => window.localStorage.setItem("tgs-display", value), JSON.stringify({ v: 2, font, size: "large" }));
+        for (const width of [1024, 1100, 1200, 1279, 1280, 1440]) {
+          await page.setViewportSize({ width, height: 900 });
+          await page.goto("/");
+          const over = await page.evaluate(() => {
+            const row = document.querySelector("header .page-container")!;
+            const contentRight = row.getBoundingClientRect().right - parseFloat(getComputedStyle(row).paddingRight);
+            const visible = Array.from(row.children).filter((e) => getComputedStyle(e).display !== "none");
+            return Math.max(...visible.map((e) => e.getBoundingClientRect().right)) - contentRight;
+          });
+          expect(over, `${font} ${width}px: header row runs ${over.toFixed(1)}px past the container edge`).toBeLessThanOrEqual(1);
+        }
+      }
+      await context.close();
+    });
   });
 });
 
 test.describe("compact footer", () => {
   // One row (about 56 to 64px) from 1280px; two compact rows (at most about 110px) from 1024px with a mouse.
+  // At exactly 1280px the small print sits beside the links with the least room, so Linux text (about 3% wider than macOS) wraps it
+  // to a third line: 64.75px on macOS, 77.1px on Linux (the link column is 46.75px on both). 80px allows that one extra line of
+  // small print on either platform, but fails when the footer grows a real extra row (stacked rows measure about 104px or more).
   for (const [width, max] of [
     [1024, 115],
-    [1280, 66],
+    [1280, 80],
     [1440, 66],
     [1728, 66],
     [1920, 66],
