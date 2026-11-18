@@ -4,6 +4,9 @@ import { loadTestEnv } from "./tests/test-env";
 // Refuses to run unless .env.test.local points at LOCAL Supabase.
 const env = loadTestEnv();
 const port = new URL(env.siteUrl).port || "3100";
+// A second server on the next port runs the same build with the ask-to-join switch OFF (JOIN_FORM_ENABLED unset).
+const offPort = String(Number(port) + 1);
+const offSiteUrl = `http://localhost:${offPort}`;
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -22,7 +25,8 @@ export default defineConfig({
     // Mobile first: the core journey must work at 375px wide.
     { name: "mobile-chromium", use: { ...devices["Pixel 7"], viewport: { width: 375, height: 812 } } },
   ],
-  webServer: {
+  webServer: [
+    {
     // Production build, so the test sees what users will see. The env vars
     // passed here take precedence over .env.local.
     command: `npm run build && npx next start --port ${port}`,
@@ -43,6 +47,27 @@ export default defineConfig({
       // the key is blanked too, in case .env.local ever holds one.
       AI_PROVIDER: "fake",
       ANTHROPIC_API_KEY: "",
+      // The ask-to-join form is off unless this is "true"; the tests of the form need it on.
+      JOIN_FORM_ENABLED: "true",
     },
-  },
+    },
+    {
+      // The same build, switch off. Started after the first server, which builds.
+      command: `npx next start --port ${offPort}`,
+      url: offSiteUrl,
+      timeout: 120_000,
+      reuseExistingServer: false,
+      env: {
+        NEXT_PUBLIC_SITE_URL: offSiteUrl,
+        NEXT_PUBLIC_SUPABASE_URL: env.supabaseUrl,
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: env.anonKey,
+        SUPABASE_SERVICE_ROLE_KEY: env.serviceKey,
+        EMAIL_TRANSPORT: "mailpit",
+        MAILPIT_URL: env.mailpitUrl,
+        AI_PROVIDER: "fake",
+        ANTHROPIC_API_KEY: "",
+        JOIN_FORM_ENABLED: "",
+      },
+    },
+  ],
 });

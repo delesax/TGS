@@ -40,6 +40,13 @@ Checkouts and local stacks: the shared `TGS/` checkout (default Supabase project
 
 ## Entries
 
+### 2026-11-18 — Ask-to-join switch (branch `feat/join-form-switch`, stacked on `invites-small-pieces`)
+
+- **Why.** The owner wants `/join` closed until the privacy wording is settled. New env switch `JOIN_FORM_ENABLED`, **off when unset**; only the exact value `true` turns it on (`src/lib/join-form.ts`).
+- **Off:** `/join` shows "Not open yet" (noindex, no form), and `requestToJoin` returns "Requests to join are not open yet." as its first step, before the honeypot, validation, rate limits or any database call. **On:** unchanged. No migration, no change to the invites admin.
+- **Tests:** `src/app/join/actions.test.ts` calls the action directly (switch unset, empty, false, TRUE, 1, yes, " true": no database or rate-limit call; "true": works as before). `tests/e2e/join-switch.spec.ts` covers both states; Playwright now starts a second server on the next port, same build, switch off. The existing join specs run with the switch on.
+- **Docs:** `docs/LAUNCH_RUNBOOK.md` section "Ask-to-join form switch"; `.env.example`. **Owner action:** set `JOIN_FORM_ENABLED=true` on Vercel only when ready; nothing applied to hosted.
+
 ### 2026-11-17 — Invites: the small pieces ported to main (branch `invites-small-pieces`)
 
 - **Why.** The owner asked for a reduced invites version on `invites-admin-lite` after the full build had already been merged to `main` (PR #66, on 16 to 17 Nov); the lite branch could not rebase (add/add conflicts in `src/app/admin/invites/*`). The owner chose to port only the pieces `main` lacks.
