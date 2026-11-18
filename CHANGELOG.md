@@ -7,6 +7,7 @@ Branch `invites-copy-and-one-message`, on top of `main`'s Invites screen. **No m
 - **One message at sign-up.** A mistyped, used, expired, revoked or wrong-address invite code all show "This code doesn't match this email. Use the address the invite was sent to." (owner decision 8 in `docs/INVITES_PLAN.md` on that branch). The form no longer says an invite was made for a different address.
 - **Copy link and Copy invite message** next to each link the Invites screen shows once (approve or re-issue without emailing). They report "copied" only if the copy worked. The message is a short plain-text note with the link, "use the email address this was sent to" and how many days it lasts.
 - **Left out on purpose:** the old branch's migration (`main` already has `issue_invites`, `revoke_invite` and `reissue_invite`), its table of plaintext codes (`main` stores only hashes and shows a link once), and its tests for those.
+
 ## Invites: one sign-up message, `/join` not linked (17 November 2026)
 
 - A mistyped, used, expired, revoked or wrong-address invite code now shows one message on sign-up: "This code doesn't match this email. Use the address the invite was sent to." The "Ask to join" link was removed from the sign-up page and `/join` is not indexed (owner decision: not advertised until after the first wave). No migration. `docs/INVITES_PLAN.md` records the plan, the owner's answers and the state of `main`.

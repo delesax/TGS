@@ -98,6 +98,13 @@ Checkouts and local stacks: `TGS-admin/` (project `tgs-adm`, ports 583xx, site 3
 - **Hosted records `20261116000100` as `join_requests_invites`, so the verdict migration is now `20261117000100_verdict_winner_summary.sql`** (`git mv`, SQL unchanged). Only references to the old name were this log and `docs/LAUNCH_AUDIT_2026-11-17.md`; both updated. Rebased onto `main` `b03b233` (the only conflicts were in this log; both sides kept). Highest migration on `main` was `20261116000100`. Nothing applied to hosted.
 - **Own stack (`tgs-sum`, fresh reset):** migrations apply in order, `20261116000100_join_requests_invites` then `20261117000100_verdict_winner_summary`. Lint and typecheck clean; 408 unit; 398 RLS; 150 Playwright on a freshly reset database.
 - **Test-run notes:** with several Docker stacks running at once, auth timed out and RLS files failed at random; they passed once the machine was quiet. Repeated Playwright runs on the same database (not reset between runs) also failed at random; a fresh reset gave 150 of 150. `feat/verdict-winning-case-public` is stacked on the old tip of this branch and needs a rebase onto it.
+### 2026-11-18 — Ask-to-join switch (branch `feat/join-form-switch`, stacked on `invites-small-pieces`)
+
+- **Why.** The owner wants `/join` closed until the privacy wording is settled. New env switch `JOIN_FORM_ENABLED`, **off when unset**; only the exact value `true` turns it on (`src/lib/join-form.ts`).
+- **Off:** `/join` shows "Not open yet" (noindex, no form), and `requestToJoin` returns "Requests to join are not open yet." as its first step, before the honeypot, validation, rate limits or any database call. **On:** unchanged. No migration, no change to the invites admin.
+- **Tests:** `src/app/join/actions.test.ts` calls the action directly (switch unset, empty, false, TRUE, 1, yes, " true": no database or rate-limit call; "true": works as before). `tests/e2e/join-switch.spec.ts` covers both states; Playwright now starts a second server on the next port, same build, switch off. The existing join specs run with the switch on.
+- **Docs:** `docs/LAUNCH_RUNBOOK.md` section "Ask-to-join form switch"; `.env.example`. **Owner action:** set `JOIN_FORM_ENABLED=true` on Vercel only when ready; nothing applied to hosted.
+
 ### 2026-11-17 — Invites: the small pieces ported to main (branch `invites-small-pieces`)
 
 - **Why.** The owner asked for a reduced invites version on `invites-admin-lite` after the full build had already been merged to `main` (PR #66, on 16 to 17 Nov); the lite branch could not rebase (add/add conflicts in `src/app/admin/invites/*`). The owner chose to port only the pieces `main` lacks.
