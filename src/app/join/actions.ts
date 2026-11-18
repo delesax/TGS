@@ -1,6 +1,7 @@
 "use server";
 
 import type { FormState } from "@/components/form";
+import { joinFormEnabled } from "@/lib/join-form";
 import { joinRequestSchema } from "@/lib/join-requests";
 import { hashSubject, ipSubject, withinLimit } from "@/lib/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -14,6 +15,10 @@ const SAME: FormState = {
 
 /** "Ask to join". Saves a pending request; admins decide. Never says whether the address is known. */
 export async function requestToJoin(_prev: FormState, formData: FormData): Promise<FormState> {
+  // Switched off (the default): refuse before anything else runs, so nothing is rate-limited, read or written. A server
+  // action can be called without the page, so the page being hidden is not enough.
+  if (!joinFormEnabled()) return { formError: "Requests to join are not open yet." };
+
   // A hidden field only a bot fills in. Say thank you and do nothing.
   if (String(formData.get("website") ?? "").trim() !== "") return SAME;
 

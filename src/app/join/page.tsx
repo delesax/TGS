@@ -3,12 +3,19 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Page } from "@/components/page";
 import { getViewer } from "@/lib/auth";
+import { joinFormEnabled } from "@/lib/join-form";
 import { JoinForm } from "./join-form";
 
-export const metadata: Metadata = { title: "Ask to join" };
+// Not linked from anywhere and not indexed: the owner decided it is not advertised until after the first wave.
+export const metadata: Metadata = { title: "Ask to join", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
 export default async function JoinPage() {
+  if (!joinFormEnabled()) {
+    return (
+      <Page narrow title="Not open yet" intro="Requests to join are not open yet. There is nothing to fill in on this page." />
+    );
+  }
   if (await getViewer()) redirect("/dossier");
   return (
     <Page
