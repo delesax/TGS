@@ -12,8 +12,9 @@ import { RECOVERY_COOKIE } from "@/lib/recovery";
 import { getSwitches, SWITCH_WORDING } from "@/lib/switches";
 import { fieldErrors, forgotPasswordSchema, resetPasswordSchema, safeNextPath, signInSchema, signUpSchema } from "@/lib/validation";
 
-const INVITE_PROBLEM =
-  "We could not accept that invite code. It may be mistyped, used up or expired. Check the code in your invitation email, or ask the person who invited you for a new one.";
+// One message for every invite problem (mistyped, used up, expired, revoked, or made for another address), so the form never
+// says which: a person who holds a code learns nothing about who it was made for.
+const INVITE_PROBLEM = "This code doesn't match this email. Use the address the invite was sent to.";
 
 /**
  * Server-side check so we can give a clear message. Counts places held by
@@ -36,9 +37,6 @@ async function inviteCheck(code: string, email: string): Promise<"ok" | "invalid
   if (error) return (await inviteIsUsable(code)) ? "ok" : "invalid";
   return data === "ok" || data === "email_mismatch" ? data : "invalid";
 }
-
-const INVITE_EMAIL_PROBLEM =
-  "This invite code was made for a different email address. Sign up with the address your invitation was sent to, or ask the person who invited you.";
 
 export async function signUp(_prev: FormState, formData: FormData): Promise<FormState> {
   const parsed = signUpSchema.safeParse({
@@ -65,7 +63,7 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
 
   const invite = await inviteCheck(inviteCode, email);
   if (invite === "email_mismatch") {
-    return { formError: "Your invite code was not accepted.", fieldErrors: { inviteCode: INVITE_EMAIL_PROBLEM } };
+    return { formError: "Your invite code was not accepted.", fieldErrors: { inviteCode: INVITE_PROBLEM } };
   }
   if (invite !== "ok") {
     return { formError: "Your invite code was not accepted.", fieldErrors: { inviteCode: INVITE_PROBLEM } };
@@ -104,7 +102,7 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
       };
     }
     if (error.message.includes("INVITE_EMAIL_MISMATCH")) {
-      return { formError: "Your invite code was not accepted.", fieldErrors: { inviteCode: INVITE_EMAIL_PROBLEM } };
+      return { formError: "Your invite code was not accepted.", fieldErrors: { inviteCode: INVITE_PROBLEM } };
     }
     if (error.code === "unexpected_failure" || error.message.includes("Database error")) {
       // The invite trigger refused the account (for example, the code was used up a moment ago).

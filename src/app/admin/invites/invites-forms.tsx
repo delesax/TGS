@@ -5,7 +5,7 @@ import { useActionState } from "react";
 import { FormMessage, SubmitButton, TextAreaField, type FormState } from "@/components/form";
 import { Button } from "@/components/ui/button";
 import { formatUkShort } from "@/lib/campaigns";
-import { parseEmailList, splitBySendDay, type Budget } from "@/lib/join-requests";
+import { inviteMessage, parseEmailList, splitBySendDay, type Budget } from "@/lib/join-requests";
 import { decideRequests, reissueInviteAction, revokeInviteAction, type InviteActionState } from "./actions";
 
 export type PendingRequest = { id: string; email: string; note: string | null; source: string; created_at: string };
@@ -32,7 +32,31 @@ function submitWith(event: React.FormEvent<HTMLFormElement>, action: (data: Form
   React.startTransition(() => action(data));
 }
 
-function Result({ state }: { state: InviteActionState }) {
+/** Copies text to the clipboard and says so. Says nothing false: the label only changes if the copy worked. */
+function CopyButton({ text, label, what }: { text: string; label: string; what: string }) {
+  const [done, setDone] = React.useState<"idle" | "copied" | "failed">("idle");
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setDone("copied");
+    } catch {
+      setDone("failed");
+    }
+    window.setTimeout(() => setDone("idle"), 3000);
+  };
+  return (
+    <>
+      <Button type="button" variant="outline" onClick={copy}>
+        {label}
+      </Button>
+      <span role="status" className="text-base">
+        {done === "copied" ? `${what} copied.` : done === "failed" ? "Could not copy. Select the link and copy it by hand." : ""}
+      </span>
+    </>
+  );
+}
+
+function Result({ state, expiryDays }: { state: InviteActionState; expiryDays?: number }) {
   return (
     <div className="flex flex-col gap-3">
       <FormMessage state={state as FormState} />
@@ -52,6 +76,10 @@ function Result({ state }: { state: InviteActionState }) {
                 <span className="font-semibold">{l.email}</span>
                 <br />
                 <code data-testid="invite-link">{l.link}</code>
+                <span className="mt-2 flex flex-wrap items-center gap-2 break-normal">
+                  <CopyButton text={l.link} label="Copy link" what="Link" />
+                  <CopyButton text={inviteMessage(l.link, expiryDays)} label="Copy invite message" what="Message" />
+                </span>
               </li>
             ))}
           </ul>
@@ -111,7 +139,7 @@ export function PendingPanel({ requests, budget }: { requests: PendingRequest[];
 
   return (
     <form ref={formRef} noValidate onSubmit={(e) => submitWith(e, action, getKey)} onChange={recount} className="flex flex-col gap-6" aria-label="Pending requests">
-      <Result state={state} />
+      <Result state={state} expiryDays={budget.expiry_days} />
       <section aria-labelledby="pending-h" className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 id="pending-h" className="text-xl font-semibold">
@@ -169,7 +197,7 @@ export function PendingPanel({ requests, budget }: { requests: PendingRequest[];
   );
 }
 
-export function IssuedActions({ inviteId, canRevoke, canReissue }: { inviteId: string; canRevoke: boolean; canReissue: boolean }) {
+export function IssuedActions({ inviteId, canRevoke, canReissue, expiryDays }: { inviteId: string; canRevoke: boolean; canReissue: boolean; expiryDays?: number }) {
   const [revokeState, revoke, revoking] = useActionState(revokeInviteAction, {} as InviteActionState);
   const [reissueState, reissue, reissuing] = useActionState(reissueInviteAction, {} as InviteActionState);
   const getKey = useBatchKey(reissueState);
@@ -197,7 +225,7 @@ export function IssuedActions({ inviteId, canRevoke, canReissue }: { inviteId: s
         ) : null}
       </div>
       <Result state={revokeState} />
-      <Result state={reissueState} />
+      <Result state={reissueState} expiryDays={expiryDays} />
     </div>
   );
 }

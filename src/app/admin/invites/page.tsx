@@ -53,7 +53,7 @@ export default async function InvitesPage() {
                         {state === "waiting" && r.send_after ? ` · goes out ${formatUkShort(r.send_after)}` : ""}
                         {r.decided_at ? ` · decided ${formatUkShort(r.decided_at)}` : ""}
                       </p>
-                      {r.invite_id && (canRevoke(state) || canReissue(state)) ? <IssuedActions inviteId={r.invite_id} canRevoke={canRevoke(state)} canReissue={canReissue(state)} /> : null}
+                      {r.invite_id && (canRevoke(state) || canReissue(state)) ? <IssuedActions inviteId={r.invite_id} canRevoke={canRevoke(state)} canReissue={canReissue(state)} expiryDays={budget.expiry_days} /> : null}
                     </li>
                   );
                 })}

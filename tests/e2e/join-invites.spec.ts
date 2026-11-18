@@ -174,7 +174,7 @@ test.describe("ask to join, and invites from the admin screen", () => {
     const visitor = await (await browser.newContext()).newPage();
     await visitor.goto(link!);
     await fillSignUp(visitor, fresh("wrongaddress"));
-    await expect(visitor.getByText(/made for a different email address/)).toBeVisible();
+    await expect(visitor.getByText("This code doesn't match this email. Use the address the invite was sent to.")).toBeVisible();
     await fillSignUp(visitor, email.toUpperCase());
     await expect(visitor.getByRole("heading", { level: 1, name: "Check your email" })).toBeVisible();
     expect(await userFor(email)).toBeDefined();
@@ -183,7 +183,7 @@ test.describe("ask to join, and invites from the admin screen", () => {
     const again = await (await browser.newContext()).newPage();
     await again.goto(link!);
     await fillSignUp(again, email);
-    await expect(again.getByText(/We could not accept that invite code|not accepted/).first()).toBeVisible();
+    await expect(again.getByText("This code doesn't match this email. Use the address the invite was sent to.")).toBeVisible();
     await visitor.context().close();
     await again.context().close();
   });
@@ -197,6 +197,16 @@ test.describe("ask to join, and invites from the admin screen", () => {
     const link = await page.getByTestId("invite-link").innerText();
     expect(link).toMatch(/\/signup\?code=TGS-([A-Z2-9]{4}-){4}[A-Z2-9]{4}$/);
     await expect(page.getByText(/shown once/).first()).toBeVisible();
+    // Copy buttons: they say so only if the copy worked, and the message carries the link.
+    await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+    await page.getByRole("button", { name: "Copy link" }).click();
+    await expect(page.getByText("Link copied.")).toBeVisible();
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(link);
+    await page.getByRole("button", { name: "Copy invite message" }).click();
+    await expect(page.getByText("Message copied.")).toBeVisible();
+    const copied = await page.evaluate(() => navigator.clipboard.readText());
+    expect(copied).toContain(link);
+    expect(copied).toContain("Use the email address this was sent to.");
     // Reload: the link is gone, and the list says it was not emailed.
     await page.reload();
     await expect(page.getByTestId("invite-link")).toHaveCount(0);
@@ -210,7 +220,7 @@ test.describe("ask to join, and invites from the admin screen", () => {
     const visitor = await (await browser.newContext()).newPage();
     await visitor.goto(link);
     await fillSignUp(visitor, email);
-    await expect(visitor.getByText(/We could not accept that invite code/).first()).toBeVisible();
+    await expect(visitor.getByText("This code doesn't match this email. Use the address the invite was sent to.")).toBeVisible();
     await visitor.context().close();
   });
 
@@ -228,7 +238,7 @@ test.describe("ask to join, and invites from the admin screen", () => {
     const visitor = await (await browser.newContext()).newPage();
     await visitor.goto(link);
     await fillSignUp(visitor, email);
-    await expect(visitor.getByText(/We could not accept that invite code/).first()).toBeVisible();
+    await expect(visitor.getByText("This code doesn't match this email. Use the address the invite was sent to.")).toBeVisible();
     await visitor.context().close();
     await page.reload();
     await expect(page.getByRole("listitem").filter({ hasText: email }).getByText("Revoked")).toBeVisible();

@@ -5,6 +5,7 @@ import {
   canRevoke,
   cleanNote,
   describeInvite,
+  inviteMessage,
   joinRequestSchema,
   normaliseEmail,
   parseEmailList,
@@ -87,5 +88,14 @@ describe("describeInvite", () => {
     expect(canReissue("joined")).toBe(false);
     expect(canRevoke("joined")).toBe(false);
     expect(canReissue("rejected")).toBe(false);
+  });
+});
+
+describe("inviteMessage", () => {
+  it("carries the link, says the invite is single use and for one address, and names the days when known", () => {
+    const text = inviteMessage("https://example.test/signup?code=TGS-AAAA", 7);
+    expect(text).toContain("Create your account: https://example.test/signup?code=TGS-AAAA");
+    expect(text).toContain("Use the email address this was sent to. The invite works once and lasts 7 days.");
+    expect(inviteMessage("https://example.test/x")).toContain("The invite works once.");
   });
 });

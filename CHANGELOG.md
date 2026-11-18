@@ -1,5 +1,13 @@
 # Changelog
 
+## Invites: copy buttons and one sign-up message (18 November 2026). Awaiting review
+
+Branch `invites-copy-and-one-message`, on top of `main`'s Invites screen. **No migration.** This replaces the older `invites-admin-lite` branch, which built a second Invites screen; only the two things `main` lacked were kept.
+
+- **One message at sign-up.** A mistyped, used, expired, revoked or wrong-address invite code all show "This code doesn't match this email. Use the address the invite was sent to." (owner decision 8 in `docs/INVITES_PLAN.md` on that branch). The form no longer says an invite was made for a different address.
+- **Copy link and Copy invite message** next to each link the Invites screen shows once (approve or re-issue without emailing). They report "copied" only if the copy worked. The message is a short plain-text note with the link, "use the email address this was sent to" and how many days it lasts.
+- **Left out on purpose:** the old branch's migration (`main` already has `issue_invites`, `revoke_invite` and `reissue_invite`), its table of plaintext codes (`main` stores only hashes and shows a link once), and its tests for those.
+
 ## Invites and "ask to join" (16 November 2026). Awaiting review
 
 Branch `invites-join-requests`. **One new migration, `20261116000100_join_requests_invites.sql`, tested on local Supabase only, not applied to hosted. Deploy order: migration first, then the code** (the migration is additive; the code on main keeps working until the new code lands).
