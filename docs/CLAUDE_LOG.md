@@ -45,6 +45,10 @@ Checkouts and local stacks: one checkout, `TGS/` (the default Supabase project `
 
 ## Entries
 
+### 2026-11-19 — CHANGELOG labels: Awaiting review replaced (branch `docs/changelog-labels`) (log written by Claude)
+
+Built on `origin/main` at `3847371`. Docs only: `CHANGELOG.md` headings and this entry. All 24 headings that said "Awaiting review" now say "Merged (pull request #N)", matched from the branch name in each entry to the merge commits on `origin/main`: dialog and privacy fixes #87 to #98, invites #66 and #71, Sprint 7 #27, #29 and #31, rule 7 #34 (that pull request carried the rule 7 commit with a log entry), header sign-out #17, password recovery #13, Sprint 5 #6, #7 and #8, legal hardening #22, audit handle #25, Sprint 4 hardening #4. The Sprint 4 entry says only that its commits are on `main`: its own pull request (the hardening entry calls it PR #3) is not among the merge commits, so no number was guessed. No text of any entry was changed. Lint was not run (the worktree had no `node_modules`; no code changed).
+
 ### 2026-11-19 — Launch state recorded and the join-requests migration reviewed (branch `docs/log-launch-state`) (log written by Claude)
 
 Built on `origin/main` at `1c321d1`. Docs only: no code, no migration, no hosted access. Edited the `main` row (hosted column), the hosted-migrations and judge-prompt bullets under "Open for the owner", and this entry. No other entry was edited. **Owner-reported, not seen by Claude and not re-checked since:** on 17 Nov `supabase migration list --linked` showed `20261116000100` in Local only (not applied to hosted), and a read-only query showed `verdicts.winner_summary` does not exist (`20261117000100` not applied). Both still need a dry run and apply, in that order; the join form no longer blocks the first, because `JOIN_FORM_ENABLED` is off unless exactly "true" (PR #80). The judge prompt is owner-reported set to 1 on 17 Nov; confirm it in Admin, Judging before 8 Dec.
