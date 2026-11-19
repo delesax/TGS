@@ -29,7 +29,10 @@ const real = process.argv.includes("--real");
 const versionsArg = process.argv.find((a) => a.startsWith("--versions="));
 const versions = versionsArg ? versionsArg.slice("--versions=".length).split(",").map(Number) : [PROMPTS.coach.version];
 const CAP_USD = 5;
-/** In a real run, stop after this many failures in a row (a rejected key fails every call, and each failure is a paid retry). */
+/**
+ * In a real run, stop after this many call errors in a row (a rejected key fails every call, and each failure is a paid retry).
+ * Only errors count: an invalid_output means the model answered, so the key works and the run goes on.
+ */
 const MAX_CONSECUTIVE_FAILURES = 3;
 
 const cell = (s: string) => s.replace(/\|/g, "/").replace(/\n/g, " ");
@@ -77,7 +80,7 @@ async function runVersion(version: number, deps: ReturnType<typeof scriptDeps>, 
       break;
     }
     if (real && streak >= MAX_CONSECUTIVE_FAILURES) {
-      console.error(`Stopped: ${streak} calls in a row failed. Check the API key and the model name; nothing more was sent.`);
+      console.error(`Stopped: ${streak} calls in a row failed with an error (not a bad answer). Check the API key and the model name; nothing more was sent.`);
       run.aborted = true;
       break;
     }
@@ -97,9 +100,13 @@ async function runVersion(version: number, deps: ReturnType<typeof scriptDeps>, 
       streak = 0;
       if (r.feedback.weakest_link) run.weakest += 1;
     } else {
-      streak += 1;
-      if (r.why === "invalid_output") run.invalid += 1;
-      else run.otherFailures += 1;
+      if (r.why === "invalid_output") {
+        run.invalid += 1;
+        streak = 0;
+      } else {
+        run.otherFailures += 1;
+        streak += 1;
+      }
       if (!item.probe) run.unexpected += 1;
     }
   }
