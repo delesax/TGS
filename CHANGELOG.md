@@ -1,50 +1,50 @@
 # Changelog
 
-## Display dialog: option names on one line on phones (19 November 2026). Awaiting review
+## Display dialog: option names on one line on phones (19 November 2026). Merged (pull request #98)
 
 Branch `fix/dialog-narrow`. **No migration.** In the Display dialog (header "Text" button) on phones, the dialog is a little wider and its cards a little tighter, so option names such as "Atkinson Hyperlegible" and "Automatic (default)" stay on one line at Default text on phones from 360px (and, narrowly, 320px), and at Large text from 414px. On the narrowest phones with Large text one or two names still wrap inside their card. A browser test guards it.
 
-## Display dialog: option names on one line (19 November 2026). Awaiting review
+## Display dialog: option names on one line (19 November 2026). Merged (pull request #97)
 
 Branch `fix/dialog-label-wrap`. **No migration.** In the Display dialog (header "Text" button), "Atkinson Hyperlegible" and "Automatic (default)" no longer split over two lines on tablets and desktops: the default option of the Text style and Theme groups now takes a full row, which also makes the dialog shorter. On the narrowest phones and with Large text a name may still wrap inside its card. A browser test guards it.
 
-## Display dialog: Large text no longer cut off at 320px (19 November 2026). Awaiting review
+## Display dialog: Large text no longer cut off at 320px (19 November 2026). Merged (pull request #96)
 
 Branch `fix/dialog-large-wrap`. **No migration.** In the Display dialog (header "Text" button), on a 320px screen with Large text the Text style options ran past the right edge, hiding their check marks and part of the help line, and the dialog scrolled sideways. They now fit the dialog and wrap inside each card (a very long word breaks inside itself only where it cannot fit beside the check mark). A browser test guards it.
 
-## Verdict winner card: divider line clear of the Apex mark (19 November 2026). Awaiting review
+## Verdict winner card: divider line clear of the Apex mark (19 November 2026). Merged (pull request #95)
 
 Branch `fix/apex-divider`. **No migration.** On the Verdict page, from 640px up, the thin line above "Runners-up" now stops before the decorative Apex mark instead of running through its top circle. Nothing else moves. The browser test now checks the line as well as the scores.
 
-## Privacy policy version 2026-11-b (19 November 2026). Awaiting review
+## Privacy policy version 2026-11-b (19 November 2026). Merged (pull request #94)
 
 Branch `fix/privacy-version`. **No migration.** The privacy policy version shown on `/privacy` and recorded on new accounts and new positions consents is now `2026-11-b` (it was `2026-11-a`), after the storage table and intro sentence changes. The terms version is unchanged. Nobody is asked to accept again and no email is sent.
 
-## Privacy page: intro sentence above the storage table (19 November 2026). Awaiting review
+## Privacy page: intro sentence above the storage table (19 November 2026). Merged (pull request #92)
 
 Branch `fix/privacy-intro`. **No migration.** The sentence above the storage table now says the site uses only what it needs to work, including remembering what you ask it to (text style, size and theme), instead of only sign-in and security. Table and policy version unchanged.
 
-## Privacy page: storage table lists the text and theme choice (19 November 2026). Awaiting review
+## Privacy page: storage table lists the text and theme choice (19 November 2026). Merged (pull request #91)
 
 Branch `fix/privacy-storage`. **No migration.** The "Cookies and similar storage" table now includes `tgs-display` (your text style, size and theme, kept in this browser only) and shows the app cache name as `tgs-shell-v…` instead of the out-of-date `v1`. The policy version line is not changed: whether this needs a new version is an owner decision.
 
-## Display dialog: option text clear of the check mark (19 November 2026). Awaiting review
+## Display dialog: option text clear of the check mark (19 November 2026). Merged (pull request #90)
 
 Branch `fix/dialog-tick`. **No migration.** In the Display dialog (header "Text" button), the check mark on the selected Text size or Theme option no longer covers its label ("Default", "Automatic (default)" and others). Those two groups now fit as many columns as their text allows, so on a phone they stack in one column. Nothing else about the dialog changes. A browser test guards it.
 
-## Verdict winner card: scores clear of the Apex mark (19 November 2026). Awaiting review
+## Verdict winner card: scores clear of the Apex mark (19 November 2026). Merged (pull request #89)
 
 Branch `fix/apex-overlap`. **No migration.** On the Verdict page, from 640px up, the runners-up names and scores now stop to the left of the decorative Apex mark instead of running underneath it. The mark itself is unchanged. A browser test guards it.
 
-## Light eyebrow contrast (19 November 2026). Awaiting review
+## Light eyebrow contrast (19 November 2026). Merged (pull request #88)
 
 Branch `fix/eyebrow-contrast`. **No migration.** The light-theme "Invite-only pilot" eyebrow on the home page is a shade darker (`--gold-eyebrow`, `#7A601F`) so it meets WCAG AA (4.5:1) over the hero glow; it was 4.41:1, now 5.09:1 at worst. Dark theme and all other gold text unchanged.
 
-## Theme choice: Automatic, Light, Dark (18 November 2026). Awaiting review
+## Theme choice: Automatic, Light, Dark (18 November 2026). Merged (pull request #87)
 
 Branch `feat/theme-choice`. **No migration, nothing sent to the server.** The Display dialog (header "Text" button) has a new **Theme** group: **Automatic (default)**, **Light**, **Dark**. Automatic is dark from 19:00 to 07:00 by the device's own clock, or whenever the device is set to dark; Light and Dark override both. It changes live (device scheme, the 19:00 and 07:00 boundaries, tab visibility) without a reload. Saved in the browser only, in the existing `tgs-display` value (a stored value with no theme means Automatic, so nobody's font or size is lost). One palette (`light-dark()`), the header logo and the browser-chrome colour follow the chosen theme. Header height and logo size and position are unchanged in both themes. `scripts/contrast.ts` is the committed contrast audit.
 
-## Invites: copy buttons and one sign-up message (18 November 2026). Awaiting review
+## Invites: copy buttons and one sign-up message (18 November 2026). Merged (pull request #71)
 
 Branch `invites-copy-and-one-message`, on top of `main`'s Invites screen. **No migration.** This replaces the older `invites-admin-lite` branch, which built a second Invites screen; only the two things `main` lacked were kept.
 
@@ -56,7 +56,7 @@ Branch `invites-copy-and-one-message`, on top of `main`'s Invites screen. **No m
 
 - A mistyped, used, expired, revoked or wrong-address invite code now shows one message on sign-up: "This code doesn't match this email. Use the address the invite was sent to." The "Ask to join" link was removed from the sign-up page and `/join` is not indexed (owner decision: not advertised until after the first wave). No migration. `docs/INVITES_PLAN.md` records the plan, the owner's answers and the state of `main`.
 
-## Invites and "ask to join" (16 November 2026). Awaiting review
+## Invites and "ask to join" (16 November 2026). Merged (pull request #66)
 
 Branch `invites-join-requests`. **One new migration, `20261116000100_join_requests_invites.sql`, tested on local Supabase only, not applied to hosted. Deploy order: migration first, then the code** (the migration is additive; the code on main keeps working until the new code lands).
 
@@ -68,7 +68,7 @@ Branch `invites-join-requests`. **One new migration, `20261116000100_join_reques
 - **Defaults chosen** where the owner had not answered: hashed codes for new invites only; a rejected person cannot ask again until their row is purged at 30 days; invite email limit 25 a day; provider limit 100; the admin note on a request is never shown to the invitee; no disposable-address blocking; no cap on total members.
 - **Tests:** 16 new unit tests, 21 RLS tests (`tests/rls/join-requests.test.ts`), 8 Playwright journeys (`tests/e2e/join-invites.spec.ts`, also run in the Linux Playwright image with `CI=true`). `tests/rls/email-essentials.test.ts` now expects six essential kinds (invite added).
 
-## Sprint 7 Phase B, batch 2b: judge prompt v2, load tests, backups, launch documents, CSP (13 November 2026). Awaiting review
+## Sprint 7 Phase B, batch 2b: judge prompt v2, load tests, backups, launch documents, CSP (13 November 2026). Merged (pull request #31)
 
 Branch `sprint-7-batch-2b`, cut from `main`. **One new migration, tested on local Supabase only, not applied to hosted.** Nothing was written to hosted. Legal files, `src/lib/legal.ts` and the placeholder strings untouched. Plan: `docs/SPRINT_7_PLAN.md`.
 
@@ -81,7 +81,7 @@ Branch `sprint-7-batch-2b`, cut from `main`. **One new migration, tested on loca
 - **Tests:** typecheck and lint clean; see `docs/CLAUDE_LOG.md` for counts.
 - **Migration order:** apply `20261113000700` first, then merge. It is additive. The code already live does not read the new column or setting.
 
-## Rule 7: publish the rubric before a Campaign opens (13 November 2026). Awaiting review
+## Rule 7: publish the rubric before a Campaign opens (13 November 2026). Merged (pull request #34)
 
 Branch `rule7-rubric-publish`, cut from `main`. **One new migration, `20261113000800_rubric_publish.sql`, tested on local Supabase only, not applied to hosted.** Until now `campaigns.rubric_published_at` existed but nothing set or checked it (it is empty on all 15 hosted Campaigns) and the public Campaign page did not show how a Campaign is judged.
 
@@ -91,7 +91,7 @@ Branch `rule7-rubric-publish`, cut from `main`. **One new migration, `2026111300
 - **Tests:** new RLS suite `tests/rls/rubric-publish.test.ts`; the Campaign create journey in `tests/e2e/campaigns.spec.ts` now publishes the rubric before scheduling and checks the public section.
 - **Order:** apply the migration first, then merge. The admin form on main cannot schedule a draft after the migration until this code is deployed (it shows its generic save error), which is the intended direction of travel and affects nothing live today (all 15 are drafts).
 
-## Sprint 7 Phase B, batch 2a: rules and migrations (13 November 2026). Awaiting review
+## Sprint 7 Phase B, batch 2a: rules and migrations (13 November 2026). Merged (pull request #29)
 
 Branch `sprint-7-batch-2a`, cut from `main`. **Four new migrations, tested on local Supabase only, not applied to hosted.** Nothing written to hosted. Legal files and the placeholder strings untouched. Plan and the owner's decisions: `docs/SPRINT_7_PLAN.md` ("Decided 13 Nov").
 
@@ -103,7 +103,7 @@ Branch `sprint-7-batch-2a`, cut from `main`. **Four new migrations, tested on lo
 - **Tests:** typecheck and lint clean; unit and RLS tests: see the log for counts; full Playwright run recorded in the log. New RLS suites for eligibility, signals, invite binding, email essentials and a grants test listing every Sprint 7 function (anon can run only the read-only `site_switches`). Test fixtures updated for two deliberate behaviour changes: test users are made three days old, and email-queue tests turn essentials-only off.
 - **Migration order:** apply the four migrations first, then merge the code. Behaviour that starts the moment they are applied (and is intended): accounts under 48 hours old cannot vote, confirm or pick; non-essential app email stops being queued.
 
-## Sprint 7 Phase B, batch 1: launch safety (13 November 2026). Awaiting review
+## Sprint 7 Phase B, batch 1: launch safety (13 November 2026). Merged (pull request #27)
 
 Branch `sprint-7-phase-b`, cut from `main`. Plan: `docs/SPRINT_7_PLAN.md`; click-through: `docs/DEMO_SPRINT_7.md`. **Two new migrations, tested on local Supabase only, not applied to hosted.** Nothing was written to hosted. Legal files and the placeholder strings were not touched.
 
@@ -118,7 +118,7 @@ Branch `sprint-7-phase-b`, cut from `main`. Plan: `docs/SPRINT_7_PLAN.md`; click
 - **Not in this batch (waiting on owner decisions or later batches):** W4 vote eligibility, W5 integrity signals, W7 judge prompt v2, W9 local load tests, W10 invite binding, W13 backup procedure, W14 runbook and checklists, CSP.
 - **For the owner / legal (parked):** the limiter keeps a SHA-256 hash of an IP address and of sign-in and reset email addresses for up to two days. The privacy policy and retention wording are legal-hardening territory and were not changed; please have them reviewed.
 
-## Header: "Sign out" no longer wraps at desktop widths (12 November 2026). Awaiting review
+## Header: "Sign out" no longer wraps at desktop widths (12 November 2026). Merged (pull request #17)
 
 Branch `header-signout-wrap`, cut from `main`. **No migrations, nothing applied to hosted, no new dependency.**
 
@@ -128,7 +128,7 @@ Branch `header-signout-wrap`, cut from `main`. **No migrations, nothing applied 
 - **Known limit:** the admin header needs about 1,040px, so at exactly 1024px "Sign out" still wraps as before. It fits from 1080px.
 - **Tests:** `tests/e2e/header.spec.ts` (5 Playwright tests): as an admin at 1080, 1280, 1440 and 1920px all seven links share one row, the search box sits directly below and the header stays under 150px tall; at 375px the logo stays above the links and nothing overflows. Before the fix the first three failed at 1280, 1440 and 1920px (Sign out 58px lower than the other links). Full suite: 30 Playwright, 372 unit tests, typecheck and lint clean.
 
-## Password recovery (12 November 2026). Awaiting review
+## Password recovery (12 November 2026). Merged (pull request #13)
 
 Branch `forgot-password`, cut from `main`. **No migrations, nothing applied to hosted, no new dependency.** The owner must also add the "Reset password" email template and check the redirect URL in Supabase (steps 12 and 12b of `docs/LAUNCH_EMAIL_SETUP.md`).
 
@@ -138,7 +138,7 @@ Branch `forgot-password`, cut from `main`. **No migrations, nothing applied to h
 - **Expired or reused links** (and a direct visit to `/reset-password`) show a clear message with a link back to `/forgot-password`.
 - **Tests**: 5 unit tests (`src/lib/recovery.test.ts`); 6 Playwright tests (`tests/e2e/password-reset.spec.ts`: same message for known and unknown addresses, bad address, emailed link end to end with the password rules and mismatch, old password stops working, link reuse, token link, garbled link, signed-in session cannot use the page; checked at 375px).
 
-## Sprint 5: Judging and Verdict (11 November 2026). Awaiting review
+## Sprint 5: Judging and Verdict (11 November 2026). Merged (pull requests #6, #7 and #8)
 
 Branch `sprint-5-judging`, cut from `main` at `eec5c7c`. **Not applied to hosted**: two new migrations, tested on local Supabase only. **No real AI call was made**: every test, the seed and the evaluation ran on the fake provider. Full details, decisions and the owner checklist: `docs/SESSION_LOG_SPRINT_5.md`; click-through: `docs/DEMO_SPRINT_5.md`.
 
@@ -155,7 +155,7 @@ Branch `sprint-5-judging`, cut from `main` at `eec5c7c`. **Not applied to hosted
 - **Seed** `npm run seed:judging`: 12 users, a closed Campaign, panel, votes, picks, fake AI scores and a draft Verdict; one run at a time, repeat runs write nothing.
 - **Tests**: unit, RLS and Playwright suites green; see the session log for counts.
 
-## Legal hardening and launch decisions (7 November 2026). Awaiting review
+## Legal hardening and launch decisions (7 November 2026). Merged (pull request #22)
 
 Branch `legal-hardening`, cut from `origin/main` at `eec5c7c`. **Six migrations written, none applied to hosted** (list below). Branch `sprint-4-audit-handle` is **not merged**, so its migration `20261104000500` is not in this branch (it matters for one sentence on the delete page; see the session log). Built from `docs/LEGAL_HARDENING_BRIEF.md`; the internal write-up is `docs/SESSION_LOG_LEGAL_HARDENING.md`. Not legal advice: a solicitor still reviews it. Self-service deletion stays OFF and the DRAFT banners stay.
 
@@ -182,13 +182,13 @@ Branch `legal-hardening`, cut from `origin/main` at `eec5c7c`. **Six migrations 
 ### Tests
 Unit 174, RLS 238, Playwright 29, all passing on a freshly reset local database; typecheck and lint clean. `eval:moderation` and `eval:coach` (fake provider) run: 100% recall, 0% false holds. New tests cover the gate, consent trigger, privacy requests, retention (with back-dated rows and exclusions), the audit exception, the export, the delete script, the draft-topic script, email footers and stop links, and the pages at 375px.
 
-## Audit log: no handles (7 November 2026). Awaiting review
+## Audit log: no handles (7 November 2026). Merged (pull request #25)
 
 Branch `sprint-4-audit-handle`, cut from `main` at `cbc3d7a`. **Not applied to hosted.**
 - **Migration `20261104000500_audit_no_handle.sql`.** `decide_held_handle()` used to write the Strategist's handle into `audit_log.details`. The audit log can never be edited or erased, so that handle would outlive an account deletion. The entry now holds only `flag_id` and `reason` (the Strategist is already identified by `target_id`). Nothing else in the function changed. 5 new RLS tests; they fail against the old function.
 - **Not fixed here (found while checking):** onboarding (`src/app/onboarding/actions.ts`) still writes `{ handle }` into `audit_log` as `profile.handle_set`, and entries already written by either path cannot be changed. See the pull request text.
 
-## Sprint 4 hardening (6 November 2026). Awaiting review
+## Sprint 4 hardening (6 November 2026). Merged (pull request #4)
 
 Branch `sprint-4-hardening`, cut from the `sprint-4` head `4ba8692` because PR #3 had not been merged when it was started. Merge PR #3 first; this branch's own pull request then shows only the changes below. **Not applied to hosted.**
 
@@ -197,7 +197,7 @@ Branch `sprint-4-hardening`, cut from the `sprint-4` head `4ba8692` because PR #
 - **`npm audit`.** No non-breaking fixes exist, so nothing changed. Eight moderate advisories remain, all one chain (`minimatch` denial of service, reached through `eslint-config-next` → `typescript-eslint`). Development tooling only, not shipped. The only fix is `--force`, which downgrades `eslint-config-next`: not applied.
 - **Owner docs** (separate commit): `docs/DRAFT_WORDING.md` (all DRAFT copy, verbatim) and `docs/OWNER_DECISIONS.md` (the nine Sprint 4 and four launch-topic decisions, their defaults and how to change them).
 
-## Sprint 4: AI moderation, coach and admin (2 November 2026). Awaiting review
+## Sprint 4: AI moderation, coach and admin (2 November 2026). Merged (its commits are on `main`; the pull request number was not found)
 
 Branch `sprint-4`, cut from `main` at `4a573ec` (Sprint 3 merged). **Both migrations were applied to hosted on 3 November** at the owner's request, after a dry run that listed exactly those two (see DEMO.md). A second dry run confirms hosted is up to date. **No real AI call was made** by anything in this sprint: every test, the seed and the evaluations below ran on the built-in fake provider. The owner supplies `ANTHROPIC_API_KEY` later; until then hosted Dispatches follow the fallback rule below.
 
