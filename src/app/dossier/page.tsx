@@ -139,14 +139,14 @@ export default async function DossierPage({ searchParams }: PageProps<"/dossier"
           </div>
         ) : (
           <EmptyState
-            title="No Dispatches yet"
+            title="You haven't written a Dispatch yet"
             action={
               <Button asChild variant="secondary">
                 <Link href="/campaigns">See Campaigns</Link>
               </Button>
             }
           >
-            A Dispatch is your argument, rebuttal or evidence in a Campaign. When you post one, it will appear here.
+            Open a Campaign and read it, then write one Dispatch: an argument, a rebuttal or a piece of evidence. It will appear here.
           </EmptyState>
         )}
       </section>

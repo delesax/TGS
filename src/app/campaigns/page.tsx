@@ -35,9 +35,9 @@ function CampaignCard({ campaign, now }: { campaign: CampaignSummary; now: numbe
 }
 
 const SECTIONS = [
-  { key: "open", title: "Open now", empty: "No Campaigns are open right now. Look under Opening soon for the next one." },
-  { key: "soon", title: "Opening soon", empty: "Nothing is scheduled yet. New Campaigns are announced here first." },
-  { key: "closed", title: "Closed", empty: "No Campaigns have closed yet. Verdicts will appear here." },
+  { key: "open", title: "Open now", emptyTitle: "No Campaigns open right now", empty: "No Campaign is open right now. When one opens, read it and write a Dispatch. Check Opening soon for the next." },
+  { key: "soon", title: "Opening soon", emptyTitle: "None opening soon", empty: "No Campaign is scheduled yet. New ones appear here first, so you can read the question before it opens." },
+  { key: "closed", title: "Closed", emptyTitle: "None closed yet", empty: "No Campaign has closed yet. When one does, its Verdict appears here." },
 ] as const;
 
 export default async function CampaignsPage() {
@@ -73,7 +73,7 @@ export default async function CampaignsPage() {
               ))}
             </ul>
           ) : (
-            <EmptyState title={`Nothing ${section.title.toLowerCase()}`}>{section.empty}</EmptyState>
+            <EmptyState title={section.emptyTitle}>{section.empty}</EmptyState>
           )}
         </section>
       ))}

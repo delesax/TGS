@@ -25,7 +25,7 @@ export default async function OnboardingPage() {
     <Page
       narrow
       title="Choose your handle"
-      intro="Your handle is the name other Strategists see next to your Dispatches. You cannot change it later, so choose carefully."
+      intro="Your handle is the name other Strategists see next to your Dispatches. You cannot change it later, so choose carefully. Next, you can read a Campaign and write your first Dispatch."
     >
       {waiting?.details.handle ? (
         <p role="status" className="rounded-lg border border-hairline bg-muted p-4 text-lg">

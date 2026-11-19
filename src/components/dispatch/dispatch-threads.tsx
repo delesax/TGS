@@ -163,9 +163,9 @@ export function DispatchThreads({
           </ol>
         ) : (
           <div className="flex flex-col items-start gap-3 rounded-[12px] bg-muted/70 p-5">
-            <p className="text-2xl font-semibold">No Dispatches yet</p>
+            <p className="text-2xl font-semibold">Nobody has made a case yet</p>
             <p className="text-lg text-muted-foreground">
-              {context.open ? "Be the first to make the case. Your Dispatch will appear here." : "Nothing was posted in this Campaign."}
+              {context.open ? "Read the Campaign, then write one Dispatch to start the discussion. It will appear here." : "This Campaign closed without any Dispatches."}
             </p>
           </div>
         )}

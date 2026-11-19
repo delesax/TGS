@@ -95,7 +95,7 @@ test.describe("Sign-up with an invite code", () => {
 
     await expect(page.getByRole("heading", { level: 1, name: "Your Dossier" })).toBeVisible();
     await expect(page.getByText(`Welcome, @${handle}`)).toBeVisible();
-    await expect(page.getByRole("heading", { name: "No Dispatches yet" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "You haven't written a Dispatch yet" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "No awards yet" })).toBeVisible();
 
     // Persistent header: Account page, then a clear way back home.
