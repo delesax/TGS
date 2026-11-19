@@ -1,5 +1,9 @@
 # Changelog
 
+## Display dialog: option names on one line on phones (19 November 2026). Awaiting review
+
+Branch `fix/dialog-narrow`. **No migration.** In the Display dialog (header "Text" button) on phones, the dialog is a little wider and its cards a little tighter, so option names such as "Atkinson Hyperlegible" and "Automatic (default)" stay on one line at Default text on phones from 360px (and, narrowly, 320px), and at Large text from 414px. On the narrowest phones with Large text one or two names still wrap inside their card. A browser test guards it.
+
 ## Display dialog: option names on one line (19 November 2026). Awaiting review
 
 Branch `fix/dialog-label-wrap`. **No migration.** In the Display dialog (header "Text" button), "Atkinson Hyperlegible" and "Automatic (default)" no longer split over two lines on tablets and desktops: the default option of the Text style and Theme groups now takes a full row, which also makes the dialog shorter. On the narrowest phones and with Large text a name may still wrap inside its card. A browser test guards it.

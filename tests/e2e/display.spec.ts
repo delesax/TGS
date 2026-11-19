@@ -255,8 +255,8 @@ test.describe("Display settings", () => {
     }
   });
 
-  test("option names stay on one line where a card has room: Default text from 375px, Large text from 768px", async ({ browser }) => {
-    for (const [size, widths] of [["default", [375, 640, 768, 1280]], ["large", [768, 1280]]] as const) {
+  test("option names stay on one line: Default text from 360px, Large text from 414px", async ({ browser }) => {
+    for (const [size, widths] of [["default", [360, 375, 414, 640, 768, 1280]], ["large", [414, 640, 768, 1280]]] as const) {
       for (const width of widths) {
         const context = await browser.newContext({ viewport: { width, height: 1400 } });
         await context.addInitScript(([key, value]) => window.localStorage.setItem(key, value), [KEY, JSON.stringify({ v: 2, size })]);
