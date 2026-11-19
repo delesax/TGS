@@ -47,6 +47,14 @@ const REWRITE_PHRASES = [
 ];
 
 /**
+ * Quoted passages, read left to right as whole pairs: "double", “curly” or 'single'. Reading whole pairs means a closing mark is
+ * never mistaken for the next opening one. A single quote counts as a quotation mark only when it stands apart from letters, so the
+ * apostrophes in "doesn't" and "team's" are not quote marks. (The first version of this rule paired any two quote-like characters
+ * 40 or more characters apart and rejected ordinary feedback; see evals/coach-validator-false-positives.json.)
+ */
+const QUOTED = /"([^"]*)"|“([^”]*)”|(?<![\p{L}\p{N}])['‘]((?:[^'‘’]|(?<=[\p{L}\p{N}])['’](?=[\p{L}\p{N}]))*)['’](?![\p{L}\p{N}])/gu;
+
+/**
  * The coach asks questions and points at weaknesses; it must not write
  * replacement text (owner decision 3). Rejects feedback that offers a
  * rewrite, or quotes a long passage that is not the Strategist's own.
@@ -87,9 +95,10 @@ export function replacementTextRule(feedback: CoachOutput, draft: string): strin
   for (const [i, t] of texts.entries()) {
     const phrase = REWRITE_PHRASES.findIndex((re) => re.test(t));
     if (phrase >= 0) return `rewrite_phrase #${phrase + 1} ${REWRITE_PHRASES[phrase]} in ${where[i]}`;
-    for (const m of t.matchAll(/["“‘']([^"”’']{40,})["”’']/g)) {
-      const quoted = plain(m[1]);
-      if (quoted.split(" ").length >= 8 && !normalisedDraft.includes(quoted)) return `long_quote_not_in_draft in ${where[i]}: ${m[1].slice(0, 50)}`;
+    for (const m of t.matchAll(QUOTED)) {
+      const passage = m[1] ?? m[2] ?? m[3] ?? "";
+      const quoted = plain(passage);
+      if (passage.length >= 40 && quoted.split(" ").length >= 8 && !normalisedDraft.includes(quoted)) return `long_quote_not_in_draft in ${where[i]}: ${passage.slice(0, 50)}`;
     }
   }
   return null;
