@@ -22,6 +22,8 @@ import { DEFAULT_THEME_MODE, THEME_HELP, THEME_OPTIONS, applyThemeMode, type The
 export const OPEN_DISPLAY_EVENT = "tgs:open-display";
 
 const radioCard = "option-card";
+/** Short one-line choices (size, theme): as many columns as fit, each at least 10.5rem, so a card's text never runs under its check mark. */
+const fitColumns = "grid grid-cols-[repeat(auto-fit,minmax(10.5rem,1fr))] gap-2";
 
 function subscribe(onChange: () => void) {
   const observer = new MutationObserver(onChange);
@@ -128,7 +130,7 @@ export function DisplayDialog() {
       <div className="flex flex-col gap-5 p-4">
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-base font-semibold">Text size</legend>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          <div className={fitColumns}>
             {[...SIZE_OPTIONS].sort((a, b) => a.px - b.px).map((size) => (
               <label key={size.id} className={`${radioCard} items-center`}>
                 <input
@@ -176,7 +178,7 @@ export function DisplayDialog() {
           <p id="theme-help" className="text-sm text-muted-foreground">
             {THEME_HELP}
           </p>
-          <div className="grid gap-2 sm:grid-cols-3" aria-describedby="theme-help">
+          <div className={fitColumns} aria-describedby="theme-help">
             {THEME_OPTIONS.map((option) => (
               <label key={option.id} className={`${radioCard} items-center`}>
                 <input

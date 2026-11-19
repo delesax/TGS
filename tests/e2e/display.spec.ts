@@ -223,6 +223,31 @@ test.describe("Display settings", () => {
     await context.close();
   });
 
+  test("a checked option's text never runs under its check mark, at any width and at the largest size", async ({ browser }) => {
+    for (const size of ["default", "large"]) {
+      for (const width of [320, 375, 640, 768, 1280]) {
+        const context = await browser.newContext({ viewport: { width, height: 1000 } });
+        await context.addInitScript(([key, value]) => window.localStorage.setItem(key, value), [KEY, JSON.stringify({ v: 2, size })]);
+        const page = await context.newPage();
+        await page.goto("/");
+        await page.evaluate(() => window.dispatchEvent(new Event("tgs:open-display")));
+        await page.locator("dialog[open]").waitFor();
+        const radios = page.locator("dialog input[type=radio]");
+        for (let i = 0; i < (await radios.count()); i++) {
+          await radios.nth(i).check({ force: true });
+          const over = await page.evaluate((index) => {
+            const card = document.querySelectorAll("dialog input[type=radio]")[index].closest("label")!;
+            const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+            const tickLeft = card.getBoundingClientRect().right - 0.75 * rem - 1.1 * rem; // the tick: right 0.75rem, 1.1rem wide
+            return Math.max(...[...card.querySelectorAll("span")].map((s) => { const r = document.createRange(); r.selectNodeContents(s); return r.getBoundingClientRect().right; })) - tickLeft;
+          }, i);
+          expect(over, `option ${i} (${await radios.nth(i).getAttribute("value")}) at ${width}px, ${size} text`).toBeLessThanOrEqual(0);
+        }
+        await context.close();
+      }
+    }
+  });
+
   test("works signed in too", async ({ browser }) => {
     const code = `TGS-DISP-${randomUUID().slice(0, 8).toUpperCase()}`;
     await service.from("invites").insert({ code, max_uses: 1, note: "playwright display" });

@@ -1,5 +1,9 @@
 # Changelog
 
+## Display dialog: option text clear of the check mark (19 November 2026). Awaiting review
+
+Branch `fix/dialog-tick`. **No migration.** In the Display dialog (header "Text" button), the check mark on the selected Text size or Theme option no longer covers its label ("Default", "Automatic (default)" and others). Those two groups now fit as many columns as their text allows, so on a phone they stack in one column. Nothing else about the dialog changes. A browser test guards it.
+
 ## Verdict winner card: scores clear of the Apex mark (19 November 2026). Awaiting review
 
 Branch `fix/apex-overlap`. **No migration.** On the Verdict page, from 640px up, the runners-up names and scores now stop to the left of the decorative Apex mark instead of running underneath it. The mark itself is unchanged. A browser test guards it.
