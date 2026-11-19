@@ -108,6 +108,7 @@ function CoachFeedback({ reply }: { reply: Extract<CoachReply, { ok: true }> }) 
   ];
   return (
     <section aria-label="Feedback on your draft" className="flex flex-col gap-3 rounded-lg bg-muted p-3">
+      {f.weakest_link ? <p className="text-lg font-semibold">Weakest link: {f.weakest_link}</p> : null}
       <dl className="flex flex-col gap-2">
         {rows.map(([title, point]) => (
           <div key={title}>

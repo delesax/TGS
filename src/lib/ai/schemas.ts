@@ -57,8 +57,16 @@ export const coachSchema = z.strictObject({
   steelman: coachPoint(["acknowledged", "partly", "missing"] as const),
   tone: coachPoint(["constructive", "mixed", "hostile"] as const),
   questions: z.array(z.string().trim().min(5).max(200)).min(1).max(4),
+  /**
+   * Prompt v2 only: the one weakest part of the draft, in a sentence of at most 200 characters. Optional, so v1 answers and
+   * stored rows stay valid. Tolerant: anything that is not a usable string is dropped (the rest of the feedback is kept).
+   */
+  weakest_link: z
+    .unknown()
+    .optional()
+    .transform((v) => (typeof v === "string" && v.trim().length >= 3 && v.trim().length <= 200 ? v.trim() : undefined)),
 });
-export type CoachOutput = z.infer<typeof coachSchema>;
+export type CoachOutput = Omit<z.infer<typeof coachSchema>, "weakest_link"> & { weakest_link?: string };
 
 // Judging (Sprint 5): the four-part rubric with a steelman check, and the
 // optional plain-English wording of a Verdict's rationale.
@@ -155,6 +163,16 @@ export const JUDGE_RUBRIC_V2_JSON_SCHEMA = obj({
   rationale: str,
   steelman: obj({ present: { type: "boolean" }, confidence: num, note: str }),
   unverified_claims: { type: "array", items: str },
+});
+
+/** Prompt v2 of the coach: the v1 shape plus the weakest link. */
+export const COACH_V2_JSON_SCHEMA = obj({
+  clarity: obj({ rating: enumOf(["clear", "partly_clear", "unclear"]), comment: str }),
+  evidence: obj({ rating: enumOf(["strong", "some", "none"]), comment: str }),
+  steelman: obj({ rating: enumOf(["acknowledged", "partly", "missing"]), comment: str }),
+  tone: obj({ rating: enumOf(["constructive", "mixed", "hostile"]), comment: str }),
+  questions: { type: "array", items: str },
+  weakest_link: str,
 });
 
 /** Parses model text as JSON and validates it. Returns null for anything else. */
