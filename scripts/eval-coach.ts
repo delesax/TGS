@@ -70,7 +70,7 @@ function why(o: Outcome): string {
   return o.attempts.map((a) => `try ${a.attempt} ${one(a)}`).join(" | ");
 }
 
-async function runVersion(version: number, deps: ReturnType<typeof scriptDeps>, model: string): Promise<Run> {
+async function runVersion(version: number, deps: ReturnType<typeof scriptDeps>): Promise<Run> {
   const run: Run = { version, outcomes: [], spent: 0, inputTokens: 0, outputTokens: 0, apiCalls: 0, ok: 0, invalid: 0, otherFailures: 0, weakest: 0, unexpected: 0, aborted: false };
   let streak = 0;
   for (const item of samples.items as Item[]) {
@@ -174,7 +174,7 @@ async function main() {
   console.log(`${real ? `REAL model ${model}` : "Fake provider (no network, no cost)"}. ${samples.items.length} drafts, prompt version(s) ${versions.join(", ")}.`);
   const runs: Run[] = [];
   for (const v of versions) {
-    const run = await runVersion(v, deps, model);
+    const run = await runVersion(v, deps);
     runs.push(run);
     const base = writeFiles(run, model);
     printVersion(run);
