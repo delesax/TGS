@@ -25,6 +25,8 @@ const radioCard = "option-card";
 /** Short one-line choices (size, theme): as many columns as fit, each at least 10.5rem (or the full width when that is narrower), so a card's text never runs under its check mark. Where even that is too narrow (Large text on a 320px screen), a long word may break inside itself (overflow-wrap: anywhere) rather than run under the tick or out of the dialog. */
 /** The default option of a group (Atkinson Hyperlegible, Automatic) has the longest label, so it takes a whole row and its name stays on one line. */
 const fullRow = " [grid-column:1/-1]";
+/** Text style cards: two columns only while each is wide enough for the longest name ("Merriweather") beside its radio and check mark, else one. */
+const fontColumns = "grid grid-cols-[repeat(auto-fit,minmax(min(13.5rem,100%),1fr))] gap-2";
 const fitColumns = "grid grid-cols-[repeat(auto-fit,minmax(min(10.5rem,100%),1fr))] gap-2";
 
 function subscribe(onChange: () => void) {
@@ -113,9 +115,9 @@ export function DisplayDialog() {
       onClick={(event) => {
         if (event.target === dialogRef.current) dialogRef.current?.close(); // a press on the backdrop
       }}
-      className="surface-raised m-auto w-[min(32rem,calc(100vw-1.5rem))] max-h-[calc(100dvh-1.5rem)] overflow-y-auto p-0 text-foreground backdrop:bg-black/45 lg:fixed lg:right-6 lg:top-[76px] lg:left-auto lg:m-0"
+      className="surface-raised m-auto w-[min(32rem,calc(100vw-1rem))] max-w-[calc(100vw-1rem)] max-h-[calc(100dvh-1.5rem)] overflow-y-auto p-0 text-foreground backdrop:bg-black/45 lg:fixed lg:right-6 lg:top-[76px] lg:left-auto lg:m-0"
     >
-      <div className="flex items-center justify-between gap-3 border-b border-hairline px-4 py-3">
+      <div className="flex items-center justify-between gap-3 border-b border-hairline px-3 py-3 sm:px-4">
         <h2 id="display-title" className="text-lg font-semibold tracking-tight">
           Text style and size
         </h2>
@@ -129,7 +131,7 @@ export function DisplayDialog() {
         </button>
       </div>
 
-      <div className="flex flex-col gap-5 p-4">
+      <div className="flex flex-col gap-5 p-3 sm:p-4">
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-base font-semibold">Text size</legend>
           <div className={fitColumns}>
@@ -152,7 +154,7 @@ export function DisplayDialog() {
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-base font-semibold">Text style</legend>
           <p className="text-sm text-muted-foreground">Changes the body text only. Headings and the logo stay as they are.</p>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <div className={fontColumns}>
             {FONT_OPTIONS.map((font) => (
               <label key={font.id} className={`${radioCard}${font.id === DEFAULT_FONT ? fullRow : ""}`}>
                 <input

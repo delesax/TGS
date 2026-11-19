@@ -435,6 +435,15 @@ textarea.field {
   opacity: 0.6;
 }
 
+/* In the Display dialog on a phone, the option cards give their radio, gap and check-mark space a little less room so option names stay on one line. */
+@media (max-width: 639px) {
+  dialog .option-card {
+    gap: 0.5rem;
+    padding-left: 0.75rem;
+    padding-right: 2.1rem;
+  }
+}
+
 /* Help text and counters: quiet and muted. */
 .help {
   color: var(--muted-foreground);
