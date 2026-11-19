@@ -1,5 +1,9 @@
 # Changelog
 
+## Light eyebrow contrast (19 November 2026). Awaiting review
+
+Branch `fix/eyebrow-contrast`. **No migration.** The light-theme "Invite-only pilot" eyebrow on the home page is a shade darker (`--gold-eyebrow`, `#7A601F`) so it meets WCAG AA (4.5:1) over the hero glow; it was 4.41:1, now 5.09:1 at worst. Dark theme and all other gold text unchanged.
+
 ## Theme choice: Automatic, Light, Dark (18 November 2026). Awaiting review
 
 Branch `feat/theme-choice`. **No migration, nothing sent to the server.** The Display dialog (header "Text" button) has a new **Theme** group: **Automatic (default)**, **Light**, **Dark**. Automatic is dark from 19:00 to 07:00 by the device's own clock, or whenever the device is set to dark; Light and Dark override both. It changes live (device scheme, the 19:00 and 07:00 boundaries, tab visibility) without a reload. Saved in the browser only, in the existing `tgs-display` value (a stored value with no theme means Automatic, so nobody's font or size is lost). One palette (`light-dark()`), the header logo and the browser-chrome colour follow the chosen theme. Header height and logo size and position are unchanged in both themes. `scripts/contrast.ts` is the committed contrast audit.

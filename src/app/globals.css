@@ -42,6 +42,7 @@
   /* Gold tokens: accent only */
   --gold: #c8a24a; /* Burnished Gold: fills and graphics; never text on light */
   --gold-text: light-dark(#886b29, #c8a24a); /* Deep Gold: gold text and borders on light, 4.6:1 | 8.0:1 on Night, 6.9:1 on Ink */
+  --gold-eyebrow: light-dark(#7a601f, #c8a24a); /* Deep Gold, one step darker, for the home eyebrow that sits on the hero glow: 4.7:1 at the glow centre on Paper; dark is unchanged */
   --gold-mark: light-dark(#ad8935, #c8a24a); /* Mark Gold: gold inside graphics on light, 3.0:1 */
   /* Surfaces: page (--background) < card (--card) < raised (--raised, popovers and the featured card) */
   --raised: light-dark(#ffffff, #0f2744);
@@ -158,6 +159,7 @@ html[data-font="lora"] {
   --color-gold: var(--gold);
   --color-gold-text: var(--gold-text);
   --color-gold-mark: var(--gold-mark);
+  --color-gold-eyebrow: var(--gold-eyebrow);
   --color-control: var(--control);
   --color-raised: var(--raised);
   --color-hairline: var(--hairline);
