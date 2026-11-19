@@ -4,7 +4,7 @@
 consent banner is needed. If analytics or anything else non-essential is ever added, ask for consent first,
 update the privacy policy, and add a row here.
 
-Audited on 7 November 2026 by a Playwright run against a production build (`tests/e2e/legal.spec.ts` and
+`tgs-display` added on 19 November 2026 (it holds font and size since the Display dialog, and the theme since the Theme choice); the cache name was `tgs-shell-v1` here and on the page and is now written as `tgs-shell-v<n>`. Audited on 7 November 2026 by a Playwright run against a production build (`tests/e2e/legal.spec.ts` and
 `tests/e2e/sign-up.spec.ts`; they fail if an unexpected cookie appears). The names use the local project code
 (`127`); on the live site the middle of each name is the Supabase project reference.
 
@@ -15,7 +15,8 @@ Audited on 7 November 2026 by a Playwright run against a production build (`test
 | Session storage | `tgs-draft:<campaign>:<form>` | Keeps an unsent Dispatch if the page is refreshed | Until the tab closes | Never sent to us |
 | Session storage | `tgs-content-note:<campaign>` | Remembers a content note was seen | Until the tab closes | |
 | Local storage | `tgs-install-dismissed` | Remembers the "add to home screen" hint was closed | Until browser data is cleared | |
-| Cache Storage | `tgs-shell-v1` | Offline page and static files for the installed app | Until the app updates | Only files that are the same for everyone |
+| Local storage | `tgs-display` | Remembers the text style, text size and theme (Automatic, Light, Dark) chosen in the Text menu | Until reset to default or browser data is cleared | Written only when a choice is made; removed on reset. Never sent to us. Reading it at page load stores nothing |
+| Cache Storage | `tgs-shell-v<n>` (v3 today) | Offline page and static files for the installed app | Until the app updates | Only files that are the same for everyone |
 
 Signed out and browsing, the audit found **no cookies and no storage**, and **no request to any other host**
 (no third-party script).

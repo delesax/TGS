@@ -1,5 +1,9 @@
 # Changelog
 
+## Privacy page: storage table lists the text and theme choice (19 November 2026). Awaiting review
+
+Branch `fix/privacy-storage`. **No migration.** The "Cookies and similar storage" table now includes `tgs-display` (your text style, size and theme, kept in this browser only) and shows the app cache name as `tgs-shell-v…` instead of the out-of-date `v1`. The policy version line is not changed: whether this needs a new version is an owner decision.
+
 ## Display dialog: option text clear of the check mark (19 November 2026). Awaiting review
 
 Branch `fix/dialog-tick`. **No migration.** In the Display dialog (header "Text" button), the check mark on the selected Text size or Theme option no longer covers its label ("Default", "Automatic (default)" and others). Those two groups now fit as many columns as their text allows, so on a phone they stack in one column. Nothing else about the dialog changes. A browser test guards it.
