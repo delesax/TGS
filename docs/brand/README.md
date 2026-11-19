@@ -5,11 +5,11 @@ This is the short, current statement of what the app uses. The exploration histo
 ## Logo
 
 - **Mark:** icon-02 "Apex" (a lattice of nodes with one gold apex node) plus wordmark-03 "Two-tier" (THE above GRAND STRATEGIST between two rules). Files in `logo-exploration/lockups/` and `favicon/`.
-- **In the app header:** the **larger-THE** lockup, `public/brand/lockup-full.svg` (same file as `lockup-01-header.svg` here). "THE" is scaled 1.5x and the side rules shortened so it stays legible at header size. It follows the device's light or dark setting by itself (an embedded `prefers-color-scheme` rule).
+- **In the app header:** the **larger-THE** lockup, as two files with the same viewBox: `public/brand/lockup-light.svg` and `public/brand/lockup-dark.svg` (copies of `lockup-01-header-light.svg` and `-dark.svg` here). "THE" is scaled 1.5x and the side rules shortened so it stays legible at header size. The header holds both images and `globals.css` shows one by `<html data-theme>` (an `<img>` SVG cannot see the page's setting, so the old embedded `prefers-color-scheme` rule is gone); with no JavaScript it follows the device.
   - Size: 46px tall on phones (about 282px wide); on desktop 44px tall (about 270px wide) at 1024px growing to 52px (about 319px wide) from 1440px, set by `--header-logo-h` and `--header-h` in `src/app/globals.css`.
   - Accessible name: "The Grand Strategist". The footer carries no logo.
-- **Other variants** (not used in the app): `lockup-01-header-light.svg`, `-dark.svg`, `-mono-ink.svg`, `-mono-paper.svg`. Comparison with the earlier lockup: `header-logo-compare.png`.
-- **Icons:** `favicon/` (favicon.svg, 32px, 180px Apple touch icon, 192 and 512px PWA icons). The service worker cache is `tgs-shell-v3`; bump it whenever a cached brand file changes.
+- **Other variants** (not used in the app): `lockup-01-header.svg` (adaptive), `-mono-ink.svg`, `-mono-paper.svg`. Comparison with the earlier lockup: `header-logo-compare.png`.
+- **Icons:** `favicon/` (favicon.svg, 32px, 180px Apple touch icon, 192 and 512px PWA icons). The service worker cache is `tgs-shell-v3`; bump it whenever a cached shell file (offline page, manifest, icons) changes. The header lockups are not in it. Favicon, Apple touch icon, manifest and Open Graph images are fixed and do not follow the theme.
 
 ## Palette (tokens in `src/app/globals.css`)
 
@@ -32,8 +32,9 @@ Every text pair meets WCAG AA (ratios are in the comments beside each token); co
 
 ## Theme (light and dark)
 
-- **The theme follows the browser's `prefers-color-scheme`. There is no toggle and nothing is stored.** This was decided for the pilot and left as is. The dark colour set is one `@media (prefers-color-scheme: dark)` block in `globals.css`; the browser chrome colour (`themeColor` in `src/app/layout.tsx`) and the logo SVG follow the same setting.
-- A future toggle would need the dark tokens duplicated under `:root[data-theme="dark"]`, a stored `data-theme` set by the same inline script as font and size, a logo that reads the page's setting rather than the device's, and a way for the tests to force each theme.
+- **Three modes, chosen in the Display dialog** (Text button, or the Menu on phones): **Automatic** (the default), **Light** and **Dark**. Automatic is dark from 19:00 to 07:00 by the device's own clock (`NIGHT_START` and `NIGHT_END` in `src/lib/theme.ts`), or whenever the device is set to dark; otherwise light. Light and Dark override both. Nothing is sent to the server: the choice is saved in the browser only, as a `theme` field in the same `tgs-display` value as the font and size (absent, invalid or corrupt means Automatic).
+- **One palette.** The tokens in `globals.css` are written once as `light-dark(light value, dark value)`, and `color-scheme` follows `<html data-theme="light|dark">`. A tiny script in `<head>` (`src/lib/theme-init.ts`) resolves the mode before first paint and sets `data-theme`, `data-theme-mode` and the single `theme-color` meta; `src/components/theme-sync.tsx` keeps Automatic live (device scheme changes, the 19:00 and 07:00 boundaries, and tab visibility). With no JavaScript the CSS follows the device (`:root:not([data-theme])`).
+- **Checking contrast:** `scripts/contrast.ts` visits every page and state in both themes (`--theme light,dark`, or `--theme auto --hour 21 --device light`) and checks text, placeholders, focus rings and control borders; text on a gradient or glow is sampled from the real rendered pixels. Run it before changing any colour.
 
 ## Layout
 

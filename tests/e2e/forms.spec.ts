@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures";
 import { loadTestEnv } from "../test-env";
 
 // Form controls and option cards: 1px borders at 3:1, 10px radius, 44px or taller, a hover state, and a selected state

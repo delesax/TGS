@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures";
 import { loadTestEnv } from "../test-env";
 import { expectNoHorizontalOverflow } from "./helpers";
 
@@ -99,7 +99,7 @@ test.describe("Mobile menu", () => {
       const page = await context.newPage();
       await page.goto("/");
       const logo = page.getByRole("banner").getByRole("link", { name: "The Grand Strategist" }).getByRole("img");
-      await expect(logo).toHaveAttribute("src", /lockup-full\.svg/);
+      await expect(logo).toHaveAttribute("src", /lockup-(light|dark)\.svg/);
       const box = (await logo.boundingBox())!;
       expect(box.x).toBeGreaterThanOrEqual(0);
       expect(box.x + box.width).toBeLessThanOrEqual(width);

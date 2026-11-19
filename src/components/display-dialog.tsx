@@ -16,6 +16,7 @@ import {
   type FontId,
   type SizeId,
 } from "@/lib/display";
+import { DEFAULT_THEME_MODE, THEME_HELP, THEME_OPTIONS, applyThemeMode, type ThemeMode } from "@/lib/theme";
 
 /** Triggers (the header "Text" button and the one in the phone Menu) dispatch this; the one dialog below opens. */
 export const OPEN_DISPLAY_EVENT = "tgs:open-display";
@@ -24,28 +25,28 @@ const radioCard = "option-card";
 
 function subscribe(onChange: () => void) {
   const observer = new MutationObserver(onChange);
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-font", "data-size"] });
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-font", "data-size", "data-theme-mode"] });
   return () => observer.disconnect();
 }
 
 /** The attributes on <html> are the single source of truth; the pre-paint script and this dialog both write them. */
 function readAttributes() {
   const root = document.documentElement;
-  return `${root.getAttribute("data-font") ?? ""}|${root.getAttribute("data-size") ?? ""}`;
+  return `${root.getAttribute("data-font") ?? ""}|${root.getAttribute("data-size") ?? ""}|${root.getAttribute("data-theme-mode") ?? ""}`;
 }
 
 /**
  * The Display settings dialog: body font and text size, with a live preview and a reset. A native modal <dialog>
  * gives the focus trap, Escape to close and an inert page behind it. The choice is applied to <html> at once and
- * saved in this browser only (localStorage, one key, in try/catch). Headings and the logo do not change.
+ * saved in this browser only (localStorage, one key, in try/catch). Headings and the logo do not change with the font or size.
  */
 export function DisplayDialog() {
   const dialogRef = React.useRef<HTMLDialogElement>(null);
   const opener = React.useRef<HTMLElement | null>(null);
-  const snapshot = React.useSyncExternalStore(subscribe, readAttributes, () => "|");
+  const snapshot = React.useSyncExternalStore(subscribe, readAttributes, () => "||");
   const display = React.useMemo<Display>(() => {
-    const [font, size] = snapshot.split("|");
-    return parseDisplay(JSON.stringify({ v: 2, font: font || DEFAULT_FONT, size: size || DEFAULT_SIZE }));
+    const [font, size, theme] = snapshot.split("|");
+    return parseDisplay(JSON.stringify({ v: 2, font: font || DEFAULT_FONT, size: size || DEFAULT_SIZE, theme: theme || DEFAULT_THEME_MODE }));
   }, [snapshot]);
   const [saveFailed, setSaveFailed] = React.useState(false);
 
@@ -66,8 +67,9 @@ export function DisplayDialog() {
 
   function commit(next: Display) {
     applyDisplay(next);
+    applyThemeMode(next.theme);
     try {
-      if (next.font === DEFAULT_FONT && next.size === DEFAULT_SIZE) window.localStorage.removeItem(DISPLAY_KEY);
+      if (next.font === DEFAULT_FONT && next.size === DEFAULT_SIZE && next.theme === DEFAULT_THEME_MODE) window.localStorage.removeItem(DISPLAY_KEY);
       else window.localStorage.setItem(DISPLAY_KEY, serializeDisplay(next));
       setSaveFailed(false);
     } catch {
@@ -75,7 +77,7 @@ export function DisplayDialog() {
     }
   }
 
-  const isDefault = display.font === DEFAULT_FONT && display.size === DEFAULT_SIZE;
+  const isDefault = display.font === DEFAULT_FONT && display.size === DEFAULT_SIZE && display.theme === DEFAULT_THEME_MODE;
 
   return (
     <dialog
@@ -169,13 +171,35 @@ export function DisplayDialog() {
           </div>
         </fieldset>
 
+        <fieldset className="flex flex-col gap-2" data-testid="display-theme">
+          <legend className="mb-1 text-base font-semibold">Theme</legend>
+          <p id="theme-help" className="text-sm text-muted-foreground">
+            {THEME_HELP}
+          </p>
+          <div className="grid gap-2 sm:grid-cols-3" aria-describedby="theme-help">
+            {THEME_OPTIONS.map((option) => (
+              <label key={option.id} className={`${radioCard} items-center`}>
+                <input
+                  type="radio"
+                  name="display-theme"
+                  value={option.id}
+                  checked={display.theme === option.id}
+                  onChange={() => commit({ ...display, theme: option.id as ThemeMode })}
+                  className="size-5 shrink-0 accent-primary"
+                />
+                <span className="text-base font-semibold">{option.label}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
         <div className="rounded-[10px] bg-muted/70 p-3" data-testid="display-preview">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Preview</p>
           <p className="mt-1 text-base">The best argument wins, before the deadline. Read the rules, make your case, and answer the strongest objection.</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <Button type="button" variant="outline" onClick={() => commit({ font: DEFAULT_FONT, size: DEFAULT_SIZE })} disabled={isDefault}>
+          <Button type="button" variant="outline" onClick={() => commit({ font: DEFAULT_FONT, size: DEFAULT_SIZE, theme: DEFAULT_THEME_MODE })} disabled={isDefault}>
             Reset to default
           </Button>
           <p role="status" className="text-sm text-muted-foreground">

@@ -1,3 +1,5 @@
+// Real clock on purpose (not "./fixtures"): these measure elapsed time on a throttled phone, and the pinned clock's fake timers distort that.
+// They assert nothing about colour, so the Automatic theme at night does not matter here.
 import { randomUUID } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
