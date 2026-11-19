@@ -37,7 +37,7 @@ describe("LEGAL facts and the draft gate", () => {
     expect(LEGAL.companyName).toBe("The Grand Strategist Limited");
     expect(LEGAL.jurisdiction).toBe("England and Wales");
     expect(LEGAL.termsVersion).toBe("2026-11-a");
-    expect(LEGAL.privacyVersion).toBe("2026-11-a");
+    expect(LEGAL.privacyVersion).toBe("2026-11-b");
   });
 
   it("legalValue() shows a visible placeholder for an empty value", () => {

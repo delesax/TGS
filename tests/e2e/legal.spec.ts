@@ -90,7 +90,7 @@ test.describe("legal pages and the footer", () => {
 
   test("the privacy page shows its tables stacked on a phone, and the version line", async ({ page }) => {
     await page.goto("/privacy");
-    await expect(page.getByText("Version 2026-11-a, in force from")).toBeVisible();
+    await expect(page.getByText("Version 2026-11-b, in force from")).toBeVisible();
     await expect(page.getByRole("table", { name: "Why we use your data and our legal basis" })).toBeVisible();
     await expect(page.getByRole("table", { name: "How long we keep each kind of data" })).toBeVisible();
     const storage = page.getByRole("table", { name: "Cookies and similar storage used by the site" });
