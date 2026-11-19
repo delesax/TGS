@@ -223,7 +223,7 @@ test.describe("Display settings", () => {
     await context.close();
   });
 
-  test("a checked option's text never runs under its check mark, at any width and at the largest size", async ({ browser }) => {
+  test("a checked option's text never runs under its check mark, and nothing runs past the dialog edge, at any width and at the largest size", async ({ browser }) => {
     for (const size of ["default", "large"]) {
       for (const width of [320, 375, 640, 768, 1280]) {
         const context = await browser.newContext({ viewport: { width, height: 1000 } });
@@ -232,6 +232,13 @@ test.describe("Display settings", () => {
         await page.goto("/");
         await page.evaluate(() => window.dispatchEvent(new Event("tgs:open-display")));
         await page.locator("dialog[open]").waitFor();
+        // Nothing in the dialog runs past its right edge or makes it scroll sideways (at 320px with Large text the font cards used to).
+        const clipped = await page.evaluate(() => {
+          const d = document.querySelector("dialog[open]") as HTMLElement;
+          const right = d.getBoundingClientRect().right;
+          return { sideways: d.scrollWidth > d.clientWidth, past: [...d.querySelectorAll(".option-card, [data-testid=display-preview], button")].filter((c) => c.getBoundingClientRect().right > right - 1).length };
+        });
+        expect(clipped, `dialog content past its right edge at ${width}px, ${size} text`).toEqual({ sideways: false, past: 0 });
         const radios = page.locator("dialog input[type=radio]");
         for (let i = 0; i < (await radios.count()); i++) {
           await radios.nth(i).check({ force: true });
