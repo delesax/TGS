@@ -135,7 +135,8 @@ export default async function VerdictPage({ params }: PageProps<"/campaigns/[slu
             </p>
           ) : null}
           {runnersUp.length ? (
-            <div className="mt-6 border-t border-hairline pt-4">
+            /* sm:pr-[13rem] keeps the scores clear of the Apex mark (w-44 plus right-6 is 12.5rem, so 13rem leaves a 0.5rem gap) */
+            <div className="mt-6 border-t border-hairline pt-4 sm:pr-[13rem]">
               <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">Runners-up</h3>
               <ol className="mt-2 flex flex-col gap-1.5 text-base">
                 {runnersUp.map((r) => (
