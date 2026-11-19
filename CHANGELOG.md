@@ -1,5 +1,9 @@
 # Changelog
 
+## Verdict winner card: scores clear of the Apex mark (19 November 2026). Awaiting review
+
+Branch `fix/apex-overlap`. **No migration.** On the Verdict page, from 640px up, the runners-up names and scores now stop to the left of the decorative Apex mark instead of running underneath it. The mark itself is unchanged. A browser test guards it.
+
 ## Light eyebrow contrast (19 November 2026). Awaiting review
 
 Branch `fix/eyebrow-contrast`. **No migration.** The light-theme "Invite-only pilot" eyebrow on the home page is a shade darker (`--gold-eyebrow`, `#7A601F`) so it meets WCAG AA (4.5:1) over the hero glow; it was 4.41:1, now 5.09:1 at worst. Dark theme and all other gold text unchanged.

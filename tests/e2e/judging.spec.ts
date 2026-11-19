@@ -150,6 +150,19 @@ test("a closed Campaign is judged, published with an audit trail, read by a visi
   await expect(visitor.getByRole("list", { name: "Scores by Strategist" })).toBeVisible();
   await expect(visitor.getByRole("link", { name: "Sign in to appeal" })).toBeVisible();
   await expectNoHorizontalOverflow(visitor);
+  // The Apex mark on the winner card never sits over a runner-up's name or score, at any width where it is shown.
+  for (const width of [640, 768, 1024, 1280, 1440]) {
+    await visitor.setViewportSize({ width, height: 900 });
+    const covered = await visitor.evaluate(() => {
+      const card = document.querySelector(".featured-edge")!;
+      const mark = card.querySelector("svg")!.getBoundingClientRect();
+      return [...card.querySelectorAll("ol li > *")].filter((e) => {
+        const r = e.getBoundingClientRect();
+        return mark.width > 0 && r.right > mark.left && r.left < mark.right && r.bottom > mark.top && r.top < mark.bottom;
+      }).length;
+    });
+    expect(covered, `runner-up rows under the Apex mark at ${width}px`).toBe(0);
+  }
   await visitor.goto("/leaderboard");
   await expect(visitor.getByRole("heading", { level: 1, name: "Leaderboard" })).toBeVisible();
 
