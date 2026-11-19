@@ -22,8 +22,8 @@ import { DEFAULT_THEME_MODE, THEME_HELP, THEME_OPTIONS, applyThemeMode, type The
 export const OPEN_DISPLAY_EVENT = "tgs:open-display";
 
 const radioCard = "option-card";
-/** Short one-line choices (size, theme): as many columns as fit, each at least 10.5rem, so a card's text never runs under its check mark. */
-const fitColumns = "grid grid-cols-[repeat(auto-fit,minmax(10.5rem,1fr))] gap-2";
+/** Short one-line choices (size, theme): as many columns as fit, each at least 10.5rem (or the full width when that is narrower), so a card's text never runs under its check mark. Where even that is too narrow (Large text on a 320px screen), a long word may break inside itself (overflow-wrap: anywhere) rather than run under the tick or out of the dialog. */
+const fitColumns = "grid grid-cols-[repeat(auto-fit,minmax(min(10.5rem,100%),1fr))] gap-2";
 
 function subscribe(onChange: () => void) {
   const observer = new MutationObserver(onChange);
@@ -141,7 +141,7 @@ export function DisplayDialog() {
                   onChange={() => commit({ ...display, size: size.id as SizeId })}
                   className="size-5 shrink-0 accent-primary"
                 />
-                <span className="text-base font-semibold">{size.label}</span>
+                <span className="text-base font-semibold [overflow-wrap:anywhere]">{size.label}</span>
               </label>
             ))}
           </div>
@@ -150,7 +150,7 @@ export function DisplayDialog() {
         <fieldset className="flex flex-col gap-2">
           <legend className="mb-1 text-base font-semibold">Text style</legend>
           <p className="text-sm text-muted-foreground">Changes the body text only. Headings and the logo stay as they are.</p>
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {FONT_OPTIONS.map((font) => (
               <label key={font.id} className={radioCard}>
                 <input
@@ -165,8 +165,8 @@ export function DisplayDialog() {
                   className="flex min-w-0 flex-col"
                   style={{ fontFamily: `var(${font.cssVar}), ${font.generic === "serif" ? "ui-serif, Georgia, serif" : "ui-sans-serif, system-ui, sans-serif"}` }}
                 >
-                  <span className="text-base font-semibold">{font.label}</span>
-                  <span className="text-sm text-muted-foreground">{font.note}</span>
+                  <span className="text-base font-semibold [overflow-wrap:anywhere]">{font.label}</span>
+                  <span className="text-sm text-muted-foreground [overflow-wrap:anywhere]">{font.note}</span>
                 </span>
               </label>
             ))}
@@ -189,7 +189,7 @@ export function DisplayDialog() {
                   onChange={() => commit({ ...display, theme: option.id as ThemeMode })}
                   className="size-5 shrink-0 accent-primary"
                 />
-                <span className="text-base font-semibold">{option.label}</span>
+                <span className="text-base font-semibold [overflow-wrap:anywhere]">{option.label}</span>
               </label>
             ))}
           </div>

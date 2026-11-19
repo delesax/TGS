@@ -1,5 +1,9 @@
 # Changelog
 
+## Display dialog: Large text no longer cut off at 320px (19 November 2026). Awaiting review
+
+Branch `fix/dialog-large-wrap`. **No migration.** In the Display dialog (header "Text" button), on a 320px screen with Large text the Text style options ran past the right edge, hiding their check marks and part of the help line, and the dialog scrolled sideways. They now fit the dialog and wrap inside each card (a very long word breaks inside itself only where it cannot fit beside the check mark). A browser test guards it.
+
 ## Verdict winner card: divider line clear of the Apex mark (19 November 2026). Awaiting review
 
 Branch `fix/apex-divider`. **No migration.** On the Verdict page, from 640px up, the thin line above "Runners-up" now stops before the decorative Apex mark instead of running through its top circle. Nothing else moves. The browser test now checks the line as well as the scores.
