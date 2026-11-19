@@ -1,5 +1,9 @@
 # Changelog
 
+## Verdict winner card: divider line clear of the Apex mark (19 November 2026). Awaiting review
+
+Branch `fix/apex-divider`. **No migration.** On the Verdict page, from 640px up, the thin line above "Runners-up" now stops before the decorative Apex mark instead of running through its top circle. Nothing else moves. The browser test now checks the line as well as the scores.
+
 ## Privacy policy version 2026-11-b (19 November 2026). Awaiting review
 
 Branch `fix/privacy-version`. **No migration.** The privacy policy version shown on `/privacy` and recorded on new accounts and new positions consents is now `2026-11-b` (it was `2026-11-a`), after the storage table and intro sentence changes. The terms version is unchanged. Nobody is asked to accept again and no email is sent.

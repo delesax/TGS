@@ -156,12 +156,16 @@ test("a closed Campaign is judged, published with an audit trail, read by a visi
     const covered = await visitor.evaluate(() => {
       const card = document.querySelector(".featured-edge")!;
       const mark = card.querySelector("svg")!.getBoundingClientRect();
-      return [...card.querySelectorAll("ol li > *")].filter((e) => {
+      const rows = [...card.querySelectorAll("ol li > *")].filter((e) => {
         const r = e.getBoundingClientRect();
         return mark.width > 0 && r.right > mark.left && r.left < mark.right && r.bottom > mark.top && r.top < mark.bottom;
       }).length;
+      // The divider above "Runners-up" is the top border of the block that holds the list; it must stop before the mark too.
+      const block = card.querySelector("ol")!.parentElement!.getBoundingClientRect();
+      const divider = mark.width > 0 && block.top >= mark.top && block.top <= mark.bottom && block.right > mark.left && block.left < mark.right ? 1 : 0;
+      return rows + divider;
     });
-    expect(covered, `runner-up rows under the Apex mark at ${width}px`).toBe(0);
+    expect(covered, `runner-up rows or the divider under the Apex mark at ${width}px`).toBe(0);
   }
   await visitor.goto("/leaderboard");
   await expect(visitor.getByRole("heading", { level: 1, name: "Leaderboard" })).toBeVisible();
