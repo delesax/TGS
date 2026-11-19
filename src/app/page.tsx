@@ -29,7 +29,7 @@ export default async function HomePage() {
       <section className="hero-glow relative grid grid-cols-[minmax(0,1fr)] items-center gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-16">
         <ApexMotif className="pointer-events-none absolute right-0 top-0 -z-10 hidden w-[30rem] max-w-full sm:block" />
         <div className="fade-up flex min-w-0 flex-col items-start gap-5">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-text">Invite-only pilot</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gold-eyebrow">Invite-only pilot</p>
           {viewer ? (
             <>
               <h1 className="text-3xl font-medium leading-[1.1] tracking-[-0.025em] [overflow-wrap:anywhere] sm:text-5xl">{handle ? `Welcome back, @${handle}` : "Welcome"}</h1>
