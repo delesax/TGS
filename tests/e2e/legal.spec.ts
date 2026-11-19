@@ -93,7 +93,12 @@ test.describe("legal pages and the footer", () => {
     await expect(page.getByText("Version 2026-11-a, in force from")).toBeVisible();
     await expect(page.getByRole("table", { name: "Why we use your data and our legal basis" })).toBeVisible();
     await expect(page.getByRole("table", { name: "How long we keep each kind of data" })).toBeVisible();
-    await expect(page.getByRole("table", { name: "Cookies and similar storage used by the site" })).toBeVisible();
+    const storage = page.getByRole("table", { name: "Cookies and similar storage used by the site" });
+    await expect(storage).toBeVisible();
+    // Everything the site writes to the browser is listed: the Text menu's choice (font, size, theme) is local storage under tgs-display.
+    await expect(storage).toContainText("tgs-display");
+    await expect(storage).toContainText("theme");
+    await expect(storage).not.toContainText("tgs-shell-v1");
     await expectNoHorizontalOverflow(page);
     // Body type is at least 18px. Measured on page content (not the hidden settings dialog in the header).
     const size = await page.locator("main p").first().evaluate((el) => parseFloat(getComputedStyle(el).fontSize));

@@ -227,7 +227,8 @@ export default function PrivacyPage() {
             ["tgs-draft:… (session storage in your browser)", "Keeps an unsent Dispatch if you refresh the page. Never sent to us.", "Until you close the tab"],
             ["tgs-content-note:… (session storage in your browser)", "Remembers you have seen a content note on a sensitive Campaign.", "Until you close the tab"],
             ["tgs-install-dismissed (local storage in your browser)", "Remembers you closed the “add to your home screen” hint.", "Until you clear your browser data"],
-            ["tgs-shell-v1 (the app cache)", "Lets the site show an offline page. Holds only pictures and files that are the same for everyone.", "Until the app is updated"],
+            ["tgs-display (local storage in your browser)", "Remembers the text style, text size and theme (Automatic, Light or Dark) you chose in the Text menu. Set only when you change one of them, and removed when you reset to default. Never sent to us.", "Until you reset to default or clear your browser data"],
+            ["tgs-shell-v… (the app cache; the number after v goes up when the app is updated)", "Lets the site show an offline page. Holds only pictures and files that are the same for everyone.", "Until the app is updated"],
           ]}
         />
         <p>
