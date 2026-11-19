@@ -18,6 +18,10 @@ export type ProviderName = "anthropic" | "fake";
 /** Why a call did not produce a usable answer. Each one triggers the fallback. */
 export type Unavailable = "off" | "global_cap" | "user_cap" | "coach_cap" | "no_provider" | "too_long" | "timeout" | "invalid_output" | "error";
 
+/** Why one attempt at a structured call failed. Diagnostics only: nothing here changes what the member sees or what is stored. */
+export type FailureCategory = "json_parse" | "schema" | "validator" | "refusal" | "truncated" | "timeout" | "error";
+export type AttemptDetail = { attempt: number; category: FailureCategory; detail: string; stopReason?: string; rawText?: string };
+
 /** Everything stored with a decision (CLAUDE.md rule 6), whatever the outcome. */
 export type CallRecord = {
   provider: ProviderName;

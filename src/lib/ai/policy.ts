@@ -72,15 +72,25 @@ export function weakestLinkOk(text: string | undefined, draft: string): text is 
 }
 
 export function containsReplacementText(feedback: CoachOutput, draft: string): boolean {
+  return replacementTextRule(feedback, draft) !== null;
+}
+
+/**
+ * The same check, naming the rule that fired and where (for example "rewrite_phrase #2 in questions[0]"), or null if the feedback
+ * is fine. Used to say why a draft was rejected; containsReplacementText is its yes/no form.
+ */
+export function replacementTextRule(feedback: CoachOutput, draft: string): string | null {
   const texts = [feedback.clarity.comment, feedback.evidence.comment, feedback.steelman.comment, feedback.tone.comment, ...feedback.questions];
+  const where = ["clarity.comment", "evidence.comment", "steelman.comment", "tone.comment", ...feedback.questions.map((_, i) => `questions[${i}]`)];
   const plain = (x: string) => x.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, "").replace(/\s+/g, " ").trim();
   const normalisedDraft = plain(draft);
-  for (const t of texts) {
-    if (REWRITE_PHRASES.some((re) => re.test(t))) return true;
+  for (const [i, t] of texts.entries()) {
+    const phrase = REWRITE_PHRASES.findIndex((re) => re.test(t));
+    if (phrase >= 0) return `rewrite_phrase #${phrase + 1} ${REWRITE_PHRASES[phrase]} in ${where[i]}`;
     for (const m of t.matchAll(/["“‘']([^"”’']{40,})["”’']/g)) {
       const quoted = plain(m[1]);
-      if (quoted.split(" ").length >= 8 && !normalisedDraft.includes(quoted)) return true;
+      if (quoted.split(" ").length >= 8 && !normalisedDraft.includes(quoted)) return `long_quote_not_in_draft in ${where[i]}: ${m[1].slice(0, 50)}`;
     }
   }
-  return false;
+  return null;
 }

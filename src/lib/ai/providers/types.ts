@@ -17,6 +17,20 @@ export type ProviderRequest = {
 
 export type ProviderResponse = { text: string; inputTokens: number; outputTokens: number };
 
+/**
+ * Thrown when the model stops without a usable answer (a refusal, or cut off at max_tokens). The message is what the engine has
+ * always seen; the stop reason and any text are kept so an evaluation can say exactly what happened.
+ */
+export class ProviderStopError extends Error {
+  constructor(
+    message: string,
+    readonly stopReason: string,
+    readonly rawText: string,
+  ) {
+    super(message);
+  }
+}
+
 export interface AiProvider {
   name: ProviderName;
   complete(request: ProviderRequest): Promise<ProviderResponse>;

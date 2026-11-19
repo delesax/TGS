@@ -1,9 +1,9 @@
 import type { z } from "zod";
 import { TIMEOUT_MS, estimateCostUsd, resolveModel } from "./config";
 import { normaliseHandle, screenHandleWithStub } from "./handle-stub";
-import { containsReplacementText, decideScreeningOutcome, weakestLinkOk } from "./policy";
+import { decideScreeningOutcome, replacementTextRule, weakestLinkOk } from "./policy";
 import { loadPrompt, PROMPTS, type PromptKey } from "./prompts";
-import type { AiProvider, AiTask } from "./providers/types";
+import { ProviderStopError, type AiProvider, type AiTask } from "./providers/types";
 import {
   JSON_SCHEMAS,
   coachSchema,
@@ -15,7 +15,7 @@ import {
   JUDGE_RUBRIC_V2_JSON_SCHEMA,
   COACH_V2_JSON_SCHEMA,
   nudgeSchema,
-  parseStrict,
+  diagnoseParse,
   textScreenSchema,
   type CoachOutput,
   type DispatchScreenOutput,
@@ -23,7 +23,7 @@ import {
   type NudgeOutput,
   type TextScreenOutput,
 } from "./schemas";
-import type { AiFeature, AiSettings, CallRecord, Unavailable } from "./types";
+import type { AiFeature, AiSettings, AttemptDetail, CallRecord, Unavailable } from "./types";
 import { buildUserMessage } from "./untrusted";
 
 // The AI features without any database or framework code, so they can be unit
@@ -42,8 +42,9 @@ export type EngineDeps = {
   timeouts?: Partial<typeof TIMEOUT_MS>;
 };
 
-type CallOk<T> = { ok: true; value: T; record: CallRecord };
-type CallFailed = { ok: false; why: Unavailable; record: CallRecord | null };
+/** `attempts` lists the failed attempts (also on success, when the retry worked). Diagnostics only. */
+type CallOk<T> = { ok: true; value: T; record: CallRecord; attempts?: AttemptDetail[] };
+type CallFailed = { ok: false; why: Unavailable; record: CallRecord | null; attempts?: AttemptDetail[] };
 
 /**
  * One structured call: a hard time limit, one retry, JSON validated with zod.
@@ -51,11 +52,12 @@ type CallFailed = { ok: false; why: Unavailable; record: CallRecord | null };
  */
 export async function callStructured<T>(
   provider: AiProvider,
-  opts: { task: AiTask; prompt: PromptKey; promptVersion?: number; jsonSchema?: Record<string, unknown>; model: string; user: string; schema: z.ZodType<T>; timeoutMs: number; maxTokens: number; accept?: (value: T) => boolean },
+  opts: { task: AiTask; prompt: PromptKey; promptVersion?: number; jsonSchema?: Record<string, unknown>; model: string; user: string; schema: z.ZodType<T>; timeoutMs: number; maxTokens: number; accept?: (value: T) => boolean | string },
 ): Promise<CallOk<T> | CallFailed> {
   const { text: system, version } = loadPrompt(opts.prompt, opts.promptVersion);
   const record: CallRecord = { provider: provider.name, model: opts.model, promptVersion: version, inputTokens: 0, outputTokens: 0, latencyMs: 0 };
   let why: Unavailable = "error";
+  const attempts: AttemptDetail[] = [];
   const started = Date.now();
 
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -82,20 +84,32 @@ export async function callStructured<T>(
       ]);
       record.inputTokens += response.inputTokens;
       record.outputTokens += response.outputTokens;
-      const value = parseStrict(opts.schema, response.text);
-      if (value !== null && (!opts.accept || opts.accept(value))) {
-        record.latencyMs = Date.now() - started;
-        return { ok: true, value, record };
+      const parsed = diagnoseParse(opts.schema, response.text);
+      if (parsed.ok) {
+        // `accept` may answer true, false, or the name of the rule that rejected the value.
+        const verdict = opts.accept ? opts.accept(parsed.value) : true;
+        if (verdict === true) {
+          record.latencyMs = Date.now() - started;
+          return { ok: true, value: parsed.value, record, ...(attempts.length ? { attempts } : {}) };
+        }
+        attempts.push({ attempt: attempt + 1, category: "validator", detail: typeof verdict === "string" ? verdict : "rejected by the validator", rawText: response.text });
+      } else {
+        attempts.push({ attempt: attempt + 1, category: parsed.category, detail: parsed.detail, rawText: response.text });
       }
       why = "invalid_output";
     } catch (e) {
       why = e instanceof Error && e.message === "timeout" ? "timeout" : "error";
+      if (e instanceof ProviderStopError) {
+        attempts.push({ attempt: attempt + 1, category: e.stopReason === "refusal" ? "refusal" : "truncated", detail: e.message, stopReason: e.stopReason, rawText: e.rawText });
+      } else {
+        attempts.push({ attempt: attempt + 1, category: why === "timeout" ? "timeout" : "error", detail: e instanceof Error ? e.message.slice(0, 200) : String(e) });
+      }
     } finally {
       clearTimeout(timer);
     }
   }
   record.latencyMs = Date.now() - started;
-  return { ok: false, why, record };
+  return { ok: false, why, record, attempts };
 }
 
 /** Caps, kill switch and input length, then the call, then the spend log. */
@@ -242,7 +256,7 @@ export async function nudgeWith(deps: EngineDeps, draft: string, campaignTitle: 
 // Coach (private feedback; asks questions, never writes replacement text)
 // ---------------------------------------------------------------------------
 
-export type CoachResult = { ok: true; feedback: CoachOutput; record: CallRecord } | { ok: false; why: Unavailable; record: CallRecord | null };
+export type CoachResult = { ok: true; feedback: CoachOutput; record: CallRecord; attempts?: AttemptDetail[] } | { ok: false; why: Unavailable; record: CallRecord | null; attempts?: AttemptDetail[] };
 
 /**
  * One call, whichever prompt version. Version 2 also returns the weakest link; it is kept only if weakestLinkOk says so, and
@@ -269,13 +283,13 @@ export async function coachWith(
       schema: coachSchema,
       timeoutMs: deps.timeouts?.coach ?? TIMEOUT_MS.coach,
       maxTokens: 4000,
-      accept: (v) => !containsReplacementText(v, draft),
+      accept: (v) => replacementTextRule(v, draft) ?? true,
     }),
   );
   if (!result.ok) return result;
   const { weakest_link, ...rest } = result.value;
   const feedback: CoachOutput = version >= 2 && weakestLinkOk(weakest_link, draft) ? { ...rest, weakest_link } : { ...rest };
-  return { ok: true, feedback, record: result.record };
+  return { ok: true, feedback, record: result.record, ...(result.attempts ? { attempts: result.attempts } : {}) };
 }
 
 // ---------------------------------------------------------------------------
