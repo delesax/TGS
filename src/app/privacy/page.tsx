@@ -215,7 +215,7 @@ export default function PrivacyPage() {
 
         <H2>Cookies and similar technologies</H2>
         <p>
-          We use only what is needed to keep you signed in and keep the site secure. We do not use analytics or advertising cookies, and we will ask for your
+          We use only what the site needs to work: to keep you signed in and keep the site secure, and to remember what you ask it to remember, such as your text style, size and theme. We do not use analytics or advertising cookies, and we will ask for your
           agreement first if that ever changes. This is what the site stores on your device:
         </p>
         <StackTable

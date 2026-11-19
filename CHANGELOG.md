@@ -1,5 +1,9 @@
 # Changelog
 
+## Privacy page: intro sentence above the storage table (19 November 2026). Awaiting review
+
+Branch `fix/privacy-intro`. **No migration.** The sentence above the storage table now says the site uses only what it needs to work, including remembering what you ask it to (text style, size and theme), instead of only sign-in and security. Table and policy version unchanged.
+
 ## Privacy page: storage table lists the text and theme choice (19 November 2026). Awaiting review
 
 Branch `fix/privacy-storage`. **No migration.** The "Cookies and similar storage" table now includes `tgs-display` (your text style, size and theme, kept in this browser only) and shows the app cache name as `tgs-shell-v…` instead of the out-of-date `v1`. The policy version line is not changed: whether this needs a new version is an owner decision.
