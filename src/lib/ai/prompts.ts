@@ -25,7 +25,7 @@ export type PromptKey = keyof typeof PROMPTS;
  * unverified_claims). Which one the judge uses is the judging setting
  * `judge_prompt_version`, so it can be switched back without a deploy.
  */
-export const AVAILABLE_VERSIONS: Partial<Record<PromptKey, readonly number[]>> = { judge_rubric: [1, 2], judge_summary: [1, 2] };
+export const AVAILABLE_VERSIONS: Partial<Record<PromptKey, readonly number[]>> = { judge_rubric: [1, 2], judge_summary: [1, 2], coach: [1, 2] };
 
 const cache = new Map<string, string>();
 

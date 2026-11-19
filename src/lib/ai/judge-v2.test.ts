@@ -33,7 +33,7 @@ describe("prompt versions", () => {
 
   it("refuses a version that does not exist", () => {
     expect(() => promptVersion("judge_rubric", 3)).toThrow();
-    expect(() => promptVersion("coach", 2)).toThrow();
+    expect(() => promptVersion("coach", 3)).toThrow();
   });
 });
 

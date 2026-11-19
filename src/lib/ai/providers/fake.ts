@@ -178,7 +178,7 @@ export function fakeNudge(raw: string): NudgeOutput {
   return { kind: "none", message: "" };
 }
 
-export function fakeCoach(raw: string): CoachOutput {
+export function fakeCoach(raw: string, withWeakestLink = false): CoachOutput {
   const text = normalise(raw);
   const firstSentence = text.split(/[.!?]\s/)[0] ?? "";
   const clear = /\b(should|must|i (?:think|believe|argue)|because|the case for|the case against)\b/.test(firstSentence);
@@ -221,7 +221,17 @@ export function fakeCoach(raw: string): CoachOutput {
       comment: hostile ? "Parts of this are aimed at a person rather than their argument." : shouting ? "Exclamation marks and capitals may read as shouting." : "The tone argues with ideas, not people.",
     },
     questions: questions.slice(0, 4),
+    ...(withWeakestLink ? { weakest_link: fakeWeakestLink({ clear, evidenceHits, steel, hostile: hostile || shouting }) } : {}),
   };
+}
+
+/** The first weak part in a fixed order; the stand-in is not the real model. */
+function fakeWeakestLink(s: { clear: boolean; evidenceHits: number; steel: string; hostile: boolean }): string {
+  if (s.hostile) return "The tone is the weakest part: some of it is aimed at a person, not the argument.";
+  if (!s.clear) return "The clarity is the weakest part: the main claim is not stated at the start.";
+  if (s.evidenceHits < 2) return "The evidence is the weakest part: the claim rests on assertion.";
+  if (s.steel !== "acknowledged") return "The steelman is the weakest part: the strongest opposing point is not met.";
+  return "The evidence is the weakest part: it could be more specific.";
 }
 
 // Judging (Sprint 5): a crude, deterministic stand-in for the rubric. It counts
@@ -333,7 +343,7 @@ export const fakeProvider: AiProvider = {
                 ? { rationale: blocks.draft ?? "" }
                 : req.task === "judge_summary"
                   ? fakeJudgeSummary(blocks)
-                  : fakeCoach(blocks.draft ?? "");
+                  : fakeCoach(blocks.draft ?? "", "weakest_link" in ((req.schema as { properties?: Record<string, unknown> }).properties ?? {}));
     return { text: JSON.stringify(output), ...tokens };
   },
 };

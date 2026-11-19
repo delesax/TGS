@@ -1,8 +1,8 @@
 import type { z } from "zod";
 import { TIMEOUT_MS, estimateCostUsd, resolveModel } from "./config";
 import { normaliseHandle, screenHandleWithStub } from "./handle-stub";
-import { containsReplacementText, decideScreeningOutcome } from "./policy";
-import { loadPrompt, type PromptKey } from "./prompts";
+import { containsReplacementText, decideScreeningOutcome, weakestLinkOk } from "./policy";
+import { loadPrompt, PROMPTS, type PromptKey } from "./prompts";
 import type { AiProvider, AiTask } from "./providers/types";
 import {
   JSON_SCHEMAS,
@@ -13,6 +13,7 @@ import {
   judgeRubricSchema,
   judgeRubricSchemaV2,
   JUDGE_RUBRIC_V2_JSON_SCHEMA,
+  COACH_V2_JSON_SCHEMA,
   nudgeSchema,
   parseStrict,
   textScreenSchema,
@@ -243,13 +244,26 @@ export async function nudgeWith(deps: EngineDeps, draft: string, campaignTitle: 
 
 export type CoachResult = { ok: true; feedback: CoachOutput; record: CallRecord } | { ok: false; why: Unavailable; record: CallRecord | null };
 
-export async function coachWith(deps: EngineDeps, draft: string, campaign: { title: string; kind: string }, userId: string | null): Promise<CoachResult> {
+/**
+ * One call, whichever prompt version. Version 2 also returns the weakest link; it is kept only if weakestLinkOk says so, and
+ * dropped (never blocking the feedback) otherwise.
+ */
+export async function coachWith(
+  deps: EngineDeps,
+  draft: string,
+  campaign: { title: string; kind: string },
+  userId: string | null,
+  opts: { promptVersion?: number } = {},
+): Promise<CoachResult> {
+  const version = opts.promptVersion ?? PROMPTS.coach.version;
   const model = resolveModel("coach", deps.settings, deps.env);
   const user = buildUserMessage({ "Campaign question": campaign.title, "Dispatch kind": campaign.kind }, [{ label: "draft", text: draft }]);
   const result = await guarded(deps, "coach", userId, draft.length, (p) =>
     callStructured<CoachOutput>(p, {
       task: "coach",
       prompt: "coach",
+      promptVersion: version,
+      jsonSchema: version >= 2 ? COACH_V2_JSON_SCHEMA : undefined,
       model,
       user,
       schema: coachSchema,
@@ -259,7 +273,9 @@ export async function coachWith(deps: EngineDeps, draft: string, campaign: { tit
     }),
   );
   if (!result.ok) return result;
-  return { ok: true, feedback: result.value, record: result.record };
+  const { weakest_link, ...rest } = result.value;
+  const feedback: CoachOutput = version >= 2 && weakestLinkOk(weakest_link, draft) ? { ...rest, weakest_link } : { ...rest };
+  return { ok: true, feedback, record: result.record };
 }
 
 // ---------------------------------------------------------------------------
