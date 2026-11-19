@@ -1,5 +1,9 @@
 # Changelog
 
+## Display dialog: option names on one line (19 November 2026). Awaiting review
+
+Branch `fix/dialog-label-wrap`. **No migration.** In the Display dialog (header "Text" button), "Atkinson Hyperlegible" and "Automatic (default)" no longer split over two lines on tablets and desktops: the default option of the Text style and Theme groups now takes a full row, which also makes the dialog shorter. On the narrowest phones and with Large text a name may still wrap inside its card. A browser test guards it.
+
 ## Display dialog: Large text no longer cut off at 320px (19 November 2026). Awaiting review
 
 Branch `fix/dialog-large-wrap`. **No migration.** In the Display dialog (header "Text" button), on a 320px screen with Large text the Text style options ran past the right edge, hiding their check marks and part of the help line, and the dialog scrolled sideways. They now fit the dialog and wrap inside each card (a very long word breaks inside itself only where it cannot fit beside the check mark). A browser test guards it.
