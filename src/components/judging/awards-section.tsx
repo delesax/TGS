@@ -30,7 +30,7 @@ export function TitlesAndAwards({ awards, own }: { awards: AwardRow[]; own: bool
           <ul className="flex flex-col gap-3">{titles.map(item)}</ul>
         ) : (
           <EmptyState title="No titles yet">
-            {own ? "Win a Campaign to be named Grand Strategist. Your title will be shown here for good." : "No Grand Strategist titles yet."}
+            {own ? "To earn this, read a Campaign and write a Dispatch. The winner is named Grand Strategist, and the title stays here." : "No Grand Strategist titles yet."}
           </EmptyState>
         )}
       </section>
@@ -42,7 +42,7 @@ export function TitlesAndAwards({ awards, own }: { awards: AwardRow[]; own: bool
           <ul className="flex flex-col gap-3">{others.map(item)}</ul>
         ) : (
           <EmptyState title="No awards yet">
-            {own ? "Awards such as Best rebuttal and Best evidence are given when each Campaign's Verdict is published." : "No awards yet."}
+            {own ? "Awards such as Best rebuttal and Best evidence are given when a Campaign's Verdict is published. Write a Dispatch in an open Campaign to be considered." : "No awards yet."}
           </EmptyState>
         )}
       </section>

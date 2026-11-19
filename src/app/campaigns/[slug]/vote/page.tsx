@@ -75,7 +75,7 @@ export default async function VotePage({ params }: PageProps<"/campaigns/[slug]/
       </section>
 
       {!dispatches.length ? (
-        <EmptyState title="No Dispatches to vote on">This Campaign has no visible Dispatches.</EmptyState>
+        <EmptyState title="No Dispatches to vote on">Nobody has made a case in this Campaign yet, so there is nothing to vote on.</EmptyState>
       ) : (
         <section aria-labelledby="dispatches-h" className="flex flex-col gap-4">
           <h2 id="dispatches-h">
