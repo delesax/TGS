@@ -24,15 +24,17 @@ const real = process.argv.includes("--real");
 const versionsArg = process.argv.find((a) => a.startsWith("--versions="));
 const versions = versionsArg ? versionsArg.slice("--versions=".length).split(",").map(Number) : [PROMPTS.coach.version];
 const CAP_USD = 5;
+/** In a real run, stop after this many failures in a row (a rejected key fails every call, and each failure is a paid retry). */
+const MAX_CONSECUTIVE_FAILURES = 3;
 
 const cell = (s: string) => s.replace(/\|/g, "/").replace(/\n/g, " ");
 const csv = (s: unknown) => `"${String(s ?? "").replace(/"/g, '""')}"`;
 const FOUR = ["clarity", "evidence", "steelman", "tone"] as const;
 
-type Run = { version: number; byId: Map<string, CoachOutput | null>; spent: number; inputTokens: number; outputTokens: number; failures: number; weakest: number };
+type Run = { version: number; byId: Map<string, CoachOutput | null>; spent: number; inputTokens: number; outputTokens: number; failures: number; weakest: number; aborted: boolean };
 
 async function runVersion(version: number, deps: ReturnType<typeof scriptDeps>, model: string): Promise<Run> {
-  const run: Run = { version, byId: new Map(), spent: 0, inputTokens: 0, outputTokens: 0, failures: 0, weakest: 0 };
+  const run: Run = { version, byId: new Map(), spent: 0, inputTokens: 0, outputTokens: 0, failures: 0, weakest: 0, aborted: false };
   const md = [
     `# Coach evaluation, prompt v${version}, ${new Date().toISOString().slice(0, 16).replace("T", " ")} UTC`,
     "",
@@ -42,9 +44,16 @@ async function runVersion(version: number, deps: ReturnType<typeof scriptDeps>, 
     "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
   ];
   const rows = [["id", "campaign", "kind", "draft", "clarity", "evidence", "steelman", "tone", "questions", "weakest link", "owner rating (1-5)"].map(csv).join(",")];
+  let streak = 0;
   for (const s of samples.items) {
     if (run.spent > CAP_USD) {
       console.log("Stopped: the spending cap was reached.");
+      run.aborted = true;
+      break;
+    }
+    if (real && streak >= MAX_CONSECUTIVE_FAILURES) {
+      console.error(`Stopped: ${streak} calls in a row failed. Check the API key and the model name; nothing more was sent.`);
+      run.aborted = true;
       break;
     }
     const r = await coachWith(deps, s.draft, { title: s.campaign_title, kind: s.kind }, null, { promptVersion: version });
@@ -55,11 +64,13 @@ async function runVersion(version: number, deps: ReturnType<typeof scriptDeps>, 
     }
     if (!r.ok) {
       run.failures += 1;
+      streak += 1;
       run.byId.set(s.id, null);
       md.push(`| ${s.id} | ${cell(s.draft.slice(0, 80))}… | (no feedback: ${r.why}) | | | | | | |`);
       rows.push([s.id, s.campaign_title, s.kind, s.draft, `no feedback: ${r.why}`, "", "", "", "", "", ""].map(csv).join(","));
       continue;
     }
+    streak = 0;
     const f = r.feedback;
     run.byId.set(s.id, f);
     if (f.weakest_link) run.weakest += 1;
@@ -81,7 +92,11 @@ async function main() {
   const model = resolveModel("coach", deps.settings);
   console.log(`${real ? `REAL model ${model}` : "Fake provider (no network, no cost)"}. ${samples.items.length} drafts, prompt version(s) ${versions.join(", ")}.`);
   const runs: Run[] = [];
-  for (const v of versions) runs.push(await runVersion(v, deps, model));
+  for (const v of versions) {
+    const run = await runVersion(v, deps, model);
+    runs.push(run);
+    if (run.aborted) break; // do not start the next version after a stop
+  }
 
   const lines = ["version | failures | weakest link shown | input tokens | output tokens | cost (USD)"];
   for (const r of runs) lines.push(`v${r.version} | ${r.failures}/${samples.items.length} | ${r.weakest}/${samples.items.length} | ${r.inputTokens} | ${r.outputTokens} | ${r.spent.toFixed(4)}`);
@@ -100,6 +115,13 @@ async function main() {
     }
   }
   console.log("\n" + lines.join("\n"));
+
+  // A run that had any failure or stopped early is not a result: exit non-zero so nobody reads it as one.
+  const bad = runs.filter((r) => r.failures > 0 || r.aborted);
+  if (bad.length || runs.length < versions.length) {
+    console.error(`FAILED: ${bad.map((r) => `v${r.version} had ${r.failures} failed call(s)${r.aborted ? " and stopped early" : ""}`).join("; ")}.`);
+    process.exit(1);
+  }
 }
 
 main().catch((e) => {

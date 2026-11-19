@@ -98,7 +98,7 @@ export function AiHelp({ campaignId, kind, body, draftKey, usesPerDraft }: { cam
   );
 }
 
-function CoachFeedback({ reply }: { reply: Extract<CoachReply, { ok: true }> }) {
+export function CoachFeedback({ reply }: { reply: Extract<CoachReply, { ok: true }> }) {
   const f = reply.feedback;
   const rows: [string, { rating: string; comment: string }][] = [
     ["Clarity of your claim", f.clarity],
