@@ -1,5 +1,9 @@
 # Changelog
 
+## Privacy policy version 2026-11-b (19 November 2026). Awaiting review
+
+Branch `fix/privacy-version`. **No migration.** The privacy policy version shown on `/privacy` and recorded on new accounts and new positions consents is now `2026-11-b` (it was `2026-11-a`), after the storage table and intro sentence changes. The terms version is unchanged. Nobody is asked to accept again and no email is sent.
+
 ## Privacy page: intro sentence above the storage table (19 November 2026). Awaiting review
 
 Branch `fix/privacy-intro`. **No migration.** The sentence above the storage table now says the site uses only what it needs to work, including remembering what you ask it to (text style, size and theme), instead of only sign-in and security. Table and policy version unchanged.

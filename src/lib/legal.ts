@@ -20,7 +20,7 @@ export const LEGAL = {
   privacyEmail: "contact@thegrandstrategist.com",
   contactEmail: "contact@thegrandstrategist.com",
   termsVersion: "2026-11-a",
-  privacyVersion: "2026-11-a",
+  privacyVersion: "2026-11-b",
   effectiveDate: "",
   reviewed: false,
 } as const;
