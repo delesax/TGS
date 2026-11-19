@@ -255,6 +255,31 @@ test.describe("Display settings", () => {
     }
   });
 
+  test("option names stay on one line where a card has room: Default text from 375px, Large text from 768px", async ({ browser }) => {
+    for (const [size, widths] of [["default", [375, 640, 768, 1280]], ["large", [768, 1280]]] as const) {
+      for (const width of widths) {
+        const context = await browser.newContext({ viewport: { width, height: 1400 } });
+        await context.addInitScript(([key, value]) => window.localStorage.setItem(key, value), [KEY, JSON.stringify({ v: 2, size })]);
+        const page = await context.newPage();
+        await page.goto("/");
+        await page.evaluate(() => window.dispatchEvent(new Event("tgs:open-display")));
+        await page.locator("dialog[open]").waitFor();
+        const wrapped = await page.evaluate(() =>
+          [...document.querySelectorAll("dialog .option-card")]
+            .map((card) => {
+              const name = card.querySelector("span.font-semibold")!;
+              const range = document.createRange();
+              range.selectNodeContents(name);
+              return new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size > 1 ? name.textContent : null;
+            })
+            .filter(Boolean),
+        );
+        expect(wrapped, `option names on two lines at ${width}px, ${size} text`).toEqual([]);
+        await context.close();
+      }
+    }
+  });
+
   test("works signed in too", async ({ browser }) => {
     const code = `TGS-DISP-${randomUUID().slice(0, 8).toUpperCase()}`;
     await service.from("invites").insert({ code, max_uses: 1, note: "playwright display" });

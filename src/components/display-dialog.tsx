@@ -23,6 +23,8 @@ export const OPEN_DISPLAY_EVENT = "tgs:open-display";
 
 const radioCard = "option-card";
 /** Short one-line choices (size, theme): as many columns as fit, each at least 10.5rem (or the full width when that is narrower), so a card's text never runs under its check mark. Where even that is too narrow (Large text on a 320px screen), a long word may break inside itself (overflow-wrap: anywhere) rather than run under the tick or out of the dialog. */
+/** The default option of a group (Atkinson Hyperlegible, Automatic) has the longest label, so it takes a whole row and its name stays on one line. */
+const fullRow = " [grid-column:1/-1]";
 const fitColumns = "grid grid-cols-[repeat(auto-fit,minmax(min(10.5rem,100%),1fr))] gap-2";
 
 function subscribe(onChange: () => void) {
@@ -152,7 +154,7 @@ export function DisplayDialog() {
           <p className="text-sm text-muted-foreground">Changes the body text only. Headings and the logo stay as they are.</p>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {FONT_OPTIONS.map((font) => (
-              <label key={font.id} className={radioCard}>
+              <label key={font.id} className={`${radioCard}${font.id === DEFAULT_FONT ? fullRow : ""}`}>
                 <input
                   type="radio"
                   name="display-font"
@@ -180,7 +182,7 @@ export function DisplayDialog() {
           </p>
           <div className={fitColumns} aria-describedby="theme-help">
             {THEME_OPTIONS.map((option) => (
-              <label key={option.id} className={`${radioCard} items-center`}>
+              <label key={option.id} className={`${radioCard} items-center${option.id === DEFAULT_THEME_MODE ? fullRow : ""}`}>
                 <input
                   type="radio"
                   name="display-theme"
