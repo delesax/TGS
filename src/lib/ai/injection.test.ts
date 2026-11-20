@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import corpus from "../../../evals/injection/corpus.json";
+import { campaignDraftWith } from "./campaign-draft";
 import { coachWith, judgeRationaleWith, judgeRubricWith, nudgeWith, screenDispatchWith, screenNameWith, type EngineDeps } from "./engine";
 import { loadPrompt, PROMPTS, type PromptKey } from "./prompts";
 import { fakeProvider } from "./providers/fake";
@@ -45,6 +46,7 @@ const CALLS: Call[] = [
   { name: "nudge", run: (d, t) => nudgeWith(d, t, campaign.title, null) },
   { name: "coach", run: (d, t) => coachWith(d, t, { title: campaign.title, kind: "argument" }, null) },
   { name: "judge rubric", run: (d, t) => judgeRubricWith(d, { body: t, kind: "evidence", campaign: { title: campaign.title, category: campaign.category }, parentBody: t }) },
+  { name: "campaign draft helper", run: (d, t) => campaignDraftWith(d, { title: campaign.title, notes: `${t}\n\nBackground notes: the Example Council announced a plan on 12 March 2026. Supporters and critics disagree about it, and a consultation is open.` }) },
   { name: "judge rationale wording", run: (d, t) => judgeRationaleWith(d, `Verdict for the Campaign. ${t}`) },
 ];
 

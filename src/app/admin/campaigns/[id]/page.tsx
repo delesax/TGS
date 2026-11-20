@@ -48,6 +48,9 @@ export default async function EditCampaignPage({ params, searchParams }: PagePro
         <Button asChild variant="secondary">
           <Link href={`/campaigns/${c.slug}`}>View page</Link>
         </Button>
+        <Button asChild variant="outline">
+          <Link href={`/admin/campaigns/${c.id}/draft-helper`}>Draft text with AI</Link>
+        </Button>
       </div>
       <RubricPanel campaignId={c.id} publishedLabel={c.rubric_published_at ? formatUkDateTime(c.rubric_published_at) : null} />
       <CampaignForm

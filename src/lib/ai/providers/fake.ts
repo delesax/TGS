@@ -317,6 +317,29 @@ function fakeJudgeSummary(blocks: Record<string, string>) {
   return { summary, best_dispatch: labels[0] ?? "D1" };
 }
 
+/**
+ * A deterministic stand-in for the Campaign draft helper: it copies the notes' own sentences (so every figure, date and quote
+ * is really in the notes) and obeys no instruction inside them. Not a drafter; it exercises the whole pipeline.
+ */
+export function fakeCampaignDraft(notes: string) {
+  const sentences = notes
+    .split(/(?<=[.!?])\s+|\n+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 20 && !/\[\[|@/.test(s));
+  const picked = sentences.slice(0, 4);
+  let summary = picked.join(" ");
+  while (summary.length < 110) summary += " The notes pasted by the administrator are the only source for this draft.";
+  const dated = (s: string) => /\d/.test(s);
+  const rows = [...sentences.filter(dated), ...sentences.filter((s) => !dated(s))].slice(0, 4);
+  const claims = rows.map((line) => ({ claim: line.split(/\s+/).slice(0, 8).join(" "), source_line: line, exact_quote: line.split(/\s+/).slice(0, 8).join(" "), status: "unverified" as const }));
+  const recheck = sentences
+    .map((s) => ({ s, m: /\b\d{1,2} (?:January|February|March|April|May|June|July|August|September|October|November|December)(?: \d{4})?/.exec(s) }))
+    .filter((x) => x.m)
+    .slice(0, 3)
+    .map((x) => `Re-check by ${x.m![0]}: ${x.s.split(/\s+/).slice(0, 6).join(" ")}`);
+  return { summary: summary.slice(0, 1900), claims: claims.length ? claims : [{ claim: "the notes", source_line: notes.trim().slice(0, 40), exact_quote: notes.trim().slice(0, 40), status: "unverified" as const }], recheck_lines: recheck };
+}
+
 export const fakeProvider: AiProvider = {
   name: "fake",
   async complete(req: ProviderRequest): Promise<ProviderResponse> {
@@ -341,7 +364,9 @@ export const fakeProvider: AiProvider = {
                 }
               : req.task === "judge_rationale"
                 ? { rationale: blocks.draft ?? "" }
-                : req.task === "judge_summary"
+                : req.task === "campaign_draft"
+                  ? fakeCampaignDraft(blocks.notes ?? "")
+                  : req.task === "judge_summary"
                   ? fakeJudgeSummary(blocks)
                   : fakeCoach(blocks.draft ?? "", "weakest_link" in ((req.schema as { properties?: Record<string, unknown> }).properties ?? {}));
     return { text: JSON.stringify(output), ...tokens };
