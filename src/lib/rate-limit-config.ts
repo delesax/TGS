@@ -17,6 +17,9 @@ export const LIMITS = {
   join_request_ip: { max: 5, windowSeconds: 3600 },
   join_request_email: { max: 3, windowSeconds: 86_400 },
   join_request_all: { max: 300, windowSeconds: 86_400 },
+  // Campaign draft helper (admin only): 10 AI drafts a day per admin. The window is one fixed block of 86,400 seconds aligned to
+  // UTC midnight (the database allows no longer), not the UK day. A draft that fails the checks still counts.
+  campaign_draft_admin: { max: 10, windowSeconds: 86_400 },
   // CSP reports (public route): one caller, and all callers together, so a flood cannot fill the event log.
   csp_ip: { max: 60, windowSeconds: 600 },
   csp_all: { max: 600, windowSeconds: 3600 },

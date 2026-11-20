@@ -113,7 +113,7 @@ export async function callStructured<T>(
 }
 
 /** Caps, kill switch and input length, then the call, then the spend log. */
-async function guarded<T>(
+export async function guarded<T>(
   deps: EngineDeps,
   feature: AiFeature,
   userId: string | null,
@@ -416,11 +416,11 @@ export type SummaryResult =
   | { ok: true; summary: string; bestDispatchId: string; inputDispatchIds: string[]; usage: { inputTokens: number; outputTokens: number; estimatedCostUsd: number }; record: CallRecord }
   | { ok: false; why: Unavailable | "no_dispatches"; record: CallRecord | null };
 
-const squash = (t: string) => t.toLowerCase().replace(/[\u2018\u2019`]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/\s+/g, " ").trim();
+export const squash = (t: string) => t.toLowerCase().replace(/[\u2018\u2019`]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/\s+/g, " ").trim();
 /** Phrases that state what someone meant, wanted or aimed at. Allowed only when the Dispatches use the same words. */
-const MOTIVE_PHRASES = /\b(?:aimed at|aims? to|intended to|intends? to|designed to|meant to|seeks? to|hopes? to|hoping to|wants? to|wanted to|in an attempt to|so as to|motivated by|their (?:real |true )?(?:aim|goal|motive|intention|intent) (?:is|was))\b/gi;
-const numbersIn = (t: string) => [...t.matchAll(/\d+(?:[.,]\d+)*/g)].map((m) => m[0].replace(/,/g, ""));
-const urlsIn = (t: string) => [...t.matchAll(/https?:\/\/[^\s)"]+/g)].map((m) => m[0].replace(/[.,;]+$/, ""));
+export const MOTIVE_PHRASES = /\b(?:aimed at|aims? to|intended to|intends? to|designed to|meant to|seeks? to|hopes? to|hoping to|wants? to|wanted to|in an attempt to|so as to|motivated by|their (?:real |true )?(?:aim|goal|motive|intention|intent) (?:is|was))\b/gi;
+export const numbersIn = (t: string) => [...t.matchAll(/\d+(?:[.,]\d+)*/g)].map((m) => m[0].replace(/,/g, ""));
+export const urlsIn = (t: string) => [...t.matchAll(/https?:\/\/[^\s)"]+/g)].map((m) => m[0].replace(/[.,;]+$/, ""));
 
 /**
  * The mechanical checks on a summary, separate from the model call so they are tested on their own.

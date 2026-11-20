@@ -14,6 +14,8 @@ export const PROMPTS = {
   judge_rationale: { name: "judge-rationale", version: 1 },
   // The winner's summary (admin-approved before publication). Logged under the ai_usage feature "judge_rationale".
   judge_summary: { name: "judge-summary", version: 2 },
+  // The admin-only Campaign draft helper. Logged under the ai_usage feature "judge_rationale" (the nearest existing key).
+  campaign_draft: { name: "campaign-draft", version: 1 },
 } as const;
 
 export type PromptKey = keyof typeof PROMPTS;

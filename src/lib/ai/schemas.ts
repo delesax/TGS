@@ -107,6 +107,24 @@ export const judgeRationaleSchema = z.strictObject({
 });
 export type JudgeRationaleOutput = z.infer<typeof judgeRationaleSchema>;
 
+/** The admin-only Campaign draft helper: a summary, a fact-check table and re-check dates. Every status is "unverified". */
+export const campaignDraftSchema = z.strictObject({
+  summary: z.string().trim().min(100).max(2000),
+  claims: z
+    .array(
+      z.strictObject({
+        claim: z.string().trim().min(3).max(300),
+        source_line: z.string().trim().min(3).max(800),
+        exact_quote: z.string().trim().min(3).max(500),
+        status: z.literal("unverified"),
+      }),
+    )
+    .min(1)
+    .max(12),
+  recheck_lines: z.array(z.string().trim().min(3).max(200)).max(6),
+});
+export type CampaignDraftOutput = z.infer<typeof campaignDraftSchema>;
+
 export const judgeSummarySchema = z.strictObject({
   summary: z.string().trim().min(200).max(1500),
   best_dispatch: z.string().regex(/^D\d{1,2}$/),
@@ -152,6 +170,11 @@ export const JSON_SCHEMAS = {
   }),
   judge_rationale: obj({ rationale: str }),
   judge_summary: obj({ summary: str, best_dispatch: str }),
+  campaign_draft: obj({
+    summary: str,
+    claims: { type: "array", items: obj({ claim: str, source_line: str, exact_quote: str, status: enumOf(["unverified"]) }) },
+    recheck_lines: { type: "array", items: str },
+  }),
 } as const;
 
 /** Prompt v2 of the judge: the v1 shape plus the list of claims to check. */
