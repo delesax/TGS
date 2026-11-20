@@ -45,6 +45,13 @@ Checkouts and local stacks: one checkout, `TGS/` (the default Supabase project `
 
 ## Entries
 
+### 2026-11-20 — Campaign draft helper: spec approved with changes (branch `docs/campaign-draft-helper-spec-v2`) (log written by Claude)
+
+Docs only: `docs/CAMPAIGN_DRAFT_HELPER_SPEC.md`, built on `origin/main` at `ba506d7`. The spec is approved with changes and **must not be built, merged or deployed until Dele says so**. Changes recorded: full normalisation (quotes, dashes, whitespace, numbers, percentages, dates) before the validator's checks; validator tests from real model outputs with failing raw outputs kept as fixtures, and a manual real-model check on 2 or 3 real note sets before first use; nothing from the notes or the model is ever logged (with a required test); privacy sentence "TGS does not store the notes", pending a check that hosting request logs do not record bodies; decisions (judging model, 12,000 characters, UTC reset and fail-open accepted, audit log deferred, sub-page, `judge_rationale` shared).
+
+**Open, to disclose:** a first implementation was built earlier in this session and pushed as `feat/campaign-draft-helper` (unmerged, nothing deployed, all suites passed). It predates this approval and does not meet the new changes 1 to 3. It must not be merged; keep it as the starting point or delete it.
+
+
 ### 2026-11-20 — Coach: weakest link (v2), eval reporting and the validator fix (PRs #105 and #106) (log written by Claude)
 
 Built on `origin/main` at `4d38d7b`. Docs only in this entry. Nothing applied to hosted; no migration.
