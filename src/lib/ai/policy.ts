@@ -49,10 +49,11 @@ const REWRITE_PHRASES = [
 /**
  * Quoted passages, read left to right as whole pairs: "double", “curly” or 'single'. Reading whole pairs means a closing mark is
  * never mistaken for the next opening one. A single quote counts as a quotation mark only when it stands apart from letters, so the
- * apostrophes in "doesn't" and "team's" are not quote marks. (The first version of this rule paired any two quote-like characters
+ * apostrophes in "doesn't" and "teachers' phones" are not quote marks. An opening single quote may follow a bracket, a digit or
+ * punctuation (so a rewrite cannot hide behind one), but not a letter, and not a lone "s" ("the 1990's"). (The first version of this rule paired any two quote-like characters
  * 40 or more characters apart and rejected ordinary feedback; see evals/coach-validator-false-positives.json.)
  */
-const QUOTED = /"([^"]*)"|“([^”]*)”|(?<![\p{L}\p{N}])['‘]((?:[^'‘’]|(?<=[\p{L}\p{N}])['’](?=[\p{L}\p{N}]))*)['’](?![\p{L}\p{N}])/gu;
+const QUOTED = /"([^"]*)"|“([^”]*)”|(?<!\p{L})['‘](?!s(?![\p{L}\p{N}]))((?:[^'‘’]|(?<=[\p{L}\p{N}])['’](?=[\p{L}\p{N}]))*)['’](?![\p{L}\p{N}])/gu;
 
 /**
  * The coach asks questions and points at weaknesses; it must not write

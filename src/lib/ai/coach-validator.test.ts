@@ -61,3 +61,39 @@ describe("ordinary feedback with apostrophes and short quotes is not a quotation
     expect(replacementTextRule(withQuestion('You say "every parent knows" and that "it works"; what would you say to someone who doesn\'t agree with that?'), "d")).toBeNull();
   });
 });
+
+// Adversarial cases from the review of the fix: a rewrite must not slip through because of how it is quoted, and an apostrophe
+// must not stop a real quote that follows it from being found.
+describe("adversarial quoting", () => {
+  const passage = "Trials across forty firms show lower sick leave and steady output overall";
+  const rewrite = `Don't wait: ${passage}, and it doesn't cost more`;
+  const draft = "My draft.";
+  const caught = (q: string) => expect(replacementTextRule(withQuestion(q), draft)).toMatch(/^long_quote_not_in_draft/);
+  const fine = (q: string) => expect(replacementTextRule(withQuestion(q), draft)).toBeNull();
+
+  it("(a) a rewrite in double quotes that contains apostrophes and contractions is rejected", () => {
+    caught(`Try "${rewrite}."`);
+    caught(`Try “${rewrite}.”`);
+  });
+
+  it("(b) a single-quoted rewrite is rejected when the opening quote follows a bracket, a digit or punctuation", () => {
+    caught(`Try ('${passage}.')`);
+    caught(`Try [‘${passage}.’]`);
+    caught(`Option 2'${passage}.'`);
+    caught(`Try 1:'${passage}.'`);
+    caught(`Try: '${rewrite}.'`);
+    caught(`Try ‘${rewrite}.’ instead`);
+  });
+
+  it("(c) a plural possessive is not a quote opener and does not hide a real quote after it", () => {
+    fine("What do teachers' phones in class add to the argument, and what would the teachers' union say about them?");
+    fine("The pupils' and teachers' views differ, and nothing in the draft says whose evidence a sceptic should trust more.");
+    caught(`The teachers' view is stated, but try '${passage}.' instead`);
+    caught(`What would the teachers' union say? Try "${passage}."`);
+    caught(`The teachers' 'case' is thin; try '${rewrite}.'`);
+  });
+
+  it("a digit followed by 's is a possessive or plural, not an opening quote", () => {
+    fine("In the 1990's the figure was lower, and in the firms' own accounts it is higher, so which does your claim rely on?");
+  });
+});
