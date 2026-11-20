@@ -302,7 +302,9 @@ test.describe("Display settings", () => {
       await dialog(page).getByRole("radio", { name: /^Source Serif 4/ }).check();
       await page.goto("/dossier");
       await expect(html(page)).toHaveAttribute("data-font", "source-serif");
-      expect(await bodyFamily(page)).toMatch(/Source Serif 4/);
+      // This member has no handle yet, so the page can navigate on (to /onboarding) after the first document has loaded. Reading
+      // the style in the middle of that navigation threw "Execution context was destroyed", so retry until the page is stable.
+      await expect.poll(() => bodyFamily(page).catch(() => ""), { message: "the body font after the page settles" }).toMatch(/Source Serif 4/);
     } finally {
       await context.close();
       await service.auth.admin.deleteUser(data.user.id);
