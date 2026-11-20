@@ -45,6 +45,30 @@ Checkouts and local stacks: one checkout, `TGS/` (the default Supabase project `
 
 ## Entries
 
+### 2026-11-20 — Coach: weakest link (v2), eval reporting and the validator fix (PRs #105 and #106) (log written by Claude)
+
+Built on `origin/main` at `4d38d7b`. Docs only in this entry. Nothing applied to hosted; no migration.
+
+**What is on `main`:**
+- Coach prompt v2 (`prompts/coach.v2.md`) and an optional `weakest_link` on the coach output, with a validator (`weakestLinkRule`) and one "Weakest link:" line in `ai-help.tsx`. No schema or database change: coach output lives in `ai_decisions.output`.
+- `scripts/eval-coach.ts`: one table per version, per-version totals, the reason for every failed attempt (JSON parse, schema field, validator rule, refusal, truncation), raw failures in `evals/out/`, `--versions=1,2`, `--only=c12`, a probe flag (c20), and a non-zero exit on any non-probe failure or early stop. It reports whether a v2 weakest link was kept, omitted by the model, or dropped by our rules.
+- The `long_quote_not_in_draft` validator fix (quotes read as whole pairs; a single quote counts only when it stands apart from letters) with adversarial tests, and a fix for the `display.spec.ts` "works signed in too" navigation race.
+
+**State:** `PROMPTS.coach.version` is **1**. **v1 is the default; v2 is off.** v2 runs only when asked for (the eval, tests).
+
+**Real eval (claude-sonnet-5-5, 20 drafts):** before the fix v1 had 8 invalid_output and v2 had 5, all the same rule. After it, 20 of 20 ok for both. About $0.45 per full two-version run.
+
+**Lessons:**
+1. The fake provider passed 20 of 20 while the real model failed 8 of 20. Run the real eval before changing any validator, and do not read a fake-provider pass as evidence about the real model.
+2. The cause was one over-greedy rule, `long_quote_not_in_draft`: it paired any two quote-like characters 40 or more characters apart, so apostrophes ("doesn't", "team's") and single-quote scare quotes read as a long quotation. No failing answer contained a quoted rewrite, and c20 (the "rewrite this for me" probe) was a false rejection, not an expected one.
+3. Failing raw model outputs are kept as fixtures (`evals/coach-validator-false-positives.json`, 29 answers), so a validator change is tested against what the model really wrote.
+4. Stacked PRs must not merge into their base branches. Open one PR into `main` from the tip of the stack.
+
+**Deferred until after launch, together with the v2 decision:** the c12 finding. A real run showed `weakestLinkRule` dropping a valid sentence because it names two part words ("The clarity is the main problem: … no claim for evidence or a counter-argument to attach to."). The model chose one weakest part and used "evidence" as an ordinary noun. The proposed fix (count the first part word named, allow the others) is **not applied; the rule is unchanged.**
+
+**Open:** `docs/campaign-draft-helper-spec` is awaiting the owner's review; the draft helper is not started.
+
+
 ### 2026-11-19 — Campaign draft helper: spec only (branch `docs/campaign-draft-helper-spec`) (log written by Claude)
 
 Docs only: `docs/CAMPAIGN_DRAFT_HELPER_SPEC.md`, built on `origin/main` at `45371bc`. No code, migration or hosted change. Awaiting the owner's review before anything is built. Same session: `feat/coach-weakest-link` pushed (prompt v2 and the optional `weakest_link`; v1 stays the default because the real-model eval was not run), with a render test for the "Weakest link:" line and `scripts/eval-coach.ts` now exiting non-zero on any failed call or early stop.
