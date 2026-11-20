@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import type { AiProvider, ProviderRequest, ProviderResponse } from "./types";
+import { ProviderStopError, type AiProvider, type ProviderRequest, type ProviderResponse } from "./types";
 
 // The only place that talks to the Anthropic API. Server side only: the key
 // is read from the environment and this module refuses to run in a browser.
@@ -27,9 +27,9 @@ export function createAnthropicProvider(apiKey: string): AiProvider {
       },
       { signal: req.signal },
     );
-    if (response.stop_reason === "refusal") throw new Error("The model declined to answer");
-    if (response.stop_reason === "max_tokens") throw new Error("The answer was cut off");
     const text = response.content.flatMap((b) => (b.type === "text" ? [b.text] : [])).join("");
+    if (response.stop_reason === "refusal") throw new ProviderStopError("The model declined to answer", "refusal", text);
+    if (response.stop_reason === "max_tokens") throw new ProviderStopError("The answer was cut off", "max_tokens", text);
     const usage = response.usage;
     return {
       text,
@@ -57,9 +57,9 @@ export function createAnthropicProvider(apiKey: string): AiProvider {
         },
         { signal: req.signal },
       );
-      if (response.stop_reason === "refusal") throw new Error("The model declined to answer");
-      if (response.stop_reason === "max_tokens") throw new Error("The answer was cut off");
       const text = response.content.flatMap((b) => (b.type === "text" ? [b.text] : [])).join("");
+      if (response.stop_reason === "refusal") throw new ProviderStopError("The model declined to answer", "refusal", text);
+      if (response.stop_reason === "max_tokens") throw new ProviderStopError("The answer was cut off", "max_tokens", text);
       const usage = response.usage;
       return {
         text,

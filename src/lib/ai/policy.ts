@@ -47,6 +47,15 @@ const REWRITE_PHRASES = [
 ];
 
 /**
+ * Quoted passages, read left to right as whole pairs: "double", “curly” or 'single'. Reading whole pairs means a closing mark is
+ * never mistaken for the next opening one. A single quote counts as a quotation mark only when it stands apart from letters, so the
+ * apostrophes in "doesn't" and "teachers' phones" are not quote marks. An opening single quote may follow a bracket, a digit or
+ * punctuation (so a rewrite cannot hide behind one), but not a letter, and not a lone "s" ("the 1990's"). (The first version of this rule paired any two quote-like characters
+ * 40 or more characters apart and rejected ordinary feedback; see evals/coach-validator-false-positives.json.)
+ */
+const QUOTED = /"([^"]*)"|“([^”]*)”|(?<!\p{L})['‘](?!s(?![\p{L}\p{N}]))((?:[^'‘’]|(?<=[\p{L}\p{N}])['’](?=[\p{L}\p{N}]))*)['’](?![\p{L}\p{N}])/gu;
+
+/**
  * The coach asks questions and points at weaknesses; it must not write
  * replacement text (owner decision 3). Rejects feedback that offers a
  * rewrite, or quotes a long passage that is not the Strategist's own.
@@ -57,30 +66,47 @@ const REWRITE_PHRASES = [
  * and the rest of the feedback is shown as usual.
  */
 export function weakestLinkOk(text: string | undefined, draft: string): text is string {
-  if (!text) return false;
+  return weakestLinkRule(text, draft) === null;
+}
+
+/** The same check, naming the rule that dropped the sentence, or null if it is fine. */
+export function weakestLinkRule(text: string | undefined, draft: string): string | null {
+  if (!text) return "empty";
   const t = text.trim();
-  if (t.length < 3 || t.length > 200) return false;
-  if (t.split(/[.!?]+\s+\S/).length > 1) return false;
+  if (t.length < 3 || t.length > 200) return `length ${t.length}`;
+  if (t.split(/[.!?]+\s+\S/).length > 1) return "more than one sentence";
   const parts = ["clarity", "evidence", "steelman", "tone"].filter((w) => new RegExp(`\\b${w}\\b`, "i").test(t));
-  if (parts.length !== 1) return false;
-  if (/\b(?:scores?|scored|scoring|ratings?|rated|ranks?|ranked|ranking|wins?|won|winning|winners?|loses?|losing|judges?|verdicts?|leaderboard)\b/i.test(t)) return false;
-  if (/\d+\s*\/\s*\d+/.test(t)) return false;
-  if (REWRITE_PHRASES.some((re) => re.test(t))) return false;
-  if (/["“‘][^"”’]{8,}["”’]/.test(t)) return false;
-  const figures = t.match(/\d[\d,.]*/g) ?? [];
-  return figures.every((n) => draft.includes(n));
+  if (parts.length !== 1) return parts.length === 0 ? "names none of the four parts" : `names several parts (${parts.join(", ")})`;
+  const banned = t.match(/\b(?:scores?|scored|scoring|ratings?|rated|ranks?|ranked|ranking|wins?|won|winning|winners?|loses?|losing|judges?|verdicts?|leaderboard)\b/i);
+  if (banned) return `mentions scores, ranks or winning (${banned[0]})`;
+  if (/\d+\s*\/\s*\d+/.test(t)) return "a score-like ratio";
+  if (REWRITE_PHRASES.some((re) => re.test(t))) return "offers a rewrite";
+  if (/["“‘][^"”’]{8,}["”’]/.test(t)) return "quotes a passage";
+  const figure = (t.match(/\d[\d,.]*/g) ?? []).find((n) => !draft.includes(n));
+  return figure ? `a figure that is not in the draft (${figure})` : null;
 }
 
 export function containsReplacementText(feedback: CoachOutput, draft: string): boolean {
+  return replacementTextRule(feedback, draft) !== null;
+}
+
+/**
+ * The same check, naming the rule that fired and where (for example "rewrite_phrase #2 in questions[0]"), or null if the feedback
+ * is fine. Used to say why a draft was rejected; containsReplacementText is its yes/no form.
+ */
+export function replacementTextRule(feedback: CoachOutput, draft: string): string | null {
   const texts = [feedback.clarity.comment, feedback.evidence.comment, feedback.steelman.comment, feedback.tone.comment, ...feedback.questions];
+  const where = ["clarity.comment", "evidence.comment", "steelman.comment", "tone.comment", ...feedback.questions.map((_, i) => `questions[${i}]`)];
   const plain = (x: string) => x.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, "").replace(/\s+/g, " ").trim();
   const normalisedDraft = plain(draft);
-  for (const t of texts) {
-    if (REWRITE_PHRASES.some((re) => re.test(t))) return true;
-    for (const m of t.matchAll(/["“‘']([^"”’']{40,})["”’']/g)) {
-      const quoted = plain(m[1]);
-      if (quoted.split(" ").length >= 8 && !normalisedDraft.includes(quoted)) return true;
+  for (const [i, t] of texts.entries()) {
+    const phrase = REWRITE_PHRASES.findIndex((re) => re.test(t));
+    if (phrase >= 0) return `rewrite_phrase #${phrase + 1} ${REWRITE_PHRASES[phrase]} in ${where[i]}`;
+    for (const m of t.matchAll(QUOTED)) {
+      const passage = m[1] ?? m[2] ?? m[3] ?? "";
+      const quoted = plain(passage);
+      if (passage.length >= 40 && quoted.split(" ").length >= 8 && !normalisedDraft.includes(quoted)) return `long_quote_not_in_draft in ${where[i]}: ${passage.slice(0, 50)}`;
     }
   }
-  return false;
+  return null;
 }

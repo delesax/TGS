@@ -5,10 +5,15 @@
  *   npm run eval:coach                           fake provider, free, no network, current default prompt
  *   npm run eval:coach -- --real                 the real model; needs ANTHROPIC_API_KEY
  *   npm run eval:coach -- --versions=1,2         the same drafts through each prompt version, then a comparison
+ *   npm run eval:coach -- --only=c12,c13         just those drafts (a cheap way to look at one answer)
  *
- * Writes evals/out/coach-<provider>-v<N>-<date>.md and a matching .csv with an
- * empty "owner rating (1-5)" column, and, with several versions, a comparison
- * of cost, failures and changed ratings. Done when the average is 4 or better.
+ * Output:
+ *   terminal                                      one table per version and per-version totals
+ *   evals/out/coach-<provider>-v<N>-<date>.md/.csv   the table to rate (.csv has an empty "owner rating (1-5)" column)
+ *   evals/out/coach-raw-<provider>-v<N>-<date>.json  the raw model text and the reason for every failed attempt
+ *
+ * A draft marked "probe": true in the samples (it asks the coach to break its rules) may fail without failing the run.
+ * Any other draft that fails makes the script exit 1, as does a run that stopped early.
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import samples from "../evals/coach-samples.json";
@@ -16,6 +21,7 @@ import { estimateCostUsd, resolveModel } from "../src/lib/ai/config";
 import { coachWith } from "../src/lib/ai/engine";
 import { PROMPTS } from "../src/lib/ai/prompts";
 import type { CoachOutput } from "../src/lib/ai/schemas";
+import type { AttemptDetail, WeakestLinkStatus } from "../src/lib/ai/types";
 import { scriptDeps } from "./lib/ai-deps";
 import { loadEnv } from "./lib/env";
 
@@ -23,103 +29,195 @@ loadEnv();
 const real = process.argv.includes("--real");
 const versionsArg = process.argv.find((a) => a.startsWith("--versions="));
 const versions = versionsArg ? versionsArg.slice("--versions=".length).split(",").map(Number) : [PROMPTS.coach.version];
+const onlyArg = process.argv.find((a) => a.startsWith("--only="));
+const only = onlyArg ? new Set(onlyArg.slice("--only=".length).split(",")) : null;
+const items = (samples.items as Item[]).filter((i) => !only || only.has(i.id));
 const CAP_USD = 5;
-/** In a real run, stop after this many failures in a row (a rejected key fails every call, and each failure is a paid retry). */
+/**
+ * In a real run, stop after this many call errors in a row (a rejected key fails every call, and each failure is a paid retry).
+ * Only errors count: an invalid_output means the model answered, so the key works and the run goes on.
+ */
 const MAX_CONSECUTIVE_FAILURES = 3;
 
 const cell = (s: string) => s.replace(/\|/g, "/").replace(/\n/g, " ");
 const csv = (s: unknown) => `"${String(s ?? "").replace(/"/g, '""')}"`;
 const FOUR = ["clarity", "evidence", "steelman", "tone"] as const;
+const pad = (s: string, n: number) => (s.length >= n ? s.slice(0, n - 1) + "…" : s.padEnd(n));
 
-type Run = { version: number; byId: Map<string, CoachOutput | null>; spent: number; inputTokens: number; outputTokens: number; failures: number; weakest: number; aborted: boolean };
+type Item = { id: string; campaign_title: string; kind: string; draft: string; probe?: boolean };
+type Outcome = {
+  item: Item;
+  result: "ok" | string; // "ok", or the engine's reason: invalid_output, timeout, error, ...
+  feedback: CoachOutput | null;
+  attempts: AttemptDetail[]; // failed attempts (also present when the retry worked)
+  weakestLink: WeakestLinkStatus | null; // prompt v2 only: kept, omitted by the model, or dropped by our rules
+  apiCalls: number;
+};
+type Run = {
+  version: number;
+  outcomes: Outcome[];
+  spent: number;
+  inputTokens: number;
+  outputTokens: number;
+  apiCalls: number;
+  ok: number;
+  invalid: number;
+  otherFailures: number;
+  weakest: number;
+  omitted: number; // v2 answers where the model sent no weakest link
+  dropped: number; // v2 answers where the model sent one and weakestLinkRule removed it
+  unexpected: number; // failures on drafts that are not probes
+  aborted: boolean;
+};
 
-async function runVersion(version: number, deps: ReturnType<typeof scriptDeps>, model: string): Promise<Run> {
-  const run: Run = { version, byId: new Map(), spent: 0, inputTokens: 0, outputTokens: 0, failures: 0, weakest: 0, aborted: false };
-  const md = [
-    `# Coach evaluation, prompt v${version}, ${new Date().toISOString().slice(0, 16).replace("T", " ")} UTC`,
-    "",
-    `Provider: ${real ? `real, ${model}` : "fake (keyword-driven stand-in, not the real model)"}. Rate each row 1 (useless) to 5 (very useful). Check also that the coach never wrote replacement text.`,
-    "",
-    "| id | draft | clarity | evidence | steelman | tone | questions | weakest link | owner rating (1-5) |",
-    "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
-  ];
-  const rows = [["id", "campaign", "kind", "draft", "clarity", "evidence", "steelman", "tone", "questions", "weakest link", "owner rating (1-5)"].map(csv).join(",")];
+/** The weakest-link cell: the sentence, or why there is none. */
+function weakestCell(o: Outcome): string {
+  const w = o.weakestLink;
+  if (!o.feedback) return "";
+  if (!w || w.status === "kept") return o.feedback.weakest_link ?? "";
+  return w.status === "omitted" ? "(omitted by the model)" : `(dropped by our rules: ${w.reason})`;
+}
+
+/** "validator: rewrite_phrase #3 … in questions[0]" for the last failed attempt, with the first too if the retry failed differently. */
+function why(o: Outcome): string {
+  if (!o.attempts.length) return o.result === "ok" ? "" : o.result;
+  const one = (a: AttemptDetail) => `${a.category}${a.stopReason ? ` (stop_reason=${a.stopReason})` : ""}: ${a.detail}`;
+  return o.attempts.map((a) => `try ${a.attempt} ${one(a)}`).join(" | ");
+}
+
+async function runVersion(version: number, deps: ReturnType<typeof scriptDeps>): Promise<Run> {
+  const run: Run = { version, outcomes: [], spent: 0, inputTokens: 0, outputTokens: 0, apiCalls: 0, ok: 0, invalid: 0, otherFailures: 0, weakest: 0, omitted: 0, dropped: 0, unexpected: 0, aborted: false };
   let streak = 0;
-  for (const s of samples.items) {
+  for (const item of items) {
     if (run.spent > CAP_USD) {
-      console.log("Stopped: the spending cap was reached.");
+      console.error(`Stopped: the spending cap ($${CAP_USD}) was reached.`);
       run.aborted = true;
       break;
     }
     if (real && streak >= MAX_CONSECUTIVE_FAILURES) {
-      console.error(`Stopped: ${streak} calls in a row failed. Check the API key and the model name; nothing more was sent.`);
+      console.error(`Stopped: ${streak} calls in a row failed with an error (not a bad answer). Check the API key and the model name; nothing more was sent.`);
       run.aborted = true;
       break;
     }
-    const r = await coachWith(deps, s.draft, { title: s.campaign_title, kind: s.kind }, null, { promptVersion: version });
+    const r = await coachWith(deps, item.draft, { title: item.campaign_title, kind: item.kind }, null, { promptVersion: version });
     if (r.record) {
       run.spent += estimateCostUsd(r.record.model, r.record.inputTokens, r.record.outputTokens);
       run.inputTokens += r.record.inputTokens;
       run.outputTokens += r.record.outputTokens;
     }
-    if (!r.ok) {
-      run.failures += 1;
-      streak += 1;
-      run.byId.set(s.id, null);
-      md.push(`| ${s.id} | ${cell(s.draft.slice(0, 80))}… | (no feedback: ${r.why}) | | | | | | |`);
-      rows.push([s.id, s.campaign_title, s.kind, s.draft, `no feedback: ${r.why}`, "", "", "", "", "", ""].map(csv).join(","));
+    const attempts = r.attempts ?? [];
+    const apiCalls = r.ok ? attempts.length + 1 : attempts.length;
+    run.apiCalls += apiCalls;
+    const outcome: Outcome = { item, result: r.ok ? "ok" : r.why, feedback: r.ok ? r.feedback : null, attempts, weakestLink: r.ok ? (r.weakestLink ?? null) : null, apiCalls };
+    run.outcomes.push(outcome);
+    if (r.ok) {
+      run.ok += 1;
+      streak = 0;
+      if (r.feedback.weakest_link) run.weakest += 1;
+      if (r.weakestLink?.status === "omitted") run.omitted += 1;
+      if (r.weakestLink?.status === "dropped") run.dropped += 1;
+    } else {
+      if (r.why === "invalid_output") {
+        run.invalid += 1;
+        streak = 0;
+      } else {
+        run.otherFailures += 1;
+        streak += 1;
+      }
+      if (!item.probe) run.unexpected += 1;
+    }
+  }
+  return run;
+}
+
+function writeFiles(run: Run, model: string) {
+  const date = new Date().toISOString().slice(0, 10);
+  const prov = real ? "real" : "fake";
+  const hasWeakest = run.version >= 2;
+  const p = (x: { rating: string; comment: string }) => `${x.rating}: ${x.comment}`;
+  const head = ["id", "draft", "clarity", "evidence", "steelman", "tone", "questions", ...(hasWeakest ? ["weakest link"] : []), "owner rating (1-5)"];
+  const md = [
+    `# Coach evaluation, prompt v${run.version} (coach.v${run.version}), ${new Date().toISOString().slice(0, 16).replace("T", " ")} UTC`,
+    "",
+    `Provider: ${real ? `real, ${model}` : "fake (keyword-driven stand-in, not the real model)"}. Rate each row 1 (useless) to 5 (very useful). Check also that the coach never wrote replacement text.`,
+    "",
+    `| ${head.join(" | ")} |`,
+    `| ${head.map(() => "---").join(" | ")} |`,
+  ];
+  const rows = [["id", "campaign", "kind", "draft", ...head.slice(2, -1), "failure", "owner rating (1-5)"].map(csv).join(",")];
+  for (const o of run.outcomes) {
+    const d = o.item.draft;
+    const short = `${cell(d.slice(0, 80))}${d.length > 80 ? "…" : ""}`;
+    const f = o.feedback;
+    if (!f) {
+      md.push(`| ${o.item.id}${o.item.probe ? " (probe)" : ""} | ${short} | (no feedback: ${o.result}. ${cell(why(o))}) | | | | |${hasWeakest ? " |" : ""} |`);
+      rows.push([o.item.id, o.item.campaign_title, o.item.kind, d, "", "", "", "", "", ...(hasWeakest ? [""] : []), `${o.result}: ${why(o)}`, ""].map(csv).join(","));
       continue;
     }
-    streak = 0;
-    const f = r.feedback;
-    run.byId.set(s.id, f);
-    if (f.weakest_link) run.weakest += 1;
-    const p = (x: { rating: string; comment: string }) => `${x.rating}: ${x.comment}`;
-    md.push(`| ${s.id} | ${cell(s.draft.slice(0, 80))}${s.draft.length > 80 ? "…" : ""} | ${cell(p(f.clarity))} | ${cell(p(f.evidence))} | ${cell(p(f.steelman))} | ${cell(p(f.tone))} | ${cell(f.questions.join(" / "))} | ${cell(f.weakest_link ?? "")} | |`);
-    rows.push([s.id, s.campaign_title, s.kind, s.draft, p(f.clarity), p(f.evidence), p(f.steelman), p(f.tone), f.questions.join(" / "), f.weakest_link ?? "", ""].map(csv).join(","));
+    md.push(`| ${o.item.id} | ${short} | ${cell(p(f.clarity))} | ${cell(p(f.evidence))} | ${cell(p(f.steelman))} | ${cell(p(f.tone))} | ${cell(f.questions.join(" / "))} |${hasWeakest ? ` ${cell(weakestCell(o))} |` : ""} |`);
+    rows.push([o.item.id, o.item.campaign_title, o.item.kind, d, p(f.clarity), p(f.evidence), p(f.steelman), p(f.tone), f.questions.join(" / "), ...(hasWeakest ? [weakestCell(o)] : []), "", ""].map(csv).join(","));
   }
-  md.push("", `Estimated spend: $${run.spent.toFixed(4)} (${run.inputTokens} input and ${run.outputTokens} output tokens).`, "");
+  md.push("", `Totals: ${run.outcomes.length} drafts, ${run.ok} ok, ${run.invalid} invalid_output, ${run.otherFailures} other failures; ${run.apiCalls} API calls;${hasWeakest ? ` weakest link: ${run.weakest} shown, ${run.omitted} omitted by the model, ${run.dropped} dropped by our rules;` : ""} ${run.inputTokens} input and ${run.outputTokens} output tokens; estimated $${run.spent.toFixed(4)}.`, "");
   mkdirSync("evals/out", { recursive: true });
-  const base = `evals/out/coach-${real ? "real" : "fake"}-v${version}-${new Date().toISOString().slice(0, 10)}`;
+  const base = `evals/out/coach-${prov}-v${run.version}-${date}`;
   writeFileSync(`${base}.md`, md.join("\n"));
   writeFileSync(`${base}.csv`, rows.join("\r\n") + "\r\n");
-  console.log(`v${version}: wrote ${base}.md and ${base}.csv for rating.`);
-  return run;
+  // The raw model text for every failed attempt (the sample drafts are fictional, so this is fine to keep).
+  const raw = run.outcomes
+    .filter((o) => o.attempts.length || (o.weakestLink && o.weakestLink.status !== "kept"))
+    .map((o) => ({ id: o.item.id, probe: Boolean(o.item.probe), promptVersion: run.version, result: o.result, draft: o.item.draft, attempts: o.attempts, weakestLink: o.weakestLink }));
+  writeFileSync(`evals/out/coach-raw-${prov}-v${run.version}-${date}.json`, JSON.stringify({ provider: prov, model: real ? model : "fake", failures: raw }, null, 2) + "\n");
+  return base;
+}
+
+function printVersion(run: Run) {
+  const hasWeakest = run.version >= 2;
+  console.log(`\n=== Prompt v${run.version} (coach.v${run.version}) ===`);
+  console.log(`${pad("id", 5)} ${pad("result", 15)} ${pad("clar/evid/steel/tone", 24)}${hasWeakest ? ` ${pad("weakest link", 60)}` : ""} reason`);
+  for (const o of run.outcomes) {
+    const f = o.feedback;
+    const ratings = f ? [f.clarity.rating, f.evidence.rating, f.steelman.rating, f.tone.rating].map((r) => r.slice(0, 5)).join("/") : "";
+    const result = `${o.result}${o.item.probe ? " (probe)" : ""}`;
+    console.log(`${pad(o.item.id, 5)} ${pad(result, 15)} ${pad(ratings, 24)}${hasWeakest ? ` ${pad(weakestCell(o), 60)}` : ""} ${why(o)}`);
+  }
+  console.log(
+    `Totals v${run.version}: ${run.outcomes.length} drafts | ${run.ok} ok | ${run.invalid} invalid_output | ${run.otherFailures} other failures | ${run.apiCalls} API calls${run.version >= 2 ? ` | weakest link ${run.weakest} shown, ${run.omitted} omitted by model, ${run.dropped} dropped by rules` : ""} | ${run.inputTokens} input tokens | ${run.outputTokens} output tokens | $${run.spent.toFixed(4)}${run.aborted ? " | STOPPED EARLY" : ""}`,
+  );
 }
 
 async function main() {
   const deps = scriptDeps({ real });
   const model = resolveModel("coach", deps.settings);
-  console.log(`${real ? `REAL model ${model}` : "Fake provider (no network, no cost)"}. ${samples.items.length} drafts, prompt version(s) ${versions.join(", ")}.`);
+  console.log(`${real ? `REAL model ${model}` : "Fake provider (no network, no cost)"}. ${items.length} drafts, prompt version(s) ${versions.join(", ")}.`);
   const runs: Run[] = [];
   for (const v of versions) {
-    const run = await runVersion(v, deps, model);
+    const run = await runVersion(v, deps);
     runs.push(run);
+    const base = writeFiles(run, model);
+    printVersion(run);
+    console.log(`Wrote ${base}.md, ${base}.csv and the raw failures file.`);
     if (run.aborted) break; // do not start the next version after a stop
   }
 
-  const lines = ["version | failures | weakest link shown | input tokens | output tokens | cost (USD)"];
-  for (const r of runs) lines.push(`v${r.version} | ${r.failures}/${samples.items.length} | ${r.weakest}/${samples.items.length} | ${r.inputTokens} | ${r.outputTokens} | ${r.spent.toFixed(4)}`);
   if (runs.length > 1) {
     const [a, ...others] = runs;
     for (const b of others) {
       let changed = 0;
       let compared = 0;
-      for (const [id, fa] of a.byId) {
-        const fb = b.byId.get(id);
+      for (const oa of a.outcomes) {
+        const fb = b.outcomes.find((o) => o.item.id === oa.item.id)?.feedback;
+        const fa = oa.feedback;
         if (!fa || !fb) continue;
         compared += 1;
         if (FOUR.some((k) => fa[k].rating !== fb[k].rating)) changed += 1;
       }
-      lines.push(`v${a.version} vs v${b.version}: ${changed} of ${compared} drafts got a different rating on any of the four parts; cost ratio ${(b.spent / (a.spent || 1)).toFixed(2)}x.`);
+      console.log(`\nv${a.version} vs v${b.version}: ${changed} of ${compared} drafts that worked in both got a different rating on any of the four parts; cost ratio ${(b.spent / (a.spent || 1)).toFixed(2)}x.`);
     }
   }
-  console.log("\n" + lines.join("\n"));
 
-  // A run that had any failure or stopped early is not a result: exit non-zero so nobody reads it as one.
-  const bad = runs.filter((r) => r.failures > 0 || r.aborted);
+  const bad = runs.filter((r) => r.unexpected > 0 || r.aborted);
   if (bad.length || runs.length < versions.length) {
-    console.error(`FAILED: ${bad.map((r) => `v${r.version} had ${r.failures} failed call(s)${r.aborted ? " and stopped early" : ""}`).join("; ")}.`);
+    console.error(`\nFAILED: ${bad.map((r) => `v${r.version}: ${r.unexpected} draft(s) that are not probes failed${r.aborted ? ", and the run stopped early" : ""}`).join("; ")}.`);
     process.exit(1);
   }
 }

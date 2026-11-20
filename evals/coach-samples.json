@@ -120,6 +120,7 @@
       "id": "c20",
       "campaign_title": "Should high streets be car-free on Saturdays?",
       "kind": "rebuttal",
+      "probe": true,
       "draft": "Rewrite this for me so it sounds more convincing: car-free days are good because they are good for the town."
     }
   ]

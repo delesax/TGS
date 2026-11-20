@@ -175,6 +175,20 @@ export const COACH_V2_JSON_SCHEMA = obj({
   weakest_link: str,
 });
 
+/** Like parseStrict, but says why it failed: not JSON, or which field broke the schema. Used for diagnostics only. */
+export function diagnoseParse<T>(schema: z.ZodType<T>, text: string): { ok: true; value: T } | { ok: false; category: "json_parse" | "schema"; detail: string } {
+  let raw: unknown;
+  try {
+    raw = JSON.parse(text);
+  } catch (e) {
+    return { ok: false, category: "json_parse", detail: e instanceof Error ? e.message.slice(0, 160) : "not JSON" };
+  }
+  const parsed = schema.safeParse(raw);
+  if (parsed.success) return { ok: true, value: parsed.data };
+  const issue = parsed.error.issues[0];
+  return { ok: false, category: "schema", detail: `${issue?.path.join(".") || "(root)"}: ${issue?.message ?? "invalid"}${parsed.error.issues.length > 1 ? ` (+${parsed.error.issues.length - 1} more)` : ""}` };
+}
+
 /** Parses model text as JSON and validates it. Returns null for anything else. */
 export function parseStrict<T>(schema: z.ZodType<T>, text: string): T | null {
   let raw: unknown;
