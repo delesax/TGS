@@ -22,6 +22,12 @@ export type Unavailable = "off" | "global_cap" | "user_cap" | "coach_cap" | "no_
 export type FailureCategory = "json_parse" | "schema" | "validator" | "refusal" | "truncated" | "timeout" | "error";
 export type AttemptDetail = { attempt: number; category: FailureCategory; detail: string; stopReason?: string; rawText?: string };
 
+/**
+ * What became of the weakest link in a prompt-v2 coach answer. Diagnostics only (the eval reports it; members never see it):
+ * "omitted" = the model left it out or sent an empty one; "dropped" = the model wrote one and our rules removed it, with the reason.
+ */
+export type WeakestLinkStatus = { status: "kept" } | { status: "omitted" } | { status: "dropped"; reason: string; text: string };
+
 /** Everything stored with a decision (CLAUDE.md rule 6), whatever the outcome. */
 export type CallRecord = {
   provider: ProviderName;

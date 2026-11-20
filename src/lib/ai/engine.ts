@@ -1,7 +1,7 @@
 import type { z } from "zod";
 import { TIMEOUT_MS, estimateCostUsd, resolveModel } from "./config";
 import { normaliseHandle, screenHandleWithStub } from "./handle-stub";
-import { decideScreeningOutcome, replacementTextRule, weakestLinkOk } from "./policy";
+import { decideScreeningOutcome, replacementTextRule, weakestLinkRule } from "./policy";
 import { loadPrompt, PROMPTS, type PromptKey } from "./prompts";
 import { ProviderStopError, type AiProvider, type AiTask } from "./providers/types";
 import {
@@ -23,7 +23,7 @@ import {
   type NudgeOutput,
   type TextScreenOutput,
 } from "./schemas";
-import type { AiFeature, AiSettings, AttemptDetail, CallRecord, Unavailable } from "./types";
+import type { AiFeature, AiSettings, AttemptDetail, CallRecord, Unavailable, WeakestLinkStatus } from "./types";
 import { buildUserMessage } from "./untrusted";
 
 // The AI features without any database or framework code, so they can be unit
@@ -43,7 +43,7 @@ export type EngineDeps = {
 };
 
 /** `attempts` lists the failed attempts (also on success, when the retry worked). Diagnostics only. */
-type CallOk<T> = { ok: true; value: T; record: CallRecord; attempts?: AttemptDetail[] };
+type CallOk<T> = { ok: true; value: T; record: CallRecord; attempts?: AttemptDetail[]; rawText?: string };
 type CallFailed = { ok: false; why: Unavailable; record: CallRecord | null; attempts?: AttemptDetail[] };
 
 /**
@@ -90,7 +90,7 @@ export async function callStructured<T>(
         const verdict = opts.accept ? opts.accept(parsed.value) : true;
         if (verdict === true) {
           record.latencyMs = Date.now() - started;
-          return { ok: true, value: parsed.value, record, ...(attempts.length ? { attempts } : {}) };
+          return { ok: true, value: parsed.value, record, rawText: response.text, ...(attempts.length ? { attempts } : {}) };
         }
         attempts.push({ attempt: attempt + 1, category: "validator", detail: typeof verdict === "string" ? verdict : "rejected by the validator", rawText: response.text });
       } else {
@@ -256,7 +256,7 @@ export async function nudgeWith(deps: EngineDeps, draft: string, campaignTitle: 
 // Coach (private feedback; asks questions, never writes replacement text)
 // ---------------------------------------------------------------------------
 
-export type CoachResult = { ok: true; feedback: CoachOutput; record: CallRecord; attempts?: AttemptDetail[] } | { ok: false; why: Unavailable; record: CallRecord | null; attempts?: AttemptDetail[] };
+export type CoachResult = { ok: true; feedback: CoachOutput; record: CallRecord; attempts?: AttemptDetail[]; weakestLink?: WeakestLinkStatus } | { ok: false; why: Unavailable; record: CallRecord | null; attempts?: AttemptDetail[] };
 
 /**
  * One call, whichever prompt version. Version 2 also returns the weakest link; it is kept only if weakestLinkOk says so, and
@@ -288,8 +288,22 @@ export async function coachWith(
   );
   if (!result.ok) return result;
   const { weakest_link, ...rest } = result.value;
-  const feedback: CoachOutput = version >= 2 && weakestLinkOk(weakest_link, draft) ? { ...rest, weakest_link } : { ...rest };
-  return { ok: true, feedback, record: result.record, ...(result.attempts ? { attempts: result.attempts } : {}) };
+  let weakestLink: WeakestLinkStatus | undefined;
+  if (version >= 2) {
+    // What the model actually sent: the schema already turns an unusable value (not a string, too short or long) into undefined.
+    let sent: unknown;
+    try {
+      sent = (JSON.parse(result.rawText ?? "{}") as { weakest_link?: unknown }).weakest_link;
+    } catch {
+      sent = undefined;
+    }
+    const sentText = typeof sent === "string" ? sent.trim() : "";
+    const blank = sent === undefined || sent === null || (typeof sent === "string" && !sentText);
+    const rule = weakest_link !== undefined ? weakestLinkRule(weakest_link, draft) : blank ? "omitted" : sentText ? `schema: length ${sentText.length}` : `schema: not a usable string (${typeof sent})`;
+    weakestLink = rule === null ? { status: "kept" } : rule === "omitted" ? { status: "omitted" } : { status: "dropped", reason: rule, text: sentText || String(sent ?? "") };
+  }
+  const feedback: CoachOutput = weakestLink?.status === "kept" ? { ...rest, weakest_link } : { ...rest };
+  return { ok: true, feedback, record: result.record, ...(result.attempts ? { attempts: result.attempts } : {}), ...(weakestLink ? { weakestLink } : {}) };
 }
 
 // ---------------------------------------------------------------------------

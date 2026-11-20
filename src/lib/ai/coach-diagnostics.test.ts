@@ -66,3 +66,40 @@ describe("coach failure diagnostics", () => {
     expect(r.ok && r.attempts).toBeFalsy();
   });
 });
+
+describe("weakest link status (prompt v2): omitted by the model, or dropped by our rules", () => {
+  const draft = "The four-day week should become the norm because trials found sick days fell by 20%.";
+  const run = (extra: Record<string, unknown>) => coachWith(deps(answers(JSON.stringify({ ...good, ...extra }))), draft, q, "u1", { promptVersion: 2 });
+
+  it("kept: a valid sentence is shown", async () => {
+    const r = await run({ weakest_link: "The steelman is missing: the strongest opposing point is not met." });
+    expect(r.ok && r.weakestLink).toEqual({ status: "kept" });
+    expect(r.ok && r.feedback.weakest_link).toBeTruthy();
+  });
+  it("omitted: the model sent none, null or an empty string", async () => {
+    for (const extra of [{}, { weakest_link: null }, { weakest_link: "" }, { weakest_link: "   " }]) {
+      const r = await run(extra);
+      expect(r.ok && r.weakestLink).toEqual({ status: "omitted" });
+      expect(r.ok && "weakest_link" in r.feedback).toBe(false);
+    }
+  });
+  it("dropped by our rules, naming the rule and keeping the model's text", async () => {
+    const two = await run({ weakest_link: "The evidence and the tone are both weak." });
+    expect(two.ok && two.weakestLink).toMatchObject({ status: "dropped", reason: expect.stringMatching(/names several parts/), text: "The evidence and the tone are both weak." });
+    const score = await run({ weakest_link: "The evidence would score badly." });
+    expect(score.ok && score.weakestLink).toMatchObject({ status: "dropped", reason: expect.stringMatching(/scores, ranks or winning \(score\)/) });
+    const fig = await run({ weakest_link: "The evidence is thin: a 2019 study is not cited." });
+    expect(fig.ok && fig.weakestLink).toMatchObject({ status: "dropped", reason: expect.stringMatching(/figure that is not in the draft \(2019\)/) });
+    expect(fig.ok && "weakest_link" in fig.feedback).toBe(false);
+  });
+  it("dropped by the schema: too long or not a string", async () => {
+    const long = await run({ weakest_link: `The evidence is thin: ${"x".repeat(200)}` });
+    expect(long.ok && long.weakestLink).toMatchObject({ status: "dropped", reason: expect.stringMatching(/^schema: length/) });
+    const num = await run({ weakest_link: 7 });
+    expect(num.ok && num.weakestLink).toMatchObject({ status: "dropped", reason: expect.stringMatching(/^schema: not a usable string/) });
+  });
+  it("prompt v1 reports no status", async () => {
+    const r = await coachWith(deps(answers(JSON.stringify(good))), draft, q, "u1", { promptVersion: 1 });
+    expect(r.ok && r.weakestLink).toBeUndefined();
+  });
+});

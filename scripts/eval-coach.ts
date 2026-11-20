@@ -5,6 +5,7 @@
  *   npm run eval:coach                           fake provider, free, no network, current default prompt
  *   npm run eval:coach -- --real                 the real model; needs ANTHROPIC_API_KEY
  *   npm run eval:coach -- --versions=1,2         the same drafts through each prompt version, then a comparison
+ *   npm run eval:coach -- --only=c12,c13         just those drafts (a cheap way to look at one answer)
  *
  * Output:
  *   terminal                                      one table per version and per-version totals
@@ -20,7 +21,7 @@ import { estimateCostUsd, resolveModel } from "../src/lib/ai/config";
 import { coachWith } from "../src/lib/ai/engine";
 import { PROMPTS } from "../src/lib/ai/prompts";
 import type { CoachOutput } from "../src/lib/ai/schemas";
-import type { AttemptDetail } from "../src/lib/ai/types";
+import type { AttemptDetail, WeakestLinkStatus } from "../src/lib/ai/types";
 import { scriptDeps } from "./lib/ai-deps";
 import { loadEnv } from "./lib/env";
 
@@ -28,6 +29,9 @@ loadEnv();
 const real = process.argv.includes("--real");
 const versionsArg = process.argv.find((a) => a.startsWith("--versions="));
 const versions = versionsArg ? versionsArg.slice("--versions=".length).split(",").map(Number) : [PROMPTS.coach.version];
+const onlyArg = process.argv.find((a) => a.startsWith("--only="));
+const only = onlyArg ? new Set(onlyArg.slice("--only=".length).split(",")) : null;
+const items = (samples.items as Item[]).filter((i) => !only || only.has(i.id));
 const CAP_USD = 5;
 /**
  * In a real run, stop after this many call errors in a row (a rejected key fails every call, and each failure is a paid retry).
@@ -46,6 +50,7 @@ type Outcome = {
   result: "ok" | string; // "ok", or the engine's reason: invalid_output, timeout, error, ...
   feedback: CoachOutput | null;
   attempts: AttemptDetail[]; // failed attempts (also present when the retry worked)
+  weakestLink: WeakestLinkStatus | null; // prompt v2 only: kept, omitted by the model, or dropped by our rules
   apiCalls: number;
 };
 type Run = {
@@ -59,9 +64,19 @@ type Run = {
   invalid: number;
   otherFailures: number;
   weakest: number;
+  omitted: number; // v2 answers where the model sent no weakest link
+  dropped: number; // v2 answers where the model sent one and weakestLinkRule removed it
   unexpected: number; // failures on drafts that are not probes
   aborted: boolean;
 };
+
+/** The weakest-link cell: the sentence, or why there is none. */
+function weakestCell(o: Outcome): string {
+  const w = o.weakestLink;
+  if (!o.feedback) return "";
+  if (!w || w.status === "kept") return o.feedback.weakest_link ?? "";
+  return w.status === "omitted" ? "(omitted by the model)" : `(dropped by our rules: ${w.reason})`;
+}
 
 /** "validator: rewrite_phrase #3 … in questions[0]" for the last failed attempt, with the first too if the retry failed differently. */
 function why(o: Outcome): string {
@@ -71,9 +86,9 @@ function why(o: Outcome): string {
 }
 
 async function runVersion(version: number, deps: ReturnType<typeof scriptDeps>): Promise<Run> {
-  const run: Run = { version, outcomes: [], spent: 0, inputTokens: 0, outputTokens: 0, apiCalls: 0, ok: 0, invalid: 0, otherFailures: 0, weakest: 0, unexpected: 0, aborted: false };
+  const run: Run = { version, outcomes: [], spent: 0, inputTokens: 0, outputTokens: 0, apiCalls: 0, ok: 0, invalid: 0, otherFailures: 0, weakest: 0, omitted: 0, dropped: 0, unexpected: 0, aborted: false };
   let streak = 0;
-  for (const item of samples.items as Item[]) {
+  for (const item of items) {
     if (run.spent > CAP_USD) {
       console.error(`Stopped: the spending cap ($${CAP_USD}) was reached.`);
       run.aborted = true;
@@ -93,12 +108,14 @@ async function runVersion(version: number, deps: ReturnType<typeof scriptDeps>):
     const attempts = r.attempts ?? [];
     const apiCalls = r.ok ? attempts.length + 1 : attempts.length;
     run.apiCalls += apiCalls;
-    const outcome: Outcome = { item, result: r.ok ? "ok" : r.why, feedback: r.ok ? r.feedback : null, attempts, apiCalls };
+    const outcome: Outcome = { item, result: r.ok ? "ok" : r.why, feedback: r.ok ? r.feedback : null, attempts, weakestLink: r.ok ? (r.weakestLink ?? null) : null, apiCalls };
     run.outcomes.push(outcome);
     if (r.ok) {
       run.ok += 1;
       streak = 0;
       if (r.feedback.weakest_link) run.weakest += 1;
+      if (r.weakestLink?.status === "omitted") run.omitted += 1;
+      if (r.weakestLink?.status === "dropped") run.dropped += 1;
     } else {
       if (r.why === "invalid_output") {
         run.invalid += 1;
@@ -137,18 +154,18 @@ function writeFiles(run: Run, model: string) {
       rows.push([o.item.id, o.item.campaign_title, o.item.kind, d, "", "", "", "", "", ...(hasWeakest ? [""] : []), `${o.result}: ${why(o)}`, ""].map(csv).join(","));
       continue;
     }
-    md.push(`| ${o.item.id} | ${short} | ${cell(p(f.clarity))} | ${cell(p(f.evidence))} | ${cell(p(f.steelman))} | ${cell(p(f.tone))} | ${cell(f.questions.join(" / "))} |${hasWeakest ? ` ${cell(f.weakest_link ?? "")} |` : ""} |`);
-    rows.push([o.item.id, o.item.campaign_title, o.item.kind, d, p(f.clarity), p(f.evidence), p(f.steelman), p(f.tone), f.questions.join(" / "), ...(hasWeakest ? [f.weakest_link ?? ""] : []), "", ""].map(csv).join(","));
+    md.push(`| ${o.item.id} | ${short} | ${cell(p(f.clarity))} | ${cell(p(f.evidence))} | ${cell(p(f.steelman))} | ${cell(p(f.tone))} | ${cell(f.questions.join(" / "))} |${hasWeakest ? ` ${cell(weakestCell(o))} |` : ""} |`);
+    rows.push([o.item.id, o.item.campaign_title, o.item.kind, d, p(f.clarity), p(f.evidence), p(f.steelman), p(f.tone), f.questions.join(" / "), ...(hasWeakest ? [weakestCell(o)] : []), "", ""].map(csv).join(","));
   }
-  md.push("", `Totals: ${run.outcomes.length} drafts, ${run.ok} ok, ${run.invalid} invalid_output, ${run.otherFailures} other failures; ${run.apiCalls} API calls; ${run.inputTokens} input and ${run.outputTokens} output tokens; estimated $${run.spent.toFixed(4)}.`, "");
+  md.push("", `Totals: ${run.outcomes.length} drafts, ${run.ok} ok, ${run.invalid} invalid_output, ${run.otherFailures} other failures; ${run.apiCalls} API calls;${hasWeakest ? ` weakest link: ${run.weakest} shown, ${run.omitted} omitted by the model, ${run.dropped} dropped by our rules;` : ""} ${run.inputTokens} input and ${run.outputTokens} output tokens; estimated $${run.spent.toFixed(4)}.`, "");
   mkdirSync("evals/out", { recursive: true });
   const base = `evals/out/coach-${prov}-v${run.version}-${date}`;
   writeFileSync(`${base}.md`, md.join("\n"));
   writeFileSync(`${base}.csv`, rows.join("\r\n") + "\r\n");
   // The raw model text for every failed attempt (the sample drafts are fictional, so this is fine to keep).
   const raw = run.outcomes
-    .filter((o) => o.attempts.length)
-    .map((o) => ({ id: o.item.id, probe: Boolean(o.item.probe), promptVersion: run.version, result: o.result, draft: o.item.draft, attempts: o.attempts }));
+    .filter((o) => o.attempts.length || (o.weakestLink && o.weakestLink.status !== "kept"))
+    .map((o) => ({ id: o.item.id, probe: Boolean(o.item.probe), promptVersion: run.version, result: o.result, draft: o.item.draft, attempts: o.attempts, weakestLink: o.weakestLink }));
   writeFileSync(`evals/out/coach-raw-${prov}-v${run.version}-${date}.json`, JSON.stringify({ provider: prov, model: real ? model : "fake", failures: raw }, null, 2) + "\n");
   return base;
 }
@@ -161,17 +178,17 @@ function printVersion(run: Run) {
     const f = o.feedback;
     const ratings = f ? [f.clarity.rating, f.evidence.rating, f.steelman.rating, f.tone.rating].map((r) => r.slice(0, 5)).join("/") : "";
     const result = `${o.result}${o.item.probe ? " (probe)" : ""}`;
-    console.log(`${pad(o.item.id, 5)} ${pad(result, 15)} ${pad(ratings, 24)}${hasWeakest ? ` ${pad(f?.weakest_link ?? "", 60)}` : ""} ${why(o)}`);
+    console.log(`${pad(o.item.id, 5)} ${pad(result, 15)} ${pad(ratings, 24)}${hasWeakest ? ` ${pad(weakestCell(o), 60)}` : ""} ${why(o)}`);
   }
   console.log(
-    `Totals v${run.version}: ${run.outcomes.length} drafts | ${run.ok} ok | ${run.invalid} invalid_output | ${run.otherFailures} other failures | ${run.apiCalls} API calls | ${run.inputTokens} input tokens | ${run.outputTokens} output tokens | $${run.spent.toFixed(4)}${run.aborted ? " | STOPPED EARLY" : ""}`,
+    `Totals v${run.version}: ${run.outcomes.length} drafts | ${run.ok} ok | ${run.invalid} invalid_output | ${run.otherFailures} other failures | ${run.apiCalls} API calls${run.version >= 2 ? ` | weakest link ${run.weakest} shown, ${run.omitted} omitted by model, ${run.dropped} dropped by rules` : ""} | ${run.inputTokens} input tokens | ${run.outputTokens} output tokens | $${run.spent.toFixed(4)}${run.aborted ? " | STOPPED EARLY" : ""}`,
   );
 }
 
 async function main() {
   const deps = scriptDeps({ real });
   const model = resolveModel("coach", deps.settings);
-  console.log(`${real ? `REAL model ${model}` : "Fake provider (no network, no cost)"}. ${samples.items.length} drafts, prompt version(s) ${versions.join(", ")}.`);
+  console.log(`${real ? `REAL model ${model}` : "Fake provider (no network, no cost)"}. ${items.length} drafts, prompt version(s) ${versions.join(", ")}.`);
   const runs: Run[] = [];
   for (const v of versions) {
     const run = await runVersion(v, deps);

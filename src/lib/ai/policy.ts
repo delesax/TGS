@@ -66,18 +66,24 @@ const QUOTED = /"([^"]*)"|“([^”]*)”|(?<!\p{L})['‘](?!s(?![\p{L}\p{N}]))(
  * and the rest of the feedback is shown as usual.
  */
 export function weakestLinkOk(text: string | undefined, draft: string): text is string {
-  if (!text) return false;
+  return weakestLinkRule(text, draft) === null;
+}
+
+/** The same check, naming the rule that dropped the sentence, or null if it is fine. */
+export function weakestLinkRule(text: string | undefined, draft: string): string | null {
+  if (!text) return "empty";
   const t = text.trim();
-  if (t.length < 3 || t.length > 200) return false;
-  if (t.split(/[.!?]+\s+\S/).length > 1) return false;
+  if (t.length < 3 || t.length > 200) return `length ${t.length}`;
+  if (t.split(/[.!?]+\s+\S/).length > 1) return "more than one sentence";
   const parts = ["clarity", "evidence", "steelman", "tone"].filter((w) => new RegExp(`\\b${w}\\b`, "i").test(t));
-  if (parts.length !== 1) return false;
-  if (/\b(?:scores?|scored|scoring|ratings?|rated|ranks?|ranked|ranking|wins?|won|winning|winners?|loses?|losing|judges?|verdicts?|leaderboard)\b/i.test(t)) return false;
-  if (/\d+\s*\/\s*\d+/.test(t)) return false;
-  if (REWRITE_PHRASES.some((re) => re.test(t))) return false;
-  if (/["“‘][^"”’]{8,}["”’]/.test(t)) return false;
-  const figures = t.match(/\d[\d,.]*/g) ?? [];
-  return figures.every((n) => draft.includes(n));
+  if (parts.length !== 1) return parts.length === 0 ? "names none of the four parts" : `names several parts (${parts.join(", ")})`;
+  const banned = t.match(/\b(?:scores?|scored|scoring|ratings?|rated|ranks?|ranked|ranking|wins?|won|winning|winners?|loses?|losing|judges?|verdicts?|leaderboard)\b/i);
+  if (banned) return `mentions scores, ranks or winning (${banned[0]})`;
+  if (/\d+\s*\/\s*\d+/.test(t)) return "a score-like ratio";
+  if (REWRITE_PHRASES.some((re) => re.test(t))) return "offers a rewrite";
+  if (/["“‘][^"”’]{8,}["”’]/.test(t)) return "quotes a passage";
+  const figure = (t.match(/\d[\d,.]*/g) ?? []).find((n) => !draft.includes(n));
+  return figure ? `a figure that is not in the draft (${figure})` : null;
 }
 
 export function containsReplacementText(feedback: CoachOutput, draft: string): boolean {
