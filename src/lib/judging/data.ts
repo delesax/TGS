@@ -1,6 +1,8 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
-import type { Attention, Component, ProposedAward, StrategistScore, Weights } from "./blend";
+import { createAdminClient } from "@/lib/supabase/admin";
+import type { Attention, Component, Criterion, Position, ProposedAward, StrategistScore, Weights } from "./blend";
+import { criteriaByAuthor, positionsChart, type CriteriaScoreRow, type PanelScoreRow, type PositionsChart, type StrategistCriteria } from "./verdict-extras";
 
 // Reads for the judging pages, through the signed-in (or anonymous) client,
 // so row-level security decides what each person sees.
@@ -168,6 +170,56 @@ export async function getWinningCase(verdictId: string): Promise<WinningCase | n
       dispatchId = d ? (d.id as string) : null;
     }
     return { text: row.winner_summary, aiAssisted: Boolean(row.winner_summary_ai_assisted), dispatchId };
+  } catch {
+    return null;
+  }
+}
+
+export type VerdictExtras = {
+  criteria: Map<string, StrategistCriteria>;
+  positions: PositionsChart;
+};
+
+/**
+ * Display-only extras for a published Verdict: per-criterion averages and anonymous before and after totals. The source tables are
+ * private (judges, admins and the member themself), so this reads them with the service role on the server and returns aggregates
+ * only: no judge id, no single judge's score, no member's position. Never throws: on any error the page shows no extras.
+ */
+export async function getVerdictExtras(campaignId: string, dispatches: { id: string; author_id: string }[]): Promise<VerdictExtras | null> {
+  try {
+    const admin = createAdminClient();
+    const [{ data: submitted }, { data: panel }, { data: ai }, { data: positions }] = await Promise.all([
+      admin.from("judge_assignments").select("judge_id").eq("campaign_id", campaignId).not("submitted_at", "is", null),
+      admin.from("panel_scores").select("dispatch_id, judge_id, logic, evidence, originality, responsiveness").eq("campaign_id", campaignId),
+      admin
+        .from("ai_rubric_scores")
+        .select("dispatch_id, logic, evidence, originality, responsiveness, override_scores, created_at")
+        .eq("campaign_id", campaignId)
+        .order("created_at", { ascending: false }),
+      admin.rpc("judging_positions", { p_campaign_id: campaignId }),
+    ]);
+    const submittedJudges = new Set(((submitted as { judge_id: string }[]) ?? []).map((j) => j.judge_id));
+    const submittedPanel = ((panel as PanelScoreRow[]) ?? []).filter((p) => submittedJudges.has(p.judge_id));
+    // Latest AI score per Dispatch, with an admin override applied: the same rule the blend uses.
+    const latest = new Map<string, CriteriaScoreRow>();
+    for (const r of (ai as (CriteriaScoreRow & { override_scores: Partial<Record<Criterion, number>> | null })[]) ?? []) {
+      if (latest.has(r.dispatch_id)) continue;
+      const o = r.override_scores ?? {};
+      latest.set(r.dispatch_id, {
+        dispatch_id: r.dispatch_id,
+        logic: o.logic ?? r.logic,
+        evidence: o.evidence ?? r.evidence,
+        originality: o.originality ?? r.originality,
+        responsiveness: o.responsiveness ?? r.responsiveness,
+      });
+    }
+    const ids = new Set(dispatches.map((d) => d.id));
+    return {
+      criteria: criteriaByAuthor(dispatches, submittedPanel.filter((p) => ids.has(p.dispatch_id)), [...latest.values()].filter((a) => ids.has(a.dispatch_id))),
+      positions: positionsChart(
+        ((positions as { before_position: Position | null; after_position: Position | null }[]) ?? []).map((p) => ({ before: p.before_position, after: p.after_position })),
+      ),
+    };
   } catch {
     return null;
   }

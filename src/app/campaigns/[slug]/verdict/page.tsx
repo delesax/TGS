@@ -9,10 +9,11 @@ import { getViewer } from "@/lib/auth";
 import { getCampaign, getServerNow } from "@/lib/campaign-data";
 import { formatUkDateTime } from "@/lib/campaigns";
 import { metaDescription } from "@/lib/meta-description";
-import { getHandles, getJudgingWindow, getLiveVerdict, getWinningCase } from "@/lib/judging/data";
+import { getEligibleDispatches, getHandles, getJudgingWindow, getLiveVerdict, getVerdictExtras, getWinningCase } from "@/lib/judging/data";
 import { AI_ASSISTED_RATIONALE_NOTICE, AI_JUDGING_NOTICE, APPEAL_NOTICE } from "@/lib/judging/notices";
 import { referencedUsers } from "@/lib/judging/rationale";
 import { createClient } from "@/lib/supabase/server";
+import { CriteriaSection, PositionsSection } from "@/components/judging/verdict-extras";
 import { WinningCaseSection } from "@/components/judging/winning-case";
 import { AppealForm } from "./appeal-form";
 
@@ -78,6 +79,10 @@ export default async function VerdictPage({ params }: PageProps<"/campaigns/[slu
     ...referencedUsers(verdict.rationale, ...verdict.proposed_awards.map((a) => a.rationale)),
   ]);
   const winningCase = await getWinningCase(verdict.id);
+  const extras = await getVerdictExtras(
+    campaign.id,
+    (await getEligibleDispatches(campaign.id).catch(() => [])).map((d) => ({ id: d.id, author_id: d.author_id })),
+  );
   const publicAwards = verdict.proposed_awards.filter((a) => a.category !== "grand_strategist"); // the Grand Strategist card above already says it
   const winner = verdict.component_scores.find((s) => s.user_id === verdict.winner_id);
   const runnersUp = verdict.component_scores
@@ -191,6 +196,10 @@ export default async function VerdictPage({ params }: PageProps<"/campaigns/[slu
           {AI_JUDGING_NOTICE}
         </p>
       </section>
+
+      {extras ? <CriteriaSection scores={verdict.component_scores} criteria={extras.criteria} handles={handles} /> : null}
+
+      {extras ? <PositionsSection chart={extras.positions} /> : null}
 
       <section aria-labelledby="appeal-h" className="flex flex-col gap-3">
         <h2 id="appeal-h">
