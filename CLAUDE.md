@@ -34,6 +34,7 @@ TGS is a time-boxed arena for structured reasoning. It rewards the best argument
 13. Moderation: handles and Dispatches are screened. Block hate, harassment and impersonation. Sensitive Campaigns (e.g. assisted dying) need stricter settings and a content note. Financial and medical Campaigns are labelled as opinion, not advice.
 14. Do not build anything on the out-of-scope list: dating, recruitment, payments, voice/video, native apps, verified credentials, LTI, argument map. Keep the schema open to them but ship nothing.
 15. Ask me when a requirement is unclear. Do not guess on legal, payment or safety matters.
+16. A spec means spec only. Build only after Dele says "build" in a prompt that names the feature. A branch, a pull request, a compare link, an approval of a spec, or "merged" is not that instruction. If a message is ambiguous, ask first.
 
 ## Definition of done (every task)
 Typecheck and lint clean; tests pass; works at 375px width; empty, loading and error states exist; no console errors.
