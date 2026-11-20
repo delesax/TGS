@@ -2,7 +2,7 @@
 
 Status: **approved with changes on 20 Nov 2026. Do not build, merge or deploy until Dele says so.** This revision is docs only: no code, migration or hosted change.
 
-> **Note on an existing branch.** A first implementation was built before this approval and is pushed as `feat/campaign-draft-helper` (one commit, unmerged, nothing deployed). It follows the earlier version of this spec. It does **not** yet meet changes 1 to 3 below (full normalisation, real-model fixtures and check, the no-logging test) or the new privacy wording (change 4). It must not be merged. When Dele says to build, it is the starting point, or it can be deleted.
+> **Correction (20 Nov, later).** A first implementation was built before this approval. It was **merged to `main` as PR #109 (20 Nov, 00:48 UTC) and a production deployment of that commit is READY on Vercel**, so the admin-only helper page is live. It follows the earlier version of this spec: it does **not** meet changes 1 to 3 below (full normalisation, real-model fixtures and check, the no-logging test), its month check still treats "march" or "august" as dates (see "What counts as a date"), and the public pages do not mention it. Whether to revert it or keep it is for Dele to decide. The standing rule applies from now on: a spec means spec only.
 
 ## What it is
 
@@ -55,6 +55,23 @@ Both the notes and every model-written string are normalised the same way **befo
 | Dates | `3 December 2026` = `3 Dec 2026` = `3rd December, 2026` = `December 3, 2026` = `3/12/2026` (day first, UK) = `2026-12-03`. Compared as day, month and year. An output date matches a date in the notes if day and month are equal and the years are equal or one side gives none. A month and year, or a year alone, must appear in the notes in the same way. Two-digit years are not interpreted (compared as plain numbers) |
 | Source line and quote | Compared after the same normalisation. A quote must be one unbroken stretch: it may not use `...` or `[...]` to join pieces |
 
+### What counts as a date (month check)
+
+A month name is a date only when it is **adjacent to a day number or a year**: `3 March`, `3rd of March`, `March 3`, `March 2026`, `12 Mar 2026`, `in August 2026`. A capitalised `May` counts only when a digit follows or precedes it (`May 2026`, `3 May`). Everything else is an ordinary word and is **not** a date: lowercase `march`, `august`, `may`, `mar`; `May` without a digit ("May I ask"); "the March vote" with no number. Ordinary-word uses are never checked against the notes; dates are checked as in the table above. Accepted consequence: a bare month with no number or year ("a vote in September") is not checked as a date, so an invented bare month would pass; figures, years, quotes and source lines are still checked.
+
+Test sentences (each against notes that do and do not contain the date):
+
+| Sentence | Treated as | Result |
+| --- | --- | --- |
+| "Parliament may vote on it." | ordinary word | accepted, whatever the notes say |
+| "The march was peaceful." | ordinary word | accepted |
+| "That was an august body." | ordinary word | accepted |
+| "May I ask what it costs?" | ordinary word (no digit) | accepted |
+| "The vote is in August 2026." | date | accepted only if the notes have August 2026 (or an August date in 2026); rejected otherwise |
+| "A hearing on 3 May." | date | accepted only if the notes have 3 May (any year); rejected otherwise |
+| "The consultation opens on March 3." | date | accepted only if the notes have 3 March; rejected otherwise |
+| "She said it may change in May 2026." | "may" ordinary, "May 2026" a date | the second is checked; the first is not |
+
 Number words ("ten", "a third") are not treated as figures; the prompt tells the model to use the notes' own digits. If a form is not in this table, it is not equal.
 
 Tests for this (table-driven, both directions): every equivalent pair above passes; every near miss fails (`1,000` against `100`; `3 December` against `13 December`; `3 Dec 2026` against `3 Dec 2025`; `10%` against `1.0%`; `£2.4 million` against `£24 million`; a quote with a changed word; a quote joined with `...`).
@@ -92,7 +109,8 @@ The privacy sentence is **"TGS does not store the notes."** Checked against the 
 
 - **Privacy page, "Automated checks and AI help":** the coach says "We do not keep your draft", the tone check and coach list what is kept (coach feedback and its rating: 90 days in "How long we keep it"), and one paragraph says Anthropic processes the text under a data processing agreement, deletes inputs and outputs within 30 days (marked for the owner to confirm), and does not train on them. The new sentence is consistent: it says what TGS keeps, and it does not claim anything about Anthropic, which the existing Anthropic paragraph already covers for "this text".
 - **Proposed changes:** add a fifth bullet under the AI uses and change "There are four uses" to "five"; add the bullet "**Campaign drafting (admin only).** An admin can paste source notes to get a draft Campaign summary, a fact-check table and dates to re-check. The notes are sent to Anthropic. TGS does not store the notes. Nothing is published without an admin."; add to "For each check we keep a record…" that for Campaign drafting TGS keeps only a count of calls and tokens; add a row to "How long we keep it": "Campaign drafting notes and drafts: not stored by TGS". On `/ai-use`, add the same bullet as a paragraph. The helper page's own notice changes from "we do not keep them" to "TGS does not store the notes."
-- **To confirm before it is true:** that our hosting provider's ordinary request logs do not record request bodies (the privacy table already lists "Security logs at our providers"). Not verified in this spec; Dele or the build must check the Vercel logging setting before the sentence goes live.
+- **Check before the sentence goes live (required, not yet done):** confirm that our hosting provider's logs (Vercel request and function logs, and any log drain) do not record request bodies, so that "TGS does not store the notes" is true. The privacy table already lists "Security logs at our providers". Record who checked, when, and what the setting was, in `docs/CLAUDE_LOG.md`. Until then the sentence is not published.
+- **Public pages stay unchanged until the helper ships, and are edited in the same PR** as the change that ships it. (The first implementation went live without them; the next PR that touches the helper must carry the wording, or the helper must be taken down first.)
 
 ## Prompt-injection exposure
 

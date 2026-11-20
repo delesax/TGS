@@ -4,6 +4,10 @@ A running log for Claude sessions on TGS. **Read this at the start of every sess
 
 Each entry: date, branch and latest commit, what was done, what is applied to hosted, what is open, and where the detail is. Never record secrets, `.env.local` values or users' personal data here.
 
+## Standing rules
+
+- **A spec means spec only.** Build only after Dele says "build" in a prompt that names the feature. A branch, a pull request, a compare link, an approval of a spec, or "merged" is not that instruction. If a message is ambiguous, ask first. (Also CLAUDE.md, rule 16.)
+
 ## Current state (update every session)
 
 | Branch | State | Latest commit | Hosted |
@@ -44,6 +48,13 @@ Checkouts and local stacks: one checkout, `TGS/` (the default Supabase project `
 - **Account deletion stays OFF.** Decide whether it also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-20 — Spec month rule, standing rule, and the helper that is already on `main` (branch `docs/spec-rule-and-month-check`) (log written by Claude)
+
+Docs only, built on `origin/main` at `0848901`. Added the standing rule above and CLAUDE.md rule 16. Draft helper spec: the month check now matches a month name only next to a day number or a year (so "may", "march" and "august" as ordinary words are not dates), with test sentences, and an explicit check that the hosting provider's logs do not record request bodies before "TGS does not store the notes" goes live. Public pages stay unchanged until the helper ships and are edited in the same PR.
+
+**Found while doing this, and not what the previous log entry says:** the first draft helper implementation was **merged to `main` as PR #109 (20 Nov, 00:48 UTC) and a production deployment of that commit is READY on Vercel.** The previous entry and the spec note said it was unmerged. So the helper page (`/admin/campaigns/[id]/draft-helper`, admin only, no migration) is live now, without the new normalisation, the no-logging test, the real-model check, or the public-page sentence. Whether to revert PR #109 or keep it is Dele's decision and is open. The rename to `wip/campaign-draft-helper-do-not-merge` was not done: the premise (unmerged) was wrong.
+
 
 ### 2026-11-20 — Campaign draft helper: spec approved with changes (branch `docs/campaign-draft-helper-spec-v2`) (log written by Claude)
 
