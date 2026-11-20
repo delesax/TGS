@@ -2,7 +2,7 @@
 
 Status: **approved with changes on 20 Nov 2026. Do not build, merge or deploy until Dele says so.** This revision is docs only: no code, migration or hosted change.
 
-> **Correction (20 Nov, later).** A first implementation was built before this approval. It was **merged to `main` as PR #109 (20 Nov, 00:48 UTC) and a production deployment of that commit is READY on Vercel**, so the admin-only helper page is live. It follows the earlier version of this spec: it does **not** meet changes 1 to 3 below (full normalisation, real-model fixtures and check, the no-logging test), its month check still treats "march" or "august" as dates (see "What counts as a date"), and the public pages do not mention it. Whether to revert it or keep it is for Dele to decide. The standing rule applies from now on: a spec means spec only.
+> **Correction (20 Nov, later).** A first implementation was built before this approval. It was **merged to `main` as PR #109 (20 Nov, 00:48 UTC) and a production deployment of that commit is READY on Vercel**, so the admin-only helper page is live. It follows the earlier version of this spec: it does **not** meet changes 1 to 3 below (full normalisation, real-model fixtures and check, the no-logging test), its month check still treats "march" or "august" as dates (see "What counts as a date"), and the public pages do not mention it. **Decision (Dele, 20 Nov): keep it live; it is not reverted.** The gaps listed here stay open until Dele says "build" for each. The standing rule applies from now on: a spec means spec only.
 
 ## What it is
 
