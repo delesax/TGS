@@ -99,5 +99,18 @@ export function positionsChart(rows: { before: Position | null; after: Position 
   };
 }
 
+export type MovedCount = { shown: false } | { shown: true; moved: number; of: number };
+
+/**
+ * "Moved N" (spec item c). PURE AND NOT WIRED to any page. Members who recorded BOTH a before and an after position, and how many of
+ * them changed it. Hidden under MIN_POSITIONS_FOR_CHART such members, the same threshold and the same consented rows as the positions
+ * chart. A single number only: never who moved, and never a direction.
+ */
+export function movedCount(rows: { before: Position | null; after: Position | null }[]): MovedCount {
+  const both = rows.filter((r) => r.before && r.after);
+  if (both.length < MIN_POSITIONS_FOR_CHART) return { shown: false };
+  return { shown: true, moved: both.filter((r) => r.before !== r.after).length, of: both.length };
+}
+
 export const CRITERION_LABELS: Record<Criterion, string> = { logic: "Logic", evidence: "Evidence", originality: "Originality", responsiveness: "Responsiveness" };
 export const POSITION_LABELS: Record<Position, string> = { for: "For", against: "Against", undecided: "Undecided" };

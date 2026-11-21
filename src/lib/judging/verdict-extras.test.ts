@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { criteriaByAuthor, MIN_PANEL_JUDGES, MIN_POSITIONS_FOR_CHART, positionsChart } from "./verdict-extras";
+import { criteriaByAuthor, MIN_PANEL_JUDGES, MIN_POSITIONS_FOR_CHART, movedCount, positionsChart } from "./verdict-extras";
 
 const c = (n: number) => ({ logic: n, evidence: n, originality: n, responsiveness: n });
 const dispatches = [
@@ -63,5 +63,19 @@ describe("positionsChart", () => {
   it("withholds a side that fewer than the minimum recorded", () => {
     const r = positionsChart([...rows(9, "for", null), ...rows(1, "for", "against")]);
     expect(r).toMatchObject({ shown: true, beforeN: 10, afterN: 1, after: null });
+  });
+});
+
+describe("movedCount", () => {
+  const rows = (n: number, before: "for" | "against", after: "for" | "against" | null) => Array.from({ length: n }, () => ({ before, after }));
+
+  it("is hidden under the minimum of members who recorded both positions", () => {
+    expect(movedCount(rows(MIN_POSITIONS_FOR_CHART - 1, "for", "against"))).toEqual({ shown: false });
+    // members with only one position do not count towards the minimum
+    expect(movedCount([...rows(9, "for", "against"), ...rows(5, "for", null)])).toEqual({ shown: false });
+  });
+
+  it("counts who changed, as one number with no direction", () => {
+    expect(movedCount([...rows(3, "for", "against"), ...rows(2, "against", "for"), ...rows(5, "for", "for")])).toEqual({ shown: true, moved: 5, of: 10 });
   });
 });
