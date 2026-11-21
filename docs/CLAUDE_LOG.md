@@ -28,7 +28,7 @@ Each entry: date, branch and latest commit, what was done, what is applied to ho
 | `feat/verdict-criteria-positions` (20 Nov) | Verdict page: per-criterion averages and an anonymous before and after positions chart. Display only, no migration, no scoring change. **Merged to `main`** as PR #111 (the later log-only commit as PR #112). Checks on the tip: lint 0, typecheck 0, 569 unit, 400 RLS, 231 Playwright, all exit 0 | see `git log feat/verdict-criteria-positions` | n/a |
 | `feat/draft-helper-hardening` (21 Nov) | Spec item j, the four BEFORE-FIRST-VERDICT sub-items: normalisation and month check, no-logging sentinel test, `npm run eval:campaign-draft`. No migration. **Merged to `main`** as PR #114. | `ffa322b` (merge `e6aa1d7`) | n/a |
 | `feat/gap-scaffolds` (21 Nov) | Pure, unwired code for spec items e, g and c: peer-agreement score, handle stripper, "moved N" count. Nothing imports them. No migration, no UI, no notices. **Merged to `main`** as PR #117. | `1be3f3c` (merge `451a6d5`) | n/a |
-| `feat/participation-pulse` (21 Nov) | Campaign page participation line (spec item i): "N Strategists have posted M Dispatches", hidden under 10 distinct Strategists (constant `MIN_PULSE_STRATEGISTS`). Display only, no migration. **Pushed, NOT merged as of `origin/main` `451a6d5` (checked 21 Nov): the code is not on `main`.** It also edits this log, so merging it will conflict here; keep both sides. | `c46eca5` | n/a |
+| `feat/participation-pulse` (21 Nov) | Campaign page participation line (spec item i): "N Strategists have posted M Dispatches", hidden under 10 distinct Strategists (constant `MIN_PULSE_STRATEGISTS`). Display only, no migration. **Rebased onto `origin/main` `b1f8666` and pushed (21 Nov); not merged yet.** | see `git log feat/participation-pulse` | n/a |
 | `feat/coach-c12-fix` (21 Nov) | Spec item k: the c12 fix for the weakest-link rule (`weakestLinkRule`) and `eval:coach --repeat=N` (variance table). **v2 is NOT switched on** (`PROMPTS.coach.version` stays 1). No migration. **Pushed, NOT merged as of `origin/main` `451a6d5` (checked 21 Nov): the code is not on `main`.** It also edits this log, so merging it will conflict here; keep both sides. | `2b375ee` | n/a |
 | `docs-w7-eval-notes` | **Merged to `main`** as PR #61 (W7 two-run notes and a small tested eval-report change). Branch deleted | `c38c717` (merge on `main`) | n/a |
 
@@ -57,6 +57,10 @@ Checkouts and local stacks: one checkout, `TGS/` (the default Supabase project `
 - **Account deletion stays OFF.** Decide whether it also removes a deleted user's peer votes and mind-change picks (legal-hardening owns that function).
 
 ## Entries
+
+### 2026-11-21 — Participation pulse, spec item i (branch `feat/participation-pulse`) (log written by Claude)
+
+Built on `origin/main` at `3026ffb`. Dele named items i, j and k on 21 Nov; this is i. Display only: no migration, nothing on hosted, no judging, notices or legal string change. `participationLine` and `MIN_PULSE_STRATEGISTS` (10, my default for Dele's N: change the one constant) in `src/lib/campaigns.ts`; `getParticipationAuthors` in `src/lib/campaign-data.ts` (visible, not withdrawn, not hidden Dispatches, the rows the discussion already shows publicly; never positions, votes or readers); one line inside the status card on open and closed Campaigns. Copy: "N Strategists have posted M Dispatches." (open) or "... posted ..." (closed). Not shown for scheduled or draft Campaigns, nor under 10 Strategists. Ship window (spec): Wednesday 25 or Thursday 26 Nov if it is to be live before Campaign 1 opens on 1 Dec.
 
 ### 2026-11-21 — Log refresh and a merge check (branch `docs/log-refresh-21-nov`) (log written by Claude)
 

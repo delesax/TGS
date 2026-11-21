@@ -113,3 +113,22 @@ export async function getOwnerDecisionIds(ids: string[]): Promise<Set<string> | 
     return null;
   }
 }
+
+/** Author ids of the Campaign's visible Dispatches (one per Dispatch): the same public rows the discussion shows. Never throws. */
+export async function getParticipationAuthors(campaignId: string): Promise<string[]> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("dispatches")
+      .select("author_id")
+      .eq("campaign_id", campaignId)
+      .eq("moderation_status", "visible")
+      .is("withdrawn_at", null)
+      .is("hidden_at", null)
+      .limit(5000);
+    if (error) return [];
+    return (data as { author_id: string }[]).map((d) => d.author_id);
+  } catch {
+    return [];
+  }
+}
