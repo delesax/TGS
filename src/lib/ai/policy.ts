@@ -69,13 +69,34 @@ export function weakestLinkOk(text: string | undefined, draft: string): text is 
   return weakestLinkRule(text, draft) === null;
 }
 
+const COACH_PARTS = ["clarity", "evidence", "steelman", "tone"] as const;
+/** Words that make a following part word an ordinary noun ("no claim for evidence", "a lack of clarity"), not the part being named. */
+const ORDINARY_NOUN_BEFORE = /\b(?:no|any|for|without|of|more|some|little|enough)$/i;
+
+/**
+ * The parts of the coach a sentence names. A part is named when it follows "the", "your", "its", "this", "that" or "their"
+ * ("The clarity is the main problem"), or when it appears anywhere else as other than an ordinary noun. A part word that follows
+ * "no", "for", "of" and the like ("... no claim for evidence ...") is just a noun and is not counted. (Found on the real eval, c12:
+ * a sentence that named one weakest part was dropped for using "evidence" as an ordinary noun. A sentence that names two parts as
+ * parts, "The evidence and the tone are both weak", is still dropped.)
+ */
+function partsNamed(t: string): string[] {
+  return COACH_PARTS.filter((w) => {
+    if (new RegExp(`\\b(?:the|your|its|this|that|their)\\s+${w}\\b`, "i").test(t)) return true;
+    for (const m of t.matchAll(new RegExp(`\\b${w}\\b`, "gi"))) {
+      if (!ORDINARY_NOUN_BEFORE.test(t.slice(0, m.index).trimEnd())) return true;
+    }
+    return false;
+  });
+}
+
 /** The same check, naming the rule that dropped the sentence, or null if it is fine. */
 export function weakestLinkRule(text: string | undefined, draft: string): string | null {
   if (!text) return "empty";
   const t = text.trim();
   if (t.length < 3 || t.length > 200) return `length ${t.length}`;
   if (t.split(/[.!?]+\s+\S/).length > 1) return "more than one sentence";
-  const parts = ["clarity", "evidence", "steelman", "tone"].filter((w) => new RegExp(`\\b${w}\\b`, "i").test(t));
+  const parts = partsNamed(t);
   if (parts.length !== 1) return parts.length === 0 ? "names none of the four parts" : `names several parts (${parts.join(", ")})`;
   const banned = t.match(/\b(?:scores?|scored|scoring|ratings?|rated|ranks?|ranked|ranking|wins?|won|winning|winners?|loses?|losing|judges?|verdicts?|leaderboard)\b/i);
   if (banned) return `mentions scores, ranks or winning (${banned[0]})`;
