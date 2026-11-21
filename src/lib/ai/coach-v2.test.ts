@@ -135,3 +135,38 @@ describe("coachWith, prompt versions", () => {
     expect(PROMPTS.coach.version).toBe(1);
   });
 });
+
+describe("weakestLinkOk: one named part, however many ordinary nouns (the c12 finding)", () => {
+  const d = "Immigration is a complex and multifaceted issue with many perspectives, and it is important to note that there are arguments on both sides.";
+
+  // The sentence from the real eval (c12, 19 Nov), as recorded in docs/CLAUDE_LOG.md, whose middle was elided there as "...". The
+  // middle here is a stand-in written for this test, not the model's words: the real raw answer was not kept.
+  it("keeps a sentence that names one part and uses another word as an ordinary noun", () => {
+    expect(weakestLinkOk("The clarity is the main problem: the draft takes no position, so there is no claim for evidence or a counter-argument to attach to.", d)).toBe(true);
+    expect(weakestLinkOk("The steelman is missing, and there is a lack of evidence for any opposing view.", d)).toBe(true);
+    expect(weakestLinkOk("Clarity is the weakest part: there is no claim for evidence to attach to.", d)).toBe(true);
+  });
+
+  it("still rejects a sentence that names two parts as parts", () => {
+    expect(weakestLinkOk("The evidence and the tone are both weak.", d)).toBe(false);
+    expect(weakestLinkOk("The clarity is weak, and so is the tone.", d)).toBe(false);
+    expect(weakestLinkOk("The clarity is weak, and so is evidence.", d)).toBe(false);
+    expect(weakestLinkOk("Clarity and evidence are both weak.", d)).toBe(false);
+    expect(weakestLinkOk("Both your tone and your evidence need work.", d)).toBe(false);
+    expect(weakestLinkOk("The tone is fine but the steelman is missing.", d)).toBe(false);
+    expect(weakestLinkOk("The evidence is thin, with nothing to back the claim and no sign of a steelman to answer.", d)).toBe(false); // "a steelman" is a second part
+  });
+
+  it("still rejects a sentence that names none, and the other rules still apply", () => {
+    expect(weakestLinkOk("There is no claim for evidence here.", d)).toBe(false); // only an ordinary noun: names no part
+    expect(weakestLinkOk("The clarity is the main problem: it would score badly.", d)).toBe(false);
+    expect(weakestLinkOk("The clarity is the main problem, so try writing it plainly.", d)).toBe(false);
+  });
+
+  it("reports which rule dropped it", async () => {
+    const { weakestLinkRule } = await import("./policy");
+    expect(weakestLinkRule("The evidence and the tone are both weak.", d)).toBe("names several parts (evidence, tone)");
+    expect(weakestLinkRule("There is no claim for evidence here.", d)).toBe("names none of the four parts");
+    expect(weakestLinkRule("The clarity is the main problem: no claim for evidence to attach to.", d)).toBeNull();
+  });
+});

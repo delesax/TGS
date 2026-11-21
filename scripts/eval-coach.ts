@@ -6,6 +6,8 @@
  *   npm run eval:coach -- --real                 the real model; needs ANTHROPIC_API_KEY
  *   npm run eval:coach -- --versions=1,2         the same drafts through each prompt version, then a comparison
  *   npm run eval:coach -- --only=c12,c13         just those drafts (a cheap way to look at one answer)
+ *   npm run eval:coach -- --real --versions=1,2 --repeat=5   the whole run N times, then a per-draft variance table (kept, omitted,
+ *                                                 dropped, failed) across the runs; the spending cap covers all repeats together
  *
  * Output:
  *   terminal                                      one table per version and per-version totals
@@ -29,10 +31,14 @@ loadEnv();
 const real = process.argv.includes("--real");
 const versionsArg = process.argv.find((a) => a.startsWith("--versions="));
 const versions = versionsArg ? versionsArg.slice("--versions=".length).split(",").map(Number) : [PROMPTS.coach.version];
+const repeatArg = process.argv.find((a) => a.startsWith("--repeat="));
+const repeat = Math.max(1, Math.min(10, Number(repeatArg?.slice("--repeat=".length)) || 1));
 const onlyArg = process.argv.find((a) => a.startsWith("--only="));
 const only = onlyArg ? new Set(onlyArg.slice("--only=".length).split(",")) : null;
 const items = (samples.items as Item[]).filter((i) => !only || only.has(i.id));
 const CAP_USD = 5;
+/** Spend across every version and repeat of this invocation, so --repeat cannot multiply the cap. */
+let totalSpent = 0;
 /**
  * In a real run, stop after this many call errors in a row (a rejected key fails every call, and each failure is a paid retry).
  * Only errors count: an invalid_output means the model answered, so the key works and the run goes on.
@@ -89,7 +95,7 @@ async function runVersion(version: number, deps: ReturnType<typeof scriptDeps>):
   const run: Run = { version, outcomes: [], spent: 0, inputTokens: 0, outputTokens: 0, apiCalls: 0, ok: 0, invalid: 0, otherFailures: 0, weakest: 0, omitted: 0, dropped: 0, unexpected: 0, aborted: false };
   let streak = 0;
   for (const item of items) {
-    if (run.spent > CAP_USD) {
+    if (totalSpent > CAP_USD) {
       console.error(`Stopped: the spending cap ($${CAP_USD}) was reached.`);
       run.aborted = true;
       break;
@@ -101,7 +107,9 @@ async function runVersion(version: number, deps: ReturnType<typeof scriptDeps>):
     }
     const r = await coachWith(deps, item.draft, { title: item.campaign_title, kind: item.kind }, null, { promptVersion: version });
     if (r.record) {
-      run.spent += estimateCostUsd(r.record.model, r.record.inputTokens, r.record.outputTokens);
+      const cost = estimateCostUsd(r.record.model, r.record.inputTokens, r.record.outputTokens);
+      run.spent += cost;
+      totalSpent += cost;
       run.inputTokens += r.record.inputTokens;
       run.outputTokens += r.record.outputTokens;
     }
@@ -130,7 +138,7 @@ async function runVersion(version: number, deps: ReturnType<typeof scriptDeps>):
   return run;
 }
 
-function writeFiles(run: Run, model: string) {
+function writeFiles(run: Run, model: string, repeatNo = 0) {
   const date = new Date().toISOString().slice(0, 10);
   const prov = real ? "real" : "fake";
   const hasWeakest = run.version >= 2;
@@ -159,14 +167,15 @@ function writeFiles(run: Run, model: string) {
   }
   md.push("", `Totals: ${run.outcomes.length} drafts, ${run.ok} ok, ${run.invalid} invalid_output, ${run.otherFailures} other failures; ${run.apiCalls} API calls;${hasWeakest ? ` weakest link: ${run.weakest} shown, ${run.omitted} omitted by the model, ${run.dropped} dropped by our rules;` : ""} ${run.inputTokens} input and ${run.outputTokens} output tokens; estimated $${run.spent.toFixed(4)}.`, "");
   mkdirSync("evals/out", { recursive: true });
-  const base = `evals/out/coach-${prov}-v${run.version}-${date}`;
+  const tag = repeatNo ? `-r${repeatNo}` : "";
+  const base = `evals/out/coach-${prov}-v${run.version}-${date}${tag}`;
   writeFileSync(`${base}.md`, md.join("\n"));
   writeFileSync(`${base}.csv`, rows.join("\r\n") + "\r\n");
   // The raw model text for every failed attempt (the sample drafts are fictional, so this is fine to keep).
   const raw = run.outcomes
     .filter((o) => o.attempts.length || (o.weakestLink && o.weakestLink.status !== "kept"))
     .map((o) => ({ id: o.item.id, probe: Boolean(o.item.probe), promptVersion: run.version, result: o.result, draft: o.item.draft, attempts: o.attempts, weakestLink: o.weakestLink }));
-  writeFileSync(`evals/out/coach-raw-${prov}-v${run.version}-${date}.json`, JSON.stringify({ provider: prov, model: real ? model : "fake", failures: raw }, null, 2) + "\n");
+  writeFileSync(`evals/out/coach-raw-${prov}-v${run.version}-${date}${tag}.json`, JSON.stringify({ provider: prov, model: real ? model : "fake", failures: raw }, null, 2) + "\n");
   return base;
 }
 
@@ -185,19 +194,75 @@ function printVersion(run: Run) {
   );
 }
 
+/**
+ * Across repeats: for each version and draft, how often the answer worked and (v2) how often the weakest link was kept, omitted by the
+ * model or dropped by our rules. A draft whose result changes between repeats is where the model's variance shows.
+ */
+function printVariance(allRuns: Run[][], model: string) {
+  const lines: string[] = [`# Coach variance, ${allRuns.length} repeat(s), ${new Date().toISOString().slice(0, 16).replace("T", " ")} UTC`, "", `Provider: ${real ? `real, ${model}` : "fake"}.`, ""];
+  for (const v of versions) {
+    const runsOfV = allRuns.map((b) => b.find((r) => r.version === v)).filter((r): r is Run => Boolean(r));
+    const v2 = v >= 2;
+    lines.push(
+      `## Prompt v${v}: ${runsOfV.length} complete repeat(s)`,
+      "",
+      v2 ? "| draft | ok | kept | omitted | dropped | failed | stable? | reasons |" : "| draft | ok | failed | stable? | reasons |",
+      v2 ? "| --- | --- | --- | --- | --- | --- | --- | --- |" : "| --- | --- | --- | --- | --- |",
+    );
+    for (const item of items) {
+      const os = runsOfV.map((r) => r.outcomes.find((o) => o.item.id === item.id)).filter((o): o is Outcome => Boolean(o));
+      const ok = os.filter((o) => o.result === "ok").length;
+      const kept = os.filter((o) => o.result === "ok" && o.weakestLink?.status === "kept").length;
+      const omitted = os.filter((o) => o.weakestLink?.status === "omitted").length;
+      const dropped = os.filter((o) => o.weakestLink?.status === "dropped").length;
+      const failed = os.length - ok;
+      const reasons = new Set<string>();
+      for (const o of os) {
+        if (o.result !== "ok") for (const a of o.attempts) reasons.add(`${a.category}: ${a.detail.slice(0, 60)}`);
+        if (o.weakestLink?.status === "dropped") reasons.add(`dropped: ${o.weakestLink.reason}`);
+      }
+      const outcomesSeen = [kept, omitted, dropped, failed].filter((n) => n > 0).length;
+      const stable = v2 ? outcomesSeen <= 1 : failed === 0 || failed === os.length;
+      const id = `${item.id}${item.probe ? " (probe)" : ""}`;
+      lines.push(
+        v2
+          ? `| ${id} | ${ok}/${os.length} | ${kept} | ${omitted} | ${dropped} | ${failed} | ${stable ? "yes" : "NO"} | ${cell([...reasons].join("; "))} |`
+          : `| ${id} | ${ok}/${os.length} | ${failed} | ${stable ? "yes" : "NO"} | ${cell([...reasons].join("; "))} |`,
+      );
+    }
+    lines.push("");
+  }
+  lines.push(`Estimated spend across all repeats: $${allRuns.flat().reduce((n, r) => n + r.spent, 0).toFixed(4)}.`, "");
+  mkdirSync("evals/out", { recursive: true });
+  const file = `evals/out/coach-variance-${real ? "real" : "fake"}-${new Date().toISOString().slice(0, 10)}.md`;
+  writeFileSync(file, lines.join("\n"));
+  console.log(`\n${lines.join("\n")}\nWrote ${file}.`);
+}
+
 async function main() {
   const deps = scriptDeps({ real });
   const model = resolveModel("coach", deps.settings);
   console.log(`${real ? `REAL model ${model}` : "Fake provider (no network, no cost)"}. ${items.length} drafts, prompt version(s) ${versions.join(", ")}.`);
-  const runs: Run[] = [];
-  for (const v of versions) {
-    const run = await runVersion(v, deps);
-    runs.push(run);
-    const base = writeFiles(run, model);
-    printVersion(run);
-    console.log(`Wrote ${base}.md, ${base}.csv and the raw failures file.`);
-    if (run.aborted) break; // do not start the next version after a stop
+  const allRuns: Run[][] = [];
+  let stopped = false;
+  for (let n = 1; n <= repeat && !stopped; n++) {
+    if (repeat > 1) console.log(`\n##### Repeat ${n} of ${repeat} #####`);
+    const batch: Run[] = [];
+    for (const v of versions) {
+      const run = await runVersion(v, deps);
+      batch.push(run);
+      const base = writeFiles(run, model, repeat > 1 ? n : 0);
+      printVersion(run);
+      console.log(`Wrote ${base}.md, ${base}.csv and the raw failures file.`);
+      if (run.aborted) {
+        stopped = true; // do not start the next version or repeat after a stop
+        break;
+      }
+    }
+    allRuns.push(batch);
   }
+  const runs = allRuns[0];
+  if (repeat > 1) printVariance(allRuns, model);
 
   if (runs.length > 1) {
     const [a, ...others] = runs;
@@ -215,8 +280,8 @@ async function main() {
     }
   }
 
-  const bad = runs.filter((r) => r.unexpected > 0 || r.aborted);
-  if (bad.length || runs.length < versions.length) {
+  const bad = allRuns.flat().filter((r) => r.unexpected > 0 || r.aborted);
+  if (bad.length || allRuns.some((b) => b.length < versions.length) || allRuns.length < repeat) {
     console.error(`\nFAILED: ${bad.map((r) => `v${r.version}: ${r.unexpected} draft(s) that are not probes failed${r.aborted ? ", and the run stopped early" : ""}`).join("; ")}.`);
     process.exit(1);
   }
