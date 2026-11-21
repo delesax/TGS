@@ -321,6 +321,13 @@ function fakeJudgeSummary(blocks: Record<string, string>) {
  * A deterministic stand-in for the Campaign draft helper: it copies the notes' own sentences (so every figure, date and quote
  * is really in the notes) and obeys no instruction inside them. Not a drafter; it exercises the whole pipeline.
  */
+/** The first n words of a line, never ending on half a figure or date ("on 12" cut before "March"). */
+function clipWords(line: string, n: number): string {
+  const words = line.split(/\s+/).slice(0, n);
+  while (words.length > 1 && /[\d£$€]/.test(words[words.length - 1])) words.pop();
+  return words.join(" ");
+}
+
 export function fakeCampaignDraft(notes: string) {
   const sentences = notes
     .split(/(?<=[.!?])\s+|\n+/)
@@ -331,12 +338,12 @@ export function fakeCampaignDraft(notes: string) {
   while (summary.length < 110) summary += " The notes pasted by the administrator are the only source for this draft.";
   const dated = (s: string) => /\d/.test(s);
   const rows = [...sentences.filter(dated), ...sentences.filter((s) => !dated(s))].slice(0, 4);
-  const claims = rows.map((line) => ({ claim: line.split(/\s+/).slice(0, 8).join(" "), source_line: line, exact_quote: line.split(/\s+/).slice(0, 8).join(" "), status: "unverified" as const }));
+  const claims = rows.map((line) => ({ claim: clipWords(line, 8), source_line: line, exact_quote: clipWords(line, 8), status: "unverified" as const }));
   const recheck = sentences
     .map((s) => ({ s, m: /\b\d{1,2} (?:January|February|March|April|May|June|July|August|September|October|November|December)(?: \d{4})?/.exec(s) }))
     .filter((x) => x.m)
     .slice(0, 3)
-    .map((x) => `Re-check by ${x.m![0]}: ${x.s.split(/\s+/).slice(0, 6).join(" ")}`);
+    .map((x) => `Re-check by ${x.m![0]}: ${clipWords(x.s, 6)}`);
   return { summary: summary.slice(0, 1900), claims: claims.length ? claims : [{ claim: "the notes", source_line: notes.trim().slice(0, 40), exact_quote: notes.trim().slice(0, 40), status: "unverified" as const }], recheck_lines: recheck };
 }
 

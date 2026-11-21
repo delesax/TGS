@@ -177,3 +177,30 @@ test("the 11th draft in a day is refused, and nothing is sent", async ({ browser
   expect(await calls()).toBe(before);
   await context.close();
 });
+
+test("no ai_usage, system_events, audit_log or ai_decisions row contains the notes, whether the draft passes or fails", async ({ browser }) => {
+  test.setTimeout(90_000);
+  const sentinel = `ZQXSENTINEL${randomUUID().replace(/-/g, "").slice(0, 12).toUpperCase()}`;
+  const id = await campaign();
+  const admin = await person("HELP", true);
+  const context = await browser.newContext({ baseURL: env.siteUrl, viewport: { width: 375, height: 812 } });
+  const page = await context.newPage();
+  await signIn(page, admin.email);
+  await page.goto(`/admin/campaigns/${id}/draft-helper`);
+  const button = page.getByRole("button", { name: "Draft summary, fact-check table and dates" });
+  const notes = `${NOTES}\nReference code ${sentinel} is used in the file.`;
+
+  await page.getByRole("textbox", { name: "Source notes" }).fill(notes);
+  await button.click();
+  await expect(page.getByText("Draft ready below. Verify every fact before using any of it.")).toBeVisible();
+  await page.getByRole("textbox", { name: "Source notes" }).fill(`${notes}\n[[ai-invalid]]`);
+  await button.click();
+  await expect(page.getByText(/did not pass the checks/)).toBeVisible();
+
+  for (const table of ["ai_usage", "system_events", "audit_log", "ai_decisions"]) {
+    const { data, error } = await service.from(table).select("*").limit(5000);
+    expect(error, table).toBeNull();
+    expect(JSON.stringify(data ?? []), table).not.toContain(sentinel);
+  }
+  await context.close();
+});

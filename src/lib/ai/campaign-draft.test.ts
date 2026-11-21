@@ -50,13 +50,14 @@ describe("campaignDraftProblems: what the validator rejects", () => {
 
   it("rejects a figure that is not in the notes", () => {
     const p = campaignDraftProblems(draft({ summary: draft().summary + " The plan would save £3.1 million." }), NOTES);
-    expect(p.join("|")).toMatch(/figure or date part.*: 3\.1/);
+    expect(p.join("|")).toMatch(/figure or date part.*: £3\.1 million/);
   });
   it("rejects a date that is not in the notes: a different day, year or month", () => {
-    expect(campaignDraftProblems(draft({ summary: draft().summary + " A vote is expected on 14 September 2026." }), NOTES).join("|")).toMatch(/: 14/);
+    expect(campaignDraftProblems(draft({ summary: draft().summary + " A vote is expected on 14 September 2026." }), NOTES).join("|")).toMatch(/a date that is not in the notes: 14 september 2026/);
     expect(campaignDraftProblems(draft({ summary: draft().summary + " The libraries would close in 2028." }), NOTES).join("|")).toMatch(/: 2028/);
-    expect(campaignDraftProblems(draft({ summary: draft().summary + " The vote is in December." }), NOTES).join("|")).toMatch(/month that is not in the notes: december/);
-    expect(campaignDraftProblems(draft({ recheck_lines: ["Re-check by 5 October: the vote"] }), NOTES).join("|")).toMatch(/october/);
+    expect(campaignDraftProblems(draft({ recheck_lines: ["Re-check by 5 October: the vote"] }), NOTES).join("|")).toMatch(/5 october/);
+    // Accepted consequence in the spec: a bare month with no number or year is an ordinary word, not a date.
+    expect(campaignDraftProblems(draft({ summary: draft().summary + " The vote is in December." }), NOTES)).toEqual([]);
   });
   it("accepts a month that the notes use, and the modal verb 'may'", () => {
     expect(campaignDraftProblems(draft({ summary: draft().summary + " A vote is expected in September 2026, and it may change the plan." }), NOTES)).toEqual([]);

@@ -29,6 +29,7 @@
     "seed:abuse": "tsx scripts/seed-abuse.ts",
     "eval:moderation": "tsx scripts/eval-moderation.ts",
     "eval:coach": "tsx scripts/eval-coach.ts",
+    "eval:campaign-draft": "tsx scripts/eval-campaign-draft.ts",
     "eval:judging": "tsx scripts/eval-judging.ts",
     "eval:judge": "tsx scripts/eval-judging.ts",
     "seed:judging": "tsx scripts/seed-judging.ts",
