@@ -6,6 +6,8 @@ import {
   formatUkDateTime,
   fromUkInputValue,
   groupCampaigns,
+  MIN_PULSE_STRATEGISTS,
+  participationLine,
   pickNextCampaign,
   secondsLeft,
   slugify,
@@ -225,5 +227,23 @@ describe("pickNextCampaign (the home page's Next Campaign card)", () => {
   });
   it("returns null when there is nothing to show", () => {
     expect(pickNextCampaign([], NOW)).toBeNull();
+  });
+});
+
+describe("participationLine", () => {
+  const ids = (authors: number, each = 1) => Array.from({ length: authors }, (_, i) => `u${i}`).flatMap((id) => Array(each).fill(id) as string[]);
+
+  it("shows nothing under the threshold, even with many Dispatches", () => {
+    expect(MIN_PULSE_STRATEGISTS).toBe(10);
+    expect(participationLine([], "open")).toBeNull();
+    expect(participationLine(ids(9, 5), "open")).toBeNull();
+  });
+
+  it("counts distinct Strategists and all Dispatches at the threshold", () => {
+    expect(participationLine([...ids(10), "u0", "u1"], "open")).toBe("10 Strategists have posted 12 Dispatches.");
+  });
+
+  it("uses the past tense once closed", () => {
+    expect(participationLine(ids(12, 2), "closed")).toBe("12 Strategists posted 24 Dispatches.");
   });
 });

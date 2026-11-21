@@ -231,3 +231,16 @@ export function slugify(title: string): string {
 }
 
 export const MAX_ROUND_ROWS = 5;
+
+/** The participation line appears only once this many distinct Strategists have posted, so a thin Campaign never looks empty or singles anyone out. */
+export const MIN_PULSE_STRATEGISTS = 10;
+
+/**
+ * "12 Strategists have posted 31 Dispatches", or null under the threshold. Counts only the rows it is given (visible, not withdrawn,
+ * not hidden Dispatches); never positions, votes or readers.
+ */
+export function participationLine(authorIds: string[], status: Status): string | null {
+  const strategists = new Set(authorIds).size;
+  if (strategists < MIN_PULSE_STRATEGISTS) return null;
+  return `${strategists} Strategists ${status === "open" ? "have posted" : "posted"} ${authorIds.length} Dispatches.`;
+}

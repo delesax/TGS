@@ -9,8 +9,8 @@ import { getViewer } from "@/lib/auth";
 import { metaDescription } from "@/lib/meta-description";
 import { hasPositionsConsent } from "@/lib/positions-consent";
 import { CampaignRubric } from "@/components/campaign-rubric";
-import { getCampaign, getMyPosition, getPublishedRubric, getServerNow } from "@/lib/campaign-data";
-import { POSITION_LABELS, currentRound, formatUkDateTime, statusAt } from "@/lib/campaigns";
+import { getCampaign, getMyPosition, getParticipationAuthors, getPublishedRubric, getServerNow } from "@/lib/campaign-data";
+import { POSITION_LABELS, currentRound, participationLine, formatUkDateTime, statusAt } from "@/lib/campaigns";
 import { DispatchSection } from "./dispatch-section";
 import { JudgingLinks } from "./judging-links";
 import { PositionForm } from "./position-form";
@@ -31,6 +31,7 @@ export default async function CampaignPage({ params }: PageProps<"/campaigns/[sl
 
   const status = statusAt(campaign, now);
   const rubric = await getPublishedRubric(campaign);
+  const pulse = status === "open" || status === "closed" ? participationLine(await getParticipationAuthors(campaign.id), status) : null;
   const round = status === "open" ? currentRound(campaign.rounds, now) : null;
   const [position, consented] = viewer?.profile?.handle
     ? await Promise.all([getMyPosition(campaign.id, viewer.userId), hasPositionsConsent(viewer.userId)])
@@ -98,6 +99,11 @@ export default async function CampaignPage({ params }: PageProps<"/campaigns/[sl
             Planned: {formatUkDateTime(campaign.starts_at)} to {formatUkDateTime(campaign.ends_at)}.
           </p>
         )}
+        {pulse ? (
+          <p data-testid="participation-pulse" className="mt-4 text-lg text-muted-foreground">
+            {pulse}
+          </p>
+        ) : null}
       </Card>
 
       {campaign.summary ? (
